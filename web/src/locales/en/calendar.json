@@ -1,0 +1,50 @@
+{
+  "title": "Calendar",
+  "prev": "Previous",
+  "next": "Next",
+  "today": "Today",
+  "day": "Day",
+  "week": "Week",
+  "yours": "Yours",
+  "agents": "Agents",
+  "connect": "Connect a calendar",
+  "allDay": "All day",
+  "fromPhone": "synced from your phone",
+  "whoOnIt": "Who's on it",
+  "nobody": "No agent has touched this yet. Mention it to one in a chat.",
+  "how": {
+    "created": "put it there for you",
+    "watching": "is keeping an eye on it",
+    "mentioned": "talked about it recently"
+  },
+  "kind": {
+    "routine": "Routine",
+    "check": "Watch check",
+    "watch": "Watch"
+  },
+  "everyMin": "checks every {{n}} min",
+  "checks": "{{n}} checks so far",
+  "openChat": "Open chat",
+  "openCard": "See card",
+  "empty": {
+    "title": "Your calendar isn't connected yet",
+    "body": "Paste a Google / iCloud calendar link (the secret iCal address). Your agents' work is already below.",
+    "cta": "Connect"
+  },
+  "feeds": {
+    "title": "My calendars",
+    "body": "Paste a Google / iCloud calendar link (iCal, read-only). Your events show up in Calendar next to what your agents do, and agents can see when you're free.",
+    "url": "https://calendar.google.com/…/basic.ics",
+    "name": "Name (optional)",
+    "add": "Add",
+    "remove": "Remove",
+    "checking": "Reading it…",
+    "bad": "Couldn't read that link: {{err}}",
+    "added": "Added, found {{n}} events ✓",
+    "how": "Where do I find this link?",
+    "howGoogle": "Google Calendar: web → Settings → pick the calendar → \"Secret address in iCal format\".",
+    "howIcloud": "iCloud: Calendar app → share button next to the calendar → Public Calendar → copy link.",
+    "howPhone": "Add as many links as you like (work, home, the kids' school). Each one gets its own colour."
+  },
+  "done": "past"
+}

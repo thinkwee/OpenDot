@@ -1,0 +1,27 @@
+{
+  "title": "{{name}}'s Computer",
+  "live": "LIVE",
+  "shrink": "Shrink (Esc)",
+  "enlarge": "Enlarge",
+  "tabs": {
+    "screen": "Browser",
+    "terminal": "Terminal",
+    "files": "Files"
+  },
+  "idleLine": "idle — waiting for a task",
+  "main": "main",
+  "connecting": "connecting",
+  "browserAlt": "agent browser",
+  "clickEnlarge": "Click to enlarge",
+  "browserAsleep": "The browser wakes up when your agent goes online.",
+  "term": {
+    "readOnly": "read-only live view of the agent's real terminal",
+    "typeInto": "type into it"
+  },
+  "files": {
+    "home": "home",
+    "empty": "Empty. Files your agent makes show up here."
+  },
+  "lead": "Lead",
+  "helperN": "Helper {{n}}"
+}

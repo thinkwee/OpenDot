@@ -1,0 +1,59 @@
+/* question card + routine card under an agent's message (and the ＋ menu) — Memphis flat */
+
+/* ---------- question card ---------- */
+.qcard { margin: 8px 0 2px; width: min(460px, 100%); padding: 14px; border-radius: 18px; background: var(--panel); border: 2.5px solid var(--edge); box-shadow: var(--hard); position: relative; }
+.qcard::before { content: ''; position: absolute; top: -9px; right: 18px; width: 16px; height: 16px; background: var(--m-yellow); border: 2.5px solid var(--edge); border-radius: 50%; }
+.qcard-q { font-family: var(--display); font-weight: 600; font-size: 16px; line-height: 1.3; margin: 0 22px 2px 0; }
+.qcard-sub { display: block; color: var(--ink2); font-size: 12.5px; font-weight: 700; margin-bottom: 2px; }
+.qcard-opts { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.qopt { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 12px 9px 9px; min-height: 48px; border-radius: 14px; background: var(--bg2); color: var(--ink); border: 2px solid var(--edge); box-shadow: var(--hard-sm); transition: transform .16s var(--ease-spring), box-shadow .16s var(--ease-spring), background .15s; }
+.qopt:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: var(--hard); }
+.qopt:active:not(:disabled) { transform: translate(1px, 1px); box-shadow: none; }
+.qopt.on { background: var(--m-yellow); color: #1e1b2e; }
+.qopt-key { flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; font-family: var(--display); font-weight: 700; font-size: 15px; background: var(--panel); color: var(--ink); border: 2px solid var(--edge); }
+.qopt.on .qopt-key { background: var(--m-teal); color: #fff; }
+.qopt-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.qopt-txt b { font-weight: 800; font-size: 14.5px; line-height: 1.25; }
+.qopt-txt small { font-size: 12.5px; color: var(--ink2); line-height: 1.3; }
+.qopt.on .qopt-txt small { color: #4a4458; }
+.qcard-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.qcard-type { font-size: 12.5px; font-weight: 700; color: var(--ink2); text-align: left; padding: 4px 0; text-decoration: underline dashed; text-underline-offset: 3px; }
+.qcard-type:hover { color: var(--accent); }
+.qcard-foot .btn { min-width: 112px; }
+.qcard.done { box-shadow: var(--hard-sm); }
+.qcard.done .qopt { box-shadow: none; opacity: .5; }
+.qcard.done .qopt.on { opacity: 1; }
+.qcard-own { margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--ink2); }
+
+/* ---------- routine card ---------- */
+.rcard { margin: 8px 0 2px; max-width: 480px; padding: 14px; border-radius: 18px; background: color-mix(in srgb, var(--m-teal) 12%, var(--panel)); border: 2.5px solid var(--edge); box-shadow: var(--hard); display: flex; flex-direction: column; gap: 10px; }
+.rcard.draft { margin: 0 0 10px; max-width: none; animation: rise .3s var(--ease-out) both; }
+.rcard-head { display: flex; align-items: center; gap: 8px; font-family: var(--display); }
+.rcard-head b { font-weight: 600; font-size: 15.5px; }
+.rcard-ico { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--m-yellow); color: #1e1b2e; border: 2px solid var(--edge); }
+.rcard-line { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; font-weight: 700; font-size: 14.5px; }
+.rcard-line.rwho b { font-weight: 800; }
+.rsel { appearance: none; -webkit-appearance: none; font: inherit; font-weight: 800; font-size: 14.5px; color: #1e1b2e; padding: 6px 28px 6px 11px; min-height: 36px; border-radius: 12px; border: 2px solid var(--edge); box-shadow: var(--hard-sm); cursor: pointer;
+  background: var(--m-yellow) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231e1b2e' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center; }
+.rsel:focus-visible { outline: 3px solid var(--m-teal); outline-offset: 1px; }
+.rcard-what { resize: none; margin: 0; font-size: 14.5px; min-height: 58px; }
+.rcard-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rcard-foot small { font-weight: 700; }
+.rcard.small { flex-direction: row; align-items: center; gap: 8px; padding: 8px 12px; box-shadow: var(--hard-sm); font-weight: 700; font-size: 13.5px; }
+.rcard.small.skipped { background: var(--panel); color: var(--ink2); }
+
+/* ---------- composer ＋ menu ---------- */
+.plus-wrap { position: relative; flex: none; display: flex; align-self: flex-end; }
+.plus-menu { position: absolute; bottom: calc(100% + 10px); left: -10px; z-index: 20; width: max-content; min-width: 250px; max-width: min(320px, calc(100vw - 32px)); padding: 6px; border-radius: 16px; background: var(--panel); border: 2.5px solid var(--edge); box-shadow: var(--hard); display: flex; flex-direction: column; gap: 2px; animation: rise .2s var(--ease-out) both; }
+.plus-menu button { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 11px; font-weight: 800; font-size: 14px; text-align: left; color: var(--ink); }
+.plus-menu button:hover { background: var(--m-yellow); color: #1e1b2e; }
+.plus-menu button small { display: block; font-weight: 600; font-size: 12px; color: var(--ink2); }
+.plus-menu button:hover small { color: #4a4458; }
+.plus-menu .pm-ico { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 10px; border: 2px solid var(--edge); background: var(--bg2); font-size: 15px; }
+
+@media (max-width: 560px) {
+  .qcard, .rcard { max-width: none; }
+  .qcard-foot .btn { flex: 1; }
+  .rcard-foot small { flex-basis: 100%; }
+  .rcard-foot .btn { flex: 1; }
+}

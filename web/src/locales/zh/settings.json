@@ -1,0 +1,75 @@
+{
+  "title": "设置",
+  "lead": "你的助理们住在你自己的电脑上。在这里给它们配上自己的邮箱和号码，再连上你常用的应用。",
+  "tabs": {
+    "general": "通用",
+    "identity": "助理的身份",
+    "channels": "聊天应用",
+    "devices": "你的电脑",
+    "connectors": "其他应用",
+    "skills": "技能包"
+  },
+  "pair": {
+    "title": "连上手机",
+    "hint": "用手机相机扫一下就行，不用打字。配对码只能用一次，10 分钟内有效。连上之后点“添加到主屏幕”，用起来就像个 App。",
+    "qrAlt": "配对二维码",
+    "show": "显示配对二维码"
+  },
+  "brain": {
+    "title": "大脑",
+    "defaultModel": "默认模型：",
+    "hint": "几乎任何模型都能用（通过 LiteLLM）。想换默认模型，改 <code>.env</code> 里的 <code>LLM_MODEL / LLM_API_KEY</code>，或者重新跑一遍 <code>./dot.sh setup</code>，然后重启。",
+    "liveLink": "实时连接：",
+    "connected": "已连上"
+  },
+  "look": {
+    "title": "外观",
+    "auto": "跟随系统",
+    "light": "浅色",
+    "dark": "深色",
+    "palette": {
+      "memphis": "孟菲斯",
+      "ocean": "海盐",
+      "matcha": "抹茶",
+      "berry": "莓果",
+      "noir": "墨黑"
+    },
+    "paletteLabel": "配色"
+  },
+  "device": {
+    "title": "这台设备",
+    "hint": "记忆、例行事项、身份和技能，现在都放在「团队」里每个助理的资料页。",
+    "openTeam": "打开团队",
+    "signOut": "在这台设备上退出"
+  },
+  "profiles": {
+    "title": "模型配置",
+    "hint": "给模型配置起个名字，不同的助理就能用不同的模型。“private” 是留给本地模型的（比如 Ollama），用它的助理不会离开这台机器。",
+    "builtin": "内置",
+    "test": "试一下",
+    "testFailed": "没试成：{{msg}}",
+    "new": "新建配置",
+    "editTitle": "编辑“{{name}}”",
+    "newTitle": "新建模型配置",
+    "name": "名字",
+    "namePh": "比如 fast、private、claude",
+    "baseUrl": "接口地址（只有自建的 OpenAI 兼容服务才需要填）",
+    "apiKey": "API key（或者 {{vault}}）",
+    "model": "模型",
+    "modelPh": "厂商/模型名，或者先选厂商再点“列出模型”",
+    "effort": "思考强度（可选：low / medium / high）",
+    "saveFailed": "没保存上：{{msg}}",
+    "provider": "厂商",
+    "providerPick": "选择…",
+    "getKey": "获取 key",
+    "listModels": "列出模型",
+    "listFailed": "没能列出模型：{{msg}}"
+  },
+  "secondLook": {
+    "title": "再看一眼",
+    "hint": "助理替你发邮件、发短信、发帖或以你的名义做事之前，会先快速核对一下是不是你真正想要的。它只会让事情更稳妥——先问你或者拦下来，绝不会跳过该问你的事。",
+    "on": "开",
+    "off": "关",
+    "locked": "服务器上已关闭（DOT_REVIEWER=off）。"
+  }
+}

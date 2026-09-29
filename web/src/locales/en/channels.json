@@ -1,0 +1,38 @@
+{
+  "title": "Channels",
+  "lead": "Bring your agents into the chat apps you already live in. Each chat binds to one agent (or the whole team) — only people you pair can talk to them.",
+  "status": {
+    "connected": "connected",
+    "connecting": "connecting…",
+    "error": "hit a snag",
+    "disabled": "not set up"
+  },
+  "toast": {
+    "saved": "Saved — connecting…",
+    "reconnecting": "Reconnecting…",
+    "wechatPaired": "WeChat paired!",
+    "qrExpired": "QR expired — try again"
+  },
+  "setUp": "Set up",
+  "saveConnect": "Save & connect",
+  "reconnect": "Reconnect",
+  "wechat": {
+    "getQr": "Get QR code",
+    "qrAlt": "scan with WeChat",
+    "scanHint": "Scan with WeChat → Settings → Plugins → ClawBot"
+  },
+  "pairing": {
+    "title": "Pairing",
+    "hintBefore": "Only paired chats can talk to your agents. Get a code, then send",
+    "hintAfter": "from the app.",
+    "newCode": "New code"
+  },
+  "home": {
+    "title": "Home chat for proactive updates",
+    "placeholder": "chat id"
+  },
+  "bound": {
+    "title": "Bound chats",
+    "unbind": "Unbind"
+  }
+}

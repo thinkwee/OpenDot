@@ -1,0 +1,47 @@
+/* Agent Computer 2.0 — additive styles on top of the base .computer/.screen/.term
+   rules in styles.css (owned by W1). Cute, consistent, works at 390px. */
+
+.comp-activity {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 10px; font-size: 12px; color: var(--ink2);
+  background: color-mix(in srgb, var(--accent) 6%, var(--panel2));
+  border-radius: 10px; margin: 8px 0 0;
+}
+.comp-activity .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; animation: pulse 1.4s infinite; }
+.comp-activity.idle { opacity: .55; }
+.comp-activity.idle .dot { animation: none; background: var(--ink3); }
+
+.tabstrip { display: flex; gap: 6px; padding: 0 0 8px; overflow-x: auto; }
+.tabstrip button { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: var(--panel2); font-size: 12px; font-weight: 700; color: var(--ink2); flex: none; border: 1.5px solid transparent; }
+.tabstrip button.on { border-color: var(--accent); color: var(--accent); }
+.tabstrip .helper-badge { font-size: 10px; opacity: .7; }
+
+.screen-view.live img { object-fit: contain; background: #14141a; }
+.stream-dot { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 10px; font-weight: 800; }
+.stream-dot i { width: 6px; height: 6px; border-radius: 50%; background: #6cff9e; }
+.stream-dot.off i { background: #ff8a8a; animation: none; }
+.stream-dot i { animation: pulse 1.2s infinite; }
+
+.takeover-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 2px 0; }
+.takeover-bar small { color: var(--ink2); }
+
+.xterm-wrap { background: #1d1826; border-radius: 14px; padding: 10px 6px 6px 12px; height: 380px; overflow: hidden; }
+.xterm-wrap .xterm { height: 100%; }
+.term-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 6px; }
+.term-toolbar small { color: var(--ink2); }
+
+@media (max-width: 700px) {
+  .xterm-wrap { height: 280px; }
+}
+
+/* ---------- enlarge ---------- */
+.comp-backdrop { position: fixed; inset: 0; z-index: 59; background: rgba(40, 25, 30, .45); backdrop-filter: blur(3px); animation: pop .15s; }
+.computer.max { position: fixed; inset: 24px; width: auto; z-index: 60; border-radius: 22px; border: 1px solid var(--line); box-shadow: var(--shadow); animation: pop .18s; }
+.computer.max .comp-body { display: flex; flex-direction: column; }
+.computer.max .screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.computer.max .screen-view { flex: 1; aspect-ratio: auto; min-height: 0; }
+.computer.max .xterm-wrap { height: calc(100vh - 230px); }
+.computer.max .term { min-height: calc(100vh - 230px); }
+.screen-view.live img { cursor: zoom-in; }
+.computer.max .screen-view.live img { cursor: default; }
+@media (max-width: 700px) { .computer.max { inset: 0; border-radius: 0; } }

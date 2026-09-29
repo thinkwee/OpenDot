@@ -1,0 +1,38 @@
+{
+  "title": "聊天渠道",
+  "lead": "把助理们请进你每天在用的聊天应用。每个聊天对应一个助理（或者整个团队），只有你配对过的人才能跟它们说话。",
+  "status": {
+    "connected": "已连上",
+    "connecting": "连接中…",
+    "error": "出了点状况",
+    "disabled": "还没设置"
+  },
+  "toast": {
+    "saved": "存好了，正在连接…",
+    "reconnecting": "重新连接中…",
+    "wechatPaired": "微信连上啦！",
+    "qrExpired": "二维码过期了，再来一次吧"
+  },
+  "setUp": "去设置",
+  "saveConnect": "保存并连接",
+  "reconnect": "重新连接",
+  "wechat": {
+    "getQr": "获取二维码",
+    "qrAlt": "用微信扫一扫",
+    "scanHint": "用微信扫：设置 → 插件 → ClawBot"
+  },
+  "pairing": {
+    "title": "配对",
+    "hintBefore": "只有配对过的聊天才能跟你的助理说话。先拿一个配对码，然后在应用里发送",
+    "hintAfter": "就好。",
+    "newCode": "新配对码"
+  },
+  "home": {
+    "title": "主动消息发到哪个聊天",
+    "placeholder": "聊天 ID"
+  },
+  "bound": {
+    "title": "已绑定的聊天",
+    "unbind": "解绑"
+  }
+}

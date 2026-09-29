@@ -1,0 +1,111 @@
+{
+  "kicker": "Your personal agent team, in the real world",
+  "title": [
+    "Someone for ",
+    "every",
+    " little job."
+  ],
+  "lead": "Make a small agent for each thing you want off your plate: the passport renewal, the trip, the window cleaner, the pottery class that’s always full. Each one has its own email, number and computer, deals with the world as itself, and brings the work back ready. You just answer.",
+  "star": "Star on GitHub",
+  "try": "Meet your first agent",
+  "dayTitle": "A Tuesday, handled",
+  "day": [
+    [
+      "08:10",
+      "Paper Keeper",
+      "“Your passport runs out on 2 January, and Porto needs three months left on it. I’ve filled in the renewal form; you just need a new photo.” — Got it · Remind me Friday"
+    ],
+    [
+      "11:05",
+      "Spot Spotter",
+      "It has checked the Saturday pottery class 41 times. This morning someone dropped out: “Saturday 10:00, wheel-throwing, one spot free. Want me to put your name down? You pay at the door.” — Sign me up · Not this week"
+    ],
+    [
+      "15:30",
+      "Nest Keeper",
+      "It asked three window cleaners for a quote, from its own email address. Two wrote back. “The one who can come Thursday morning is £10 cheaper. Tell him yes?” — Yes · Not now"
+    ],
+    [
+      "19:00",
+      "Weekend Pal",
+      "“Sunday looks dry. There’s a flea market by the canal till 2, then a free brass band in the park at 3, a 15-minute walk away. Want both?” — Sounds good · Something else"
+    ]
+  ],
+  "pillarsTitle": "How it feels different",
+  "pillars": [
+    [
+      "Proactive agents, reactive you",
+      "They keep an eye on prices, places and replies, and come to you when something’s ready. You answer with a tap. A few nudges a day at most, none at night."
+    ],
+    [
+      "Every agent has its own computer",
+      "A home folder, a terminal and a browser you can watch live or take over. Wide jobs get helpers, each with a computer of its own."
+    ],
+    [
+      "A real identity in the real world",
+      "Its own email address and phone number. Shops and services deal with your assistant, not a bot logged into your accounts."
+    ],
+    [
+      "A QR code or a link is an agent",
+      "Scan the code on your climbing gym’s poster or paste your vet’s link, and you get someone who deals with that place for you."
+    ],
+    [
+      "Agent calendar",
+      "Your calendars and your agents’ routines on one timeline, with a little face on every event someone is looking after."
+    ],
+    [
+      "Agent todo",
+      "Everything they took on, on one board: needs you, in progress, done. The checklist ticks itself off as they go."
+    ],
+    [
+      "Nothing risky without you",
+      "Sending as you, anything that can’t be undone: they ask first. They never pay. They hand you the link."
+    ],
+    [
+      "Memory you can read",
+      "Plain files on your own disk. Tell them once, or tell them to forget."
+    ]
+  ],
+  "ownTitle": "Yours, all the way down",
+  "own": [
+    [
+      "Open source",
+      "Read every line, change anything."
+    ],
+    [
+      "Your computer",
+      "A laptop or a home box. One command to start."
+    ],
+    [
+      "Your model",
+      "Any OpenAI-compatible API, cloud or fully local."
+    ],
+    [
+      "Your data",
+      "Memory is plain files on your disk. Nothing phones home."
+    ]
+  ],
+  "statusTitle": "Early, and honest about it",
+  "status": "OpenDot is young. Chat, agent computers, files, watches and skills are used every day. Email, phone and the chat apps work but have had less testing. Phone numbers need your own Twilio account, and email addresses need one mailbox you create for your agents.",
+  "startTitle": "Get going in three steps",
+  "steps": [
+    [
+      "Run",
+      "./dot.sh on any Linux or Mac. A wizard asks two questions."
+    ],
+    [
+      "Pair",
+      "Scan the QR code with your phone. The code works once and lasts 10 minutes."
+    ],
+    [
+      "Hand something off",
+      "Tell Pip what’s on your mind, or tap ＋ to make someone for it."
+    ]
+  ],
+  "nudgeTitle": "Psst… one tiny favour?",
+  "nudge": "If your agents took something off your plate, a ⭐ on GitHub makes them do a happy dance, and helps other people find OpenDot.",
+  "nudgeBtn": "Give a star",
+  "nudgeLater": "Maybe later",
+  "thanks": "Thank you! They’re dancing 💃",
+  "examples": "Ideas to steal"
+}

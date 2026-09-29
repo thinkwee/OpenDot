@@ -1,0 +1,55 @@
+{
+  "title": "应用和连接",
+  "lead": "把助理们接进你数字生活的方方面面。所有应用里的动作都要经过 守门员，你没点头，就不会以你的名义发出任何东西。",
+  "connecting": "连接中…",
+  "badJson": "这段 JSON 好像不太对：{{msg}}",
+  "saveConnect": "保存并连接",
+  "tools_other": "{{count}} 个工具",
+  "mcp": {
+    "title": "MCP 应用",
+    "hintBefore": "任何 Model Context Protocol 服务都行，本地的（command）或者托管的（url）。密钥写成",
+    "hintAfter": "，模型永远看不到真实的值。"
+  },
+  "feeds": {
+    "title": "订阅源",
+    "hint": "有新内容时会变成一个事件（<code>rss:name</code>），可以用来叫醒某个例行事项。",
+    "name": "名字",
+    "add": "添加"
+  },
+  "share": {
+    "title": "分享给 Pip 和 Webhook",
+    "hint": "在 iOS 快捷指令里建一个“获取 URL 内容”（POST，JSON），就能从任何应用把链接和文字分享给 Pip。其他服务的 Webhook 也发到同一个地方。"
+  },
+  "vault": {
+    "title": "保险箱",
+    "hint": "给助理们用的 API key 和密码。只存在你自己的服务器上，用到的最后一刻才填进去，模型看到的内容里一律打码。",
+    "empty": "空的",
+    "valuePh": "密钥内容"
+  },
+  "catalog": {
+    "title": "添加应用",
+    "lead": "常用的应用，一分钟就能接上。大多数只要从应用设置里复制一个令牌。令牌存在你的保险箱里，模型永远看不到。",
+    "all": "全部",
+    "needs": {
+      "node": "需要 Node.js",
+      "uv": "需要 uv",
+      "docker": "需要 Docker"
+    },
+    "missing": {
+      "node": "这台电脑还没装 Node.js（找不到 npx），先去 nodejs.org 装一下。",
+      "uv": "这台电脑还没装 uv（找不到 uvx），先去 docs.astral.sh/uv 装一下。",
+      "docker": "这台电脑还没装 Docker。"
+    },
+    "nothingToInstall": "不用装东西",
+    "added": "已添加 ✓",
+    "add": "添加",
+    "addAnother": "再加一个",
+    "optional": "可不填",
+    "getIt": "去这里拿",
+    "noSetup": "什么都不用填，直接添加。",
+    "vaultNote": "令牌存在这台电脑的保险箱里。",
+    "source": "它实际运行的是什么",
+    "addConnect": "添加并连接",
+    "addedToast": "🧩 {{name}} 加好了，正在连接…"
+  }
+}

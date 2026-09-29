@@ -1,0 +1,21 @@
+{
+  "kind": { "report": "汇报", "note": "便条", "email": "邮件", "sms": "短信", "approval": "要你点头" },
+  "src": { "heartbeat": "💓 定时看看" },
+  "title": "收件箱",
+  "subtitle": "你不在的时候助理们都干了啥，还有哪些事等你点头。",
+  "markAll": "全部标为已读",
+  "clearRead": "清掉已读",
+  "clearReadTitle": "把看过的都清掉",
+  "caughtUp": "✓ 都看完啦",
+  "cleared": "🧹 清掉了 {{count}} 条",
+  "nothingToClear": "没什么要清的",
+  "needsOk": "等你点头",
+  "updates": "动态",
+  "all": "全部",
+  "unread": "未读",
+  "emptyUnread": "没有未读，都看完啦。",
+  "empty": "这里静悄悄的。给助理打开定时查看，或者设个例行事项吧。",
+  "noDetails": "_（没有更多内容）_",
+  "openThread": "打开「{{title}}」",
+  "openChat": "打开聊天"
+}

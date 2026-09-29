@@ -1,0 +1,13 @@
+.deco { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.d-shape { position: absolute; display: block; transform: rotate(var(--rot)); }
+.d-shape svg { display: block; overflow: visible; }
+.d-fill { fill: var(--dc); stroke: var(--edge); stroke-width: 2; stroke-linejoin: round; }
+.d-stroke { fill: none; stroke: var(--dc); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.d-dots { fill: var(--edge); }
+.d-float { animation: d-float 6s var(--ease-soft) infinite alternate; }
+.d-spin { animation: d-spin 14s linear infinite; }
+.d-drift { animation: d-drift 9s var(--ease-soft) infinite alternate; }
+@keyframes d-float { from { transform: translateY(0) rotate(var(--rot)) } to { transform: translateY(-10px) rotate(calc(var(--rot) + 8deg)) } }
+@keyframes d-spin { from { transform: rotate(var(--rot)) } to { transform: rotate(calc(var(--rot) + 360deg)) } }
+@keyframes d-drift { from { transform: translate(0, 0) rotate(var(--rot)) } to { transform: translate(8px, -6px) rotate(calc(var(--rot) - 10deg)) } }
+@media (prefers-reduced-motion: reduce) { .d-shape { animation: none !important; } }

@@ -1,0 +1,75 @@
+{
+  "title": "Settings",
+  "lead": "Your agents live on your own computer. Give them their own addresses and numbers, and connect them to your apps here.",
+  "tabs": {
+    "general": "General",
+    "identity": "Agent identities",
+    "channels": "Chat apps",
+    "devices": "Your computers",
+    "connectors": "Other apps",
+    "skills": "Skill packs"
+  },
+  "pair": {
+    "title": "Pair a phone",
+    "hint": "Scan with your phone camera — no typing. The code works once and expires in 10 minutes. Then “Add to Home Screen” for an app-like experience.",
+    "qrAlt": "pairing QR",
+    "show": "Show pairing QR"
+  },
+  "brain": {
+    "title": "Brain",
+    "defaultModel": "Default model:",
+    "hint": "Almost any model works (through LiteLLM). To change the default, edit <code>LLM_MODEL / LLM_API_KEY</code> in <code>.env</code> or re-run <code>./dot.sh setup</code>, then restart.",
+    "liveLink": "Live link:",
+    "connected": "connected"
+  },
+  "look": {
+    "title": "Look",
+    "auto": "auto",
+    "light": "light",
+    "dark": "dark",
+    "palette": {
+      "memphis": "Memphis",
+      "ocean": "Ocean",
+      "matcha": "Matcha",
+      "berry": "Berry",
+      "noir": "Noir"
+    },
+    "paletteLabel": "Colours"
+  },
+  "device": {
+    "title": "This device",
+    "hint": "Memory, routines, identity and skills now live in each agent's profile under Team.",
+    "openTeam": "Open Team",
+    "signOut": "Sign out this device"
+  },
+  "profiles": {
+    "title": "Model profiles",
+    "hint": "Named LLM configs — point different agents at different models. “private” is meant for a local model (e.g. Ollama) so that agent never leaves this machine.",
+    "builtin": "built-in",
+    "test": "Test",
+    "testFailed": "Test didn't work: {{msg}}",
+    "new": "New profile",
+    "editTitle": "Edit “{{name}}”",
+    "newTitle": "New model profile",
+    "name": "Name",
+    "namePh": "e.g. fast, private, claude",
+    "baseUrl": "Base URL (only for your own OpenAI-compatible server)",
+    "apiKey": "API key (or {{vault}})",
+    "model": "Model",
+    "modelPh": "provider/model — or choose a provider and tap “Show models”",
+    "effort": "Reasoning effort (optional: low / medium / high)",
+    "saveFailed": "Couldn't save: {{msg}}",
+    "provider": "Provider",
+    "providerPick": "Choose…",
+    "getKey": "Get a key",
+    "listModels": "Show models",
+    "listFailed": "Couldn't list models: {{msg}}"
+  },
+  "secondLook": {
+    "title": "Second look",
+    "hint": "Before an agent emails, texts, posts or does anything else in your name, a quick check makes sure it's really what you asked. It can only make things safer — it'll ask you first or stop it, never skip a question.",
+    "on": "On",
+    "off": "Off",
+    "locked": "Turned off on the server (DOT_REVIEWER=off)."
+  }
+}

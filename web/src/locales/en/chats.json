@@ -1,0 +1,194 @@
+{
+  "list": {
+    "title": "Your agents",
+    "newTitle": "New agent",
+    "new": "New",
+    "workingOnIt": "working on it…",
+    "you": "You: ",
+    "agentsCount_one": "{{count}} agent",
+    "agentsCount_other": "{{count}} agents",
+    "waiting": "waiting for you",
+    "someoneNew": "Someone new",
+    "someoneNewSub": "for the next thing you want off your plate"
+  },
+  "group": {
+    "title": "A group for one goal",
+    "desc": "Put a few of them together and they split the work, like “Porto trip” or “Grandpa’s 80th”.",
+    "placeholder": "What's it for? (e.g. Porto trip)",
+    "start": "Start the group",
+    "defaultTitle": "New group"
+  },
+  "ideas": [
+    "Keep track of when our passports and warranties run out",
+    "If a spot opens in the Saturday pottery class, grab it for me",
+    "Find a piano teacher who comes to the house, for a 9-year-old",
+    "Ask three window cleaners for quotes and tell me who’s best"
+  ],
+  "hire": {
+    "title": "Who do you need?",
+    "readingPlace": "Reading the place and setting them up…",
+    "settingUp": "Setting them up…",
+    "settingUpSub": "a name, a face, an email address, their own computer",
+    "intro": "One agent for each thing you want off your plate. Just say what it is.",
+    "make": "Make them ✨",
+    "orPick": "Or pick one",
+    "fromPlace": "From a place",
+    "fromPlaceDesc": "Any place’s code or link can become an agent: your climbing gym, the vet, the kids’ swim school. Scan it and you get someone who handles that place for you.",
+    "scan": "Scan a QR code",
+    "fromPicture": "From a picture",
+    "pasteLink": "…or paste a link",
+    "go": "Go",
+    "groupLink": "Or put a few in a group for one goal →",
+    "noQr": "Couldn't find a QR code in that picture",
+    "ideas": "Need ideas?"
+  },
+  "scanner": {
+    "noCamera": "Can't open the camera here. Try “From a picture” instead.",
+    "point": "Point at a QR code"
+  },
+  "suggest": {
+    "dm": [
+      "We’re getting a kitten. Which common houseplants should go?",
+      "Tell me when return flights to Porto drop under €150.",
+      "Set up someone to remind me to call Grandma every Sunday, with something to chat about.",
+      "Every Friday at 6: three ideas for the weekend, based on the forecast."
+    ],
+    "group": [
+      "Plan our Porto long weekend, Nov 6–8. We like walking and seafood.",
+      "Grandpa turns 80 next month. Ideas for the day, a playlist of his old favourites, and a photo book from the family chat."
+    ]
+  },
+  "chat": {
+    "notFound": "Chat not found",
+    "drop": "Drop files for your agents",
+    "dropSub": "Any type — PDFs, docs, sheets, images, code, zips…",
+    "card": "{{name}}'s card",
+    "computer": "Computer",
+    "computerTitle": "Agent computer",
+    "welcomeGroup": "Welcome to {{title}}!",
+    "hiDm": "Hi, I'm {{name}}!",
+    "groupIntro": "{{names}} are here. {{lead}} leads and hands off. Use @name to call someone directly.",
+    "dmIntro": "{{tagline}} I have my own computer and I keep working while you're away.",
+    "uploadFailed": "Couldn't upload {{name}}: {{msg}}",
+    "src": {
+      "heartbeat": "💓 heartbeat",
+      "handoff": "🤝 handoff"
+    }
+  },
+  "run": {
+    "working": "{{name}} is working",
+    "used": "{{name}} used",
+    "steps_one": "{{count}} step",
+    "steps_other": "{{count}} steps",
+    "hiccups_one": "{{count}} hiccup",
+    "hiccups_other": "{{count}} hiccups"
+  },
+  "approval": {
+    "ask": "Can I {{what}}?",
+    "seeWhat": "see exactly what",
+    "go": "Go",
+    "notNow": "Not now",
+    "less": "less",
+    "dontAsk": "Don't ask again",
+    "dontAskFor": "Don't ask again for {{domain}}",
+    "okChat": "OK for this chat",
+    "neverAsk": "Never ask for this",
+    "toastGo": "👍 Go!",
+    "toastSkip": "👌 Skipped"
+  },
+  "composer": {
+    "longPaste": "📎 Long paste ({{n}} chars) attached as a file",
+    "allRole": "the whole team — one leads and splits the work",
+    "attachTitle": "Attach files (or drop / paste them)",
+    "attach": "Attach files",
+    "placeholderGroup": "Message everyone… type @ to call someone",
+    "placeholderDm": "Tell me what you need…",
+    "stop": "Stop",
+    "send": "Send",
+    "reading": "reading…",
+    "stored": "stored",
+    "remove": "Remove",
+    "plusTitle": "Add files, or set up something regular",
+    "attachSub": "or drop / paste them in",
+    "every": "Every…",
+    "everySub": "something that happens every day, week or month"
+  },
+  "files": {
+    "button": "Files",
+    "title": "Files in this chat",
+    "empty": "Nothing yet. Drop a file in, or ask for a report, a spreadsheet, a deck or a little web app.",
+    "delivered": "Delivered",
+    "made": "Made on their computers",
+    "sent": "You sent"
+  },
+  "team": {
+    "title_one": "Sent {{count}} helper off",
+    "title_other": "Sent {{count}} helpers off in parallel",
+    "progress": "{{done}}/{{count}} done",
+    "allDone": "All done",
+    "starting": "getting started…",
+    "doneSteps_one": "done · {{count}} step",
+    "doneSteps_other": "done · {{count}} steps",
+    "helper": "Helper {{n}}",
+    "watch": "Watch its computer"
+  },
+  "card": {
+    "pickAny": "Pick as many as you like",
+    "typeOwn": "None of these? Just type your answer ↓",
+    "continue": "Continue",
+    "youSaid": "You said"
+  },
+  "routine": {
+    "title": "Something regular",
+    "titleAgent": "Want me to make this a regular thing?",
+    "whenLbl": "When",
+    "atLbl": "at",
+    "will": "will…",
+    "everyLbl": "How often",
+    "wdLbl": "Which day",
+    "dayLbl": "Day of the month",
+    "timeLbl": "What time",
+    "whoLbl": "Who",
+    "every": {
+      "day": "every day",
+      "weekdays": "weekdays",
+      "weekly": "every week on",
+      "monthly": "every month on"
+    },
+    "wd": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    },
+    "when": {
+      "day": "Every day at {{time}}",
+      "weekdays": "Weekdays at {{time}}",
+      "weekly": "Every {{weekday}} at {{time}}",
+      "monthly": "Every month on the {{day}} at {{time}}"
+    },
+    "placeholder": "e.g. send me three ideas for the weekend, based on the forecast",
+    "create": "Create ⏰",
+    "notNow": "Not now",
+    "made": "⏰ Done! {{when}}",
+    "madeMsg": "⏰ Set up: {{when}} — {{what}}",
+    "notNowMsg": "Not now, thanks",
+    "skipped": "Skipped for now",
+    "dayN_ordinal_one": "{{count}}st",
+    "dayN_ordinal_two": "{{count}}nd",
+    "dayN_ordinal_few": "{{count}}rd",
+    "dayN_ordinal_other": "{{count}}th",
+    "wdOpt": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    }
+  }
+}

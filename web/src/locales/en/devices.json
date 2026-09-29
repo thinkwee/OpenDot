@@ -1,0 +1,48 @@
+{
+  "title": "Devices",
+  "lead": "Let your agents use YOUR own Mac or PC — open apps, run shell commands, read the clipboard, take a screenshot. Every risky action still asks you first.",
+  "add": "Add a device",
+  "renamePrompt": "Rename this device",
+  "removeConfirm": "Remove \"{{name}}\"? You'll need to pair it again to use it.",
+  "removed": "Removed {{name}}",
+  "empty": {
+    "title": "No devices paired yet.",
+    "hint": "Pair your Mac or PC so your agents can use it directly — open your calendar app, read what's on your clipboard, take a screenshot to show you something.",
+    "addFirst": "Add your first device"
+  },
+  "online": "online",
+  "lastSeen": "last seen {{when}}",
+  "ago": {
+    "never": "never",
+    "min": "{{n}}m ago",
+    "hour": "{{n}}h ago",
+    "day": "{{n}}d ago"
+  },
+  "caps": {
+    "shell": "shell",
+    "applescript": "AppleScript",
+    "open": "open",
+    "screenshot": "screenshot",
+    "clipboard": "clipboard",
+    "notify": "notify",
+    "list_apps": "apps",
+    "files": "files",
+    "mouse": "mouse",
+    "keyboard": "keys"
+  },
+  "noCaps": "no capabilities reported yet",
+  "canUse": "agents can use this",
+  "paused": "paused",
+  "rename": "Rename",
+  "remove": "Remove",
+  "modal": {
+    "intro": "On the Mac or PC you want your agents to use, open Terminal and run:",
+    "gettingCode": "Getting a setup code…",
+    "oneLine": "Or in one line:",
+    "keepRunning": "Then keep it running: <code>python3 dot_node.py run</code> — or on macOS, install it to auto-start: <code>./node/install_mac.sh</code> (after pairing).",
+    "expires": "This code is single-use and expires in 10 minutes.",
+    "agentsCan_one": "{{count}} agent will be able to ask to use it",
+    "agentsCan_other": "{{count}} agents will be able to ask to use it",
+    "done": "Done"
+  }
+}

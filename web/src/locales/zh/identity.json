@@ -1,0 +1,261 @@
+{
+  "mailbox": {
+    "title": "📬 给每个助理一个邮箱地址",
+    "body": "专门给助理们开一个邮箱（新注册个 Gmail 最合适）。每个助理在上面都有自己的地址，这样酒店、商家、房东写信就是找<i>你的助理</i>，不用打扰你。发到助理地址的邮件会直接出现在它的聊天里。",
+    "how": "<b>它是怎么工作的：</b>应用专用密码让 OpenDot 像邮件客户端一样登录这个邮箱、收发邮件。每个助理的地址都是这同一个邮箱的别名，比如 <b>you+pip@gmail.com</b>：发给它的信进的是这个邮箱，助理发的信也从这个账号发出，而且都要你点头才发。<br/><b>用你自己的私人邮箱？</b>那发到你本来地址的新邮件，前台助理也会看到。所以更推荐专门给助理们开一个新邮箱。",
+    "passwordSaved": "密码已存好 ✓",
+    "appPassword": "应用专用密码",
+    "stylePlus": "名字+助理@…（什么邮箱都行）",
+    "styleDomain": "助理@你的域名（全收）",
+    "serverSettings": "服务器设置",
+    "smtpHost": "SMTP 服务器",
+    "imapHost": "IMAP 服务器",
+    "saved": "📬 大家都有自己的邮箱地址啦"
+  },
+  "phoneAccount": {
+    "title": "📞 电话号码",
+    "body": "连一次 Twilio 账号，然后给每个助理配一个自己的号码。发到这个号码的短信和语音留言，会直接交给对应的助理。",
+    "tokenSaved": "Auth token 已存好 ✓",
+    "saved": "📞 存好了。去每个助理的卡片上给它挑个号码吧。"
+  },
+  "budget": {
+    "title": "🔕 它们多久能打扰你一次",
+    "body": "助理们自己做的事，一天最多让你手机响 <b>{{limit}}</b> 次，而且 {{from}}:00 到 {{to}}:00 之间绝不打扰。其余的都放在收件箱里等你，晚上给你一句话汇总。回你的消息、只有你能回答的问题，随时都会送到。",
+    "today": "今天：",
+    "todayCounts": "已提醒 {{used}} 次 · {{held}} 条在等你",
+    "changeWith": "想改的话，用 <c1>DOT_DAILY_NUDGES</c1>、<c2>DOT_QUIET_FROM</c2> 和 <c3>DOT_QUIET_TO</c3>。"
+  },
+  "page": {
+    "title": "🪪 身份",
+    "intro": "给助理配上自己的邮箱、电话和日历。下面没设置的都不会生效——而且凡是要以你的名义做的事（发邮件、打电话、花钱），还是得你点头才行。",
+    "empty": "还没有助理——先去聊天里孵一个吧。",
+    "notSetUp": "还没设置"
+  },
+  "tabs": {
+    "email": "📧 邮箱",
+    "calendar": "📅 日历",
+    "phone": "📱 电话"
+  },
+  "fields": {
+    "accountSid": "Account SID（AC…）",
+    "authToken": "Auth token",
+    "displayName": "显示名字",
+    "port": "端口",
+    "username": "用户名",
+    "password": "密码",
+    "folder": "文件夹（INBOX）",
+    "name": "名字",
+    "caldavPassword": "密码 / 应用专用密码"
+  },
+  "email": {
+    "send": "发信（SMTP）",
+    "receive": "收信",
+    "imapPolling": "IMAP 定时收",
+    "webhook": "Webhook",
+    "pointAt": "把 Cloudflare 邮件路由（或 Mailgun/SendGrid 的入站解析）指向这里：",
+    "workerSnippet": "Cloudflare Email Worker 代码片段",
+    "showOtp": "验证码 / 重置密码的邮件也显示出来（默认藏起来）",
+    "testSend": "给我自己发封测试邮件",
+    "testImap": "试试 IMAP 能不能登上",
+    "saved": "📧 存好了",
+    "testSent": "✅ 测试邮件已发到 {{to}}",
+    "imapWorks_other": "✅ IMAP 没问题——有 {{count}} 封邮件",
+    "noSubject": "（无主题）",
+    "sharedAddress": "{{name}} 的地址是 <b>{{address}}</b>，来自助理们的公共邮箱。",
+    "noMailboxYet": "还没有邮箱地址。",
+    "setUpMailbox": "去设置助理邮箱 →",
+    "ownSettings": "给这个助理单独用一个邮箱"
+  },
+  "calendar": {
+    "ics": "ICS 订阅（只读）",
+    "icsHelp": "贴一个私密的 ICS 链接（Google 日历 → 设置 → “iCal 格式的私密地址”，或者 iCloud 的公开日历链接）。",
+    "test": "试一下",
+    "add": "添加",
+    "caldav": "CalDAV 账号（可读可写，选填）",
+    "testCaldav": "试试 CalDAV 能不能登上",
+    "remindBefore": "活动开始前",
+    "remindAfter": "分钟提醒",
+    "events_other": "✅ 接下来 14 天有 {{count}} 个安排",
+    "found_other": "✅ 找到 {{count}} 个日历"
+  },
+  "phone": {
+    "pick": "给 {{name}} 挑个号码：",
+    "taken": " · 已被占用",
+    "nowIs": "📱 {{name}} 现在的号码是 {{number}}",
+    "noNumbers": "账号上还没有号码。去 Twilio 控制台买一个吧。",
+    "webhooksHelp": "在 Twilio 控制台里，给这个号码设置这些 webhook：",
+    "saved": "📱 存好了",
+    "test": "测试 Twilio",
+    "connected": "✅ 已连上 Twilio 账号“{{account}}”"
+  },
+  "recent": {
+    "title": "最近",
+    "empty": "还没有。"
+  },
+  "wizard": {
+    "pickProvider": "用的是哪家邮箱？",
+    "addressPh": "myagents@gmail.com",
+    "receiving": "收信",
+    "sending": "发信",
+    "sendTest": "顺便给这个邮箱发一封测试邮件",
+    "test": "测试一下",
+    "testing": "检查中…",
+    "imapOk_one": "没问题，收件箱里有 {{count}} 封信",
+    "imapOk_other": "没问题，收件箱里有 {{count}} 封信",
+    "smtpOk": "没问题",
+    "smtpSent": "没问题，测试邮件已经发往 {{to}}",
+    "allGood": "都通了！点保存，每个助理就都有自己的地址了。",
+    "serverSaid": "服务器原话：",
+    "noPlus": "提醒一下：{{provider}}不支持“名字+助理@”这种地址，发给助理自己地址的信可能会被退回。可以用你自己的域名选“全收”，或者换一家邮箱。",
+    "addresses": "助理们的邮箱地址"
+  },
+  "err": {
+    "auth": "这个应用专用密码不对。确认一下贴的是应用专用密码（不是平时登录的密码），邮箱地址也没写错。",
+    "app_password": "服务器要的是应用专用密码，不是平时的密码。上面的步骤里有生成的地方。",
+    "basic_auth_off": "微软已经关掉了这个邮箱的密码登录，而 OpenDot 暂时还不支持微软自家的登录方式。换个 Gmail 或 Fastmail 邮箱就行。",
+    "imap_off": "这个邮箱的 IMAP 是关着的。去邮箱设置里打开，再测一次。",
+    "unsafe_login": "服务器以“不安全登录”为由拦下了。确认邮箱设置里 IMAP 已打开，并且贴的是授权码。",
+    "dns": "找不到这个服务器，看看地址有没有打错。",
+    "unreachable": "连不上服务器。检查一下地址和端口，还有这台电脑有没有联网。",
+    "timeout": "服务器半天没回应。检查一下端口，或者过一分钟再试。",
+    "tls": "加密连接没建立起来，多半是端口和加密方式对不上：993 和 465 用 SSL/TLS，587 用 STARTTLS。",
+    "send_refused": "登录没问题，但服务器不肯发这封测试邮件。",
+    "no_password": "先把应用专用密码贴进来。",
+    "other": "出了点问题。"
+  },
+  "links": {
+    "twoStep": "两步验证",
+    "appPassword": "生成应用专用密码",
+    "appleAccount": "Apple 账户",
+    "help": "官方说明",
+    "openMail": "打开网页版邮箱"
+  },
+  "providers": {
+    "gmail": {
+      "name": "Gmail",
+      "steps": [
+        "给这个 Google 账号打开两步验证——打开之后才会出现“应用专用密码”。",
+        "打开“应用专用密码”页面，随便起个名字（比如 OpenDot），点创建。",
+        "把那串 16 位密码复制下来贴到下面，空格无所谓。",
+        "Gmail 的 IMAP 默认就是开着的，不用再动。"
+      ],
+      "authHint": "Gmail 的话，重新生成一个应用专用密码，十有八九就好了。"
+    },
+    "outlook": {
+      "name": "Outlook / Hotmail",
+      "steps": [
+        "在微软账户的安全设置里打开两步验证。",
+        "生成一个应用密码（安全 → 高级安全选项 → 应用密码）。",
+        "贴到下面。"
+      ],
+      "warn": "实话说：微软一直在把 Outlook.com 和 Hotmail 的邮件客户端登录改成它自家的授权方式，OpenDot 暂时还不支持。如果测试说密码不对，换个 Gmail 或 Fastmail 邮箱最省事。",
+      "authHint": "也可能是微软已经不再接受这个账号的应用密码了。"
+    },
+    "icloud": {
+      "name": "iCloud",
+      "steps": [
+        "确认 iCloud 邮件已打开，并且你有一个 @icloud.com 地址。",
+        "登录 account.apple.com → 登录与安全 → App 专用密码，新建一个，名字叫 OpenDot。",
+        "连同完整的 @icloud.com 地址一起填到下面。"
+      ]
+    },
+    "fastmail": {
+      "name": "Fastmail",
+      "steps": [
+        "在 Fastmail 里打开 设置 → Privacy & Security → Manage app passwords and access。",
+        "点 New app password，勾上邮件（IMAP/SMTP）权限，生成。",
+        "贴到下面。"
+      ]
+    },
+    "qq": {
+      "name": "QQ 邮箱",
+      "steps": [
+        "在网页版 QQ 邮箱：设置 → 账号与安全，打开 IMAP/SMTP 服务。",
+        "按提示用手机验证，会拿到一个 16 位的授权码。",
+        "把授权码贴到下面——不是 QQ 密码哦。"
+      ],
+      "authHint": "QQ 邮箱只认授权码，不认 QQ 密码。"
+    },
+    "netease": {
+      "name": "163 邮箱",
+      "steps": [
+        "在网页版 163 邮箱：设置 → POP3/SMTP/IMAP，打开 IMAP/SMTP 服务。",
+        "按提示验证后会拿到授权码——只显示一次，记得先复制。",
+        "把授权码贴到下面——不是登录密码。"
+      ],
+      "authHint": "163 邮箱只认授权码，不认登录密码。"
+    },
+    "other": {
+      "name": "其他",
+      "steps": [
+        "查一下你邮箱的 IMAP 和 SMTP 设置，填到“服务器设置”里。",
+        "如果有应用专用密码，就用它，别用平时的密码。"
+      ]
+    }
+  },
+  "twilio": {
+    "steps": [
+      "注册一个 Twilio 账号（按量付费：一个号码大概每月一美元左右，一条短信几美分）。",
+      "在 Twilio Console 首页的 Account Info 里，找到 Account SID 和 Auth Token。",
+      "两个都贴到下面，点“测试并保存”。"
+    ],
+    "signUp": "注册 Twilio",
+    "console": "Twilio Console",
+    "testSave": "测试并保存",
+    "connected": "📞 已连上 {{name}}",
+    "connectedAs": "已连接：{{name}}",
+    "change": "换个账号",
+    "trialNote": "这是试用账号：只能给你在 Twilio 里验证过的号码发短信、打电话，短信开头还会带一句试用提示。准备好了去 Twilio Console 升级就行。",
+    "yourNumbers": "你的号码",
+    "noNumbers": "这个账号上还没有号码，在下面挑一个吧。",
+    "sms": "短信",
+    "voice": "电话",
+    "goesTo": "短信和语音留言都会交给 {{name}}",
+    "notPointed": "归 {{name}} 用，但 Twilio 还没把消息转过来。",
+    "fix": "修好它",
+    "nobody": "还没分给谁",
+    "nobodyOpt": "— 不给谁 —",
+    "wiredToast": "📱 {{name}} 的号码是 {{number}} 啦，短信和语音留言都会交给它。",
+    "notWiredToast": "📱 号码已经记在 {{name}} 名下，但 Twilio 还连不到 OpenDot，看看关于公开链接的提示。",
+    "publicOk": "Twilio 会通过 {{url}} 找到你的助理",
+    "public": {
+      "no_public_url": "Twilio 需要一个公开的 https 链接才能找到 OpenDot。运行 ./dot.sh link（Cloudflare 链接就行），或者设置 DOT_PUBLIC_URL，然后点“修好它”。",
+      "private_link": "你现在用的是 Tailscale 私有链接，Twilio 进不来。把 DOT_PUBLIC_URL 设成一个公开的 https 地址（比如 Cloudflare 链接或 Tailscale Funnel），然后点“修好它”。"
+    },
+    "getNumber": "买个新号码",
+    "type": {
+      "local": "本地",
+      "mobile": "手机",
+      "tollfree": "免费电话"
+    },
+    "areaCode": "区号",
+    "contains": "包含数字",
+    "search": "搜索",
+    "searching": "搜索中…",
+    "priceLine": "这类号码在你的 Twilio 账号上每月 {{price}} {{unit}}。",
+    "priceUnknownLine": "Twilio 这里没给价格，去 Twilio Console 的 Pricing 页面看看。",
+    "noneFound": "没找到合适的。换个类型，或者去掉区号/数字再试。",
+    "giveTo": "分给",
+    "nobodyYet": "先不分",
+    "needsAddress": "这里的号码需要你在 Twilio 登记地址（先去 Console 里加好）。",
+    "buy": "购买",
+    "pricePer": "每月 {{price}} {{unit}}",
+    "priceUnknown": "Twilio Console 里显示的月费",
+    "confirmBuy": "确定买下 {{number}} 吗？\n\n这会从你的 Twilio 账号里扣真钱：{{price}}，直到你在 Twilio 里释放这个号码为止。",
+    "bought": "📞 {{number}} 归你啦",
+    "err": {
+      "auth": "Twilio 不认这组信息。再核对一下 Account SID（AC 开头）和 Auth Token。",
+      "no_account": "先连上你的 Twilio 账号。",
+      "not_found": "Twilio 找不到这个。",
+      "regulatory": "这个国家的号码需要地址或身份材料。先去 Twilio Console 的 Regulatory Compliance 里补上，再试一次。",
+      "gone": "这个号码刚被别人抢走了，再搜一次吧。",
+      "trial": "试用账号做不了这个，去 Twilio Console 升级一下。",
+      "funds": "Twilio 账号余额不够了，去 Console 充个值。",
+      "confirm": "请先确认购买。",
+      "taken": "这个号码已经归别的助理了。",
+      "not_yours": "这个号码不在这个 Twilio 账号上。",
+      "unreachable": "连不上 Twilio，看看这台电脑有没有联网。",
+      "twilio": "Twilio 拒绝了。"
+    }
+  }
+}

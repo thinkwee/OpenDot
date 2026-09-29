@@ -1,0 +1,29 @@
+{
+  "kind": {
+    "document": "文档", "spreadsheet": "表格", "slides": "幻灯片", "image": "图片",
+    "app": "网页", "receipt": "回执", "file": "文件"
+  },
+  "untitled": "未命名",
+  "reading": "读取中…",
+  "open": "↗️ 打开",
+  "download": "⬇️ 下载",
+  "share": "🔗 分享",
+  "revoke": "🙈 取消分享",
+  "publicLink": "公开链接（只读）：",
+  "result": "结果",
+  "linkCopied": "🔗 分享链接已复制",
+  "linkReady": "🔗 分享链接好了",
+  "shareFailed": "分享没成功：{{msg}}",
+  "revoked": "🙈 链接已失效",
+  "boundary": { "tripped": "这块出了点岔子：{{msg}}" },
+  "viewer": {
+    "text": "文字",
+    "textTitle": "只看提取出的文字",
+    "newTab": "在新标签页打开",
+    "download": "下载",
+    "shareTitle": "分享一个只读链接",
+    "opening": "正在打开…",
+    "readingFile": "正在读文件…",
+    "couldNotOpen": "（打不开这个文件：{{msg}}）"
+  }
+}

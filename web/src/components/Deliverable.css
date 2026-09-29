@@ -1,0 +1,38 @@
+/* Deliverable / attachment cards — used in ChatView (reply attachments) and Library. */
+.deliv-card {
+  display: flex; align-items: center; gap: 10px; width: 100%; max-width: 320px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 10px 12px; text-align: left; box-shadow: var(--shadow-sm);
+  transition: transform .12s, border-color .12s;
+}
+.deliv-card:hover { transform: translateY(-1px); border-color: var(--c, var(--accent)); }
+.deliv-card.receipt { max-width: 340px; background: color-mix(in srgb, var(--c, var(--accent)) 8%, var(--panel)); }
+.deliv-ico {
+  flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+  font-size: 19px; background: color-mix(in srgb, var(--c, var(--accent)) 22%, var(--panel));
+}
+.deliv-ico.big { width: 46px; height: 46px; font-size: 22px; }
+.deliv-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.deliv-info b { font-size: 14px; }
+.deliv-chev { color: var(--ink3); font-size: 18px; font-weight: 900; }
+
+.deliv-modal { width: min(720px, 100%); }
+.deliv-frame {
+  width: 100%; height: min(70vh, 560px); border: 1px solid var(--line); border-radius: 14px;
+  background: #fffdfb;
+}
+.deliv-img { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 14px; background: var(--panel2); }
+.receipt-detail .code { max-height: 220px; overflow: auto; }
+
+/* Library grid */
+.lib-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+.lib-search { flex: 1; min-width: 160px; }
+.lib-day { margin: 18px 0 10px; font-size: 13px; font-weight: 800; color: var(--ink2); text-transform: uppercase; letter-spacing: .04em; }
+.lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.lib-grid .deliv-card { max-width: none; }
+.lib-agent-chip { display: inline-flex; align-items: center; gap: 4px; }
+
+@media (max-width: 600px) {
+  .lib-grid { grid-template-columns: 1fr; }
+  .deliv-frame { height: 62vh; }
+}

@@ -1,0 +1,50 @@
+{
+  "title": "日历",
+  "prev": "上一段",
+  "next": "下一段",
+  "today": "今天",
+  "day": "日",
+  "week": "周",
+  "yours": "你的日历",
+  "agents": "助理",
+  "connect": "连接日历",
+  "allDay": "全天",
+  "fromPhone": "从手机同步",
+  "whoOnIt": "谁在管这件事",
+  "nobody": "还没有助理碰过它。在聊天里跟谁说一声就行。",
+  "how": {
+    "created": "是它帮你加上的",
+    "watching": "它正在盯着",
+    "mentioned": "它最近提到过"
+  },
+  "kind": {
+    "routine": "定时任务",
+    "check": "盯梢检查",
+    "watch": "盯梢"
+  },
+  "everyMin": "每 {{n}} 分钟看一次",
+  "checks": "已看 {{n}} 次",
+  "openChat": "打开对话",
+  "openCard": "看名片",
+  "empty": {
+    "title": "还没连上你的日历",
+    "body": "贴一个 Google / iCloud 日历的链接（私密的 iCal 地址）就行。助理的活动已经在下面了。",
+    "cta": "去连接"
+  },
+  "feeds": {
+    "title": "我的日历",
+    "body": "贴上 Google / iCloud 日历的 iCal 链接（只读）。你的日程会和助理的活动一起出现在「日历」里，助理也能看到你什么时候有空。",
+    "url": "https://calendar.google.com/…/basic.ics",
+    "name": "名字（可选）",
+    "add": "添加",
+    "remove": "移除",
+    "checking": "正在读取…",
+    "bad": "读不了这个链接：{{err}}",
+    "added": "加好了，读到 {{n}} 个日程 ✓",
+    "how": "去哪找这个链接？",
+    "howGoogle": "Google 日历：网页版 → 设置 → 选中日历 → 「iCal 格式的私密地址」。",
+    "howIcloud": "iCloud：日历 App → 日历旁的共享按钮 → 勾选「公开日历」→ 复制链接。",
+    "howPhone": "链接想加几个都行：工作的、家里的、孩子学校的，每个都有自己的颜色。"
+  },
+  "done": "已过"
+}

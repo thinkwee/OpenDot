@@ -1,0 +1,38 @@
+/* Colour schemes (generated shape; edit freely). data-palette on <html>; see src/theme.js */
+/* the paper drifts slowly behind everything */
+body { background: radial-gradient(var(--dotc) 1.3px, transparent 1.6px) 0 0 / 22px 22px, var(--bg); animation: paper-drift 90s linear infinite; }
+@keyframes paper-drift { to { background-position: 264px 132px, 0 0; } }
+@media (prefers-reduced-motion: reduce) { body { animation: none; } }
+:root { --m-mint: #8FD6B8; }
+:root[data-palette='ocean'] { --m-coral: #1f7ae0; --m-yellow: #ffc94d; --m-teal: #16b3c9; --m-blue: #3f5bd9; --m-pink: #5ad1e6; --m-lilac: #8fa8ff; --m-mint: #7fd8c4; --accent2: #8ec1f5; --user: #3f5bd9; --bg: #e8f4fb; --bg2: #f2f9fd; --panel2: #d6ebf7; --line: #c2dcec; --dotc: rgba(20,60,110,.10); }
+:root[data-palette='ocean'][data-theme='dark'] { --bg: #101b2e; --bg2: #13213a; --panel: #1b2c4a; --panel2: #23385c; --line: #2e4670; --dotc: rgba(255,255,255,.06); }
+@media (prefers-color-scheme: dark) { :root[data-palette='ocean']:not([data-theme='light']) { --bg: #101b2e; --bg2: #13213a; --panel: #1b2c4a; --panel2: #23385c; --line: #2e4670; --dotc: rgba(255,255,255,.06); } }
+:root[data-palette='ocean'] body { background: radial-gradient(circle at 50% 100%, transparent 8px, var(--dotc) 8.5px, var(--dotc) 10px, transparent 10.5px) 0 0 / 24px 12px, var(--bg); }
+:root[data-palette='matcha'] { --m-coral: #3c9d5d; --m-yellow: #c6e36b; --m-teal: #2bb39a; --m-blue: #4f8fd6; --m-pink: #ff9f68; --m-lilac: #b5a0e8; --m-mint: #9ad9a8; --accent2: #9bd1a9; --user: #4f8fd6; --bg: #eef5e4; --bg2: #f6faef; --panel2: #e0edcf; --line: #cfe0b8; --dotc: rgba(40,80,30,.10); }
+:root[data-palette='matcha'][data-theme='dark'] { --bg: #152118; --bg2: #19281d; --panel: #223526; --panel2: #2b4330; --line: #36523b; --dotc: rgba(255,255,255,.06); }
+@media (prefers-color-scheme: dark) { :root[data-palette='matcha']:not([data-theme='light']) { --bg: #152118; --bg2: #19281d; --panel: #223526; --panel2: #2b4330; --line: #36523b; --dotc: rgba(255,255,255,.06); } }
+:root[data-palette='matcha'] body { background: linear-gradient(var(--dotc) 1.2px, transparent 1.2px) 0 0 / 26px 26px, linear-gradient(90deg, var(--dotc) 1.2px, transparent 1.2px) 0 0 / 26px 26px, var(--bg); }
+:root[data-palette='berry'] { --m-coral: #d6457d; --m-yellow: #ffe066; --m-teal: #20b2aa; --m-blue: #6f6cf2; --m-pink: #ff9ac2; --m-lilac: #b18cff; --m-mint: #9fe0c8; --accent2: #f3a3c2; --user: #6f6cf2; --bg: #fbeef6; --bg2: #fdf5fa; --panel2: #f5dcea; --line: #ecc8dc; --dotc: rgba(120,30,80,.09); }
+:root[data-palette='berry'][data-theme='dark'] { --bg: #24142a; --bg2: #2b1832; --panel: #3a2244; --panel2: #482b54; --line: #583466; --dotc: rgba(255,255,255,.06); }
+@media (prefers-color-scheme: dark) { :root[data-palette='berry']:not([data-theme='light']) { --bg: #24142a; --bg2: #2b1832; --panel: #3a2244; --panel2: #482b54; --line: #583466; --dotc: rgba(255,255,255,.06); } }
+:root[data-palette='berry'] body { background: repeating-linear-gradient(-45deg, var(--dotc) 0 2px, transparent 2px 16px), var(--bg); }
+:root[data-palette='noir'] { --m-coral: #111111; --m-yellow: #f2f2f2; --m-teal: #2f2f2f; --m-blue: #555555; --m-pink: #ff3b30; --m-lilac: #8e8e93; --m-mint: #d1d1d6; --accent2: #9a9a9a; --user: #555555; --bg: #f2f2f0; --bg2: #fafaf8; --panel2: #e6e6e3; --line: #d6d6d2; --dotc: rgba(0,0,0,.08); }
+:root[data-palette='noir'][data-theme='dark'] { --bg: #0e0e0e; --bg2: #141414; --panel: #1c1c1c; --panel2: #262626; --line: #333333; --dotc: rgba(255,255,255,.06); }
+@media (prefers-color-scheme: dark) { :root[data-palette='noir']:not([data-theme='light']) { --bg: #0e0e0e; --bg2: #141414; --panel: #1c1c1c; --panel2: #262626; --line: #333333; --dotc: rgba(255,255,255,.06); } }
+:root[data-palette='noir'] body { background: conic-gradient(var(--dotc) 25%, transparent 0 50%, var(--dotc) 0 75%, transparent 0) 0 0 / 30px 30px, var(--bg); }
+:root[data-palette='noir'] .seg button.on, :root[data-palette='noir'] .chip.on, :root[data-palette='noir'] .rail-logo { background: var(--m-pink); color: #fff; }
+:root[data-palette='noir'][data-theme='dark'] { --m-coral: #f2f2f2; --ink: #f2f2f2; }
+:root[data-palette='noir'][data-theme='dark'] .btn:not(.ghost):not(.danger),
+:root[data-palette='noir'][data-theme='dark'] .rail-btn.on,
+:root[data-palette='noir'][data-theme='dark'] .tabbar button.on,
+:root[data-palette='noir'][data-theme='dark'] .cal-dayname.today b { color: #111; }
+
+/* Settings → look: scheme picker */
+.palettes { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+.palette { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 6px 8px; border-radius: 14px; border: 2.5px solid var(--edge); background: var(--panel); box-shadow: var(--hard-sm); transition: transform .18s var(--ease-spring); }
+.palette:hover { transform: translate(-1px, -1px); }
+.palette.on { background: var(--m-yellow); color: #1e1b2e; box-shadow: var(--hard); }
+.palette small { font-weight: 800; font-size: 12px; }
+.palette-sw { display: flex; }
+.palette-sw i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--edge); }
+.palette-sw i + i { margin-left: -6px; }

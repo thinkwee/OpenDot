@@ -1,0 +1,46 @@
+{
+  "title": "📚 Skills",
+  "intro": "Reusable playbooks your agents can follow — plain SKILL.md files in the common open format. Install a pack from a URL, or an agent can save one itself after doing something worth repeating.",
+  "install": {
+    "title": "🔗 Install from a link",
+    "body": "A GitHub repo or folder URL, a .zip, or a raw SKILL.md link. New skills are scanned for anything sketchy before they can be turned on.",
+    "button": "Install",
+    "installing": "Installing…",
+    "added": "Added",
+    "flagged": "🔍 Installed — some skills need a look before they can be enabled",
+    "done": "📚 Skill installed",
+    "clean": "looks clean ✓",
+    "flaggedCount_one": "{{count}} thing flagged",
+    "flaggedCount_other": "{{count}} things flagged",
+    "allow": "I've reviewed it — allow enabling"
+  },
+  "deleteAsk": "Delete the \"{{name}}\" skill?",
+  "source": {
+    "builtin": "built-in",
+    "savedBy": "saved by {{name}}",
+    "installed": "installed"
+  },
+  "needsReview": "needs review",
+  "reviewed": "reviewed ✓",
+  "files_one": "{{count}} file",
+  "files_other": "{{count}} files",
+  "read": "Read SKILL.md",
+  "empty": "No skills yet — install one above.",
+  "discover": {
+    "title": "🔭 Discover skills",
+    "body": "Search thousands of open-source skills from <a1>skills.sh</a1> and <a2>SkillsMP</a2>. Your agents can search here too when they're missing a know-how.",
+    "placeholder": "pdf forms, notion, excel charts, flight deals…",
+    "chips": {
+      "pdf": "pdf", "excel": "excel", "slides": "slides", "notion": "notion",
+      "travel": "travel", "email": "email", "research": "research", "design": "design"
+    },
+    "nothing": "Nothing found — try other words.",
+    "official": "official",
+    "installed": "installed",
+    "installs": "installs",
+    "stars": "GitHub stars",
+    "preview": "Preview",
+    "from": "{{source}} · from {{from}}",
+    "sourceLink": "Source"
+  }
+}

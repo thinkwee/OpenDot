@@ -1,0 +1,29 @@
+{
+  "kind": {
+    "document": "Document", "spreadsheet": "Spreadsheet", "slides": "Slides", "image": "Image",
+    "app": "Web page", "receipt": "Receipt", "file": "File"
+  },
+  "untitled": "Untitled",
+  "reading": "reading…",
+  "open": "↗️ Open",
+  "download": "⬇️ Download",
+  "share": "🔗 Share",
+  "revoke": "🙈 Revoke link",
+  "publicLink": "Public link (read-only):",
+  "result": "Result",
+  "linkCopied": "🔗 Share link copied",
+  "linkReady": "🔗 Share link ready",
+  "shareFailed": "Could not share: {{msg}}",
+  "revoked": "🙈 Link revoked",
+  "boundary": { "tripped": "This panel tripped over: {{msg}}" },
+  "viewer": {
+    "text": "Text",
+    "textTitle": "Show extracted text",
+    "newTab": "Open in a new tab",
+    "download": "Download",
+    "shareTitle": "Share a read-only link",
+    "opening": "Opening…",
+    "readingFile": "Reading the file…",
+    "couldNotOpen": "(Could not open this file: {{msg}})"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "more": {
+    "memory": "它记得什么",
+    "skills": "技能",
+    "identity": "邮箱 · 电话 · 日历设置",
+    "checkins": "主动来看看"
+  },
+  "letGo": {
+    "button": "送走",
+    "ask": "要送走 {{name}} 吗？和它的聊天、例行事项、盯着的事都会一起没掉。（文件和笔记还留在电脑上。）",
+    "bye": "👋 拜拜，{{name}}",
+    "keepOne": "至少留一个助理陪你吧 🙂"
+  },
+  "backToChat": "‹ 回到聊天",
+  "changeLook": "换个样子",
+  "chat": "聊天",
+  "look": "样子",
+  "animals": {
+    "fox": "狐狸",
+    "cat": "猫",
+    "bunny": "兔子",
+    "bear": "熊",
+    "frog": "青蛙",
+    "owl": "猫头鹰",
+    "panda": "熊猫",
+    "raccoon": "浣熊",
+    "duck": "鸭子",
+    "shiba": "柴犬",
+    "axolotl": "六角恐龙",
+    "penguin": "企鹅"
+  },
+  "job": {
+    "label": "负责",
+    "placeholder": "它主要帮你照看哪件事？"
+  },
+  "knows": {
+    "label": "知道这些",
+    "placeholder": "干活用得上的都行：地址、账号、你的偏好…"
+  },
+  "boundary": {
+    "label": "这些情况先问你",
+    "placeholder": "要花钱的、第一次替你开口的、做了就收不回的。"
+  },
+  "cells": {
+    "mail": "邮箱",
+    "noAddress": "还没有地址",
+    "phone": "电话",
+    "noNumber": "还没有号码",
+    "computer": "电脑",
+    "working": "忙着呢",
+    "ready": "空着",
+    "apps": "应用",
+    "connected": "已连 {{n}} 个",
+    "noneYet": "还没连"
+  },
+  "watching": {
+    "title": "正盯着",
+    "empty": "现在没在盯什么。在聊天里说一句“一有…就告诉我”试试。",
+    "detail": "{{filter}} · 看了 {{checks}} 次 · {{every}}看一次",
+    "done": "搞定了",
+    "stop": "不用盯了",
+    "every": {
+      "min": "每 {{n}} 分钟",
+      "hour": "每 {{n}} 小时",
+      "hourly": "每小时",
+      "day": "每天",
+      "days": "每 {{n}} 天"
+    }
+  },
+  "routines": {
+    "title": "例行事项",
+    "empty": "还没有。在聊天里说一句“每周一早上 9 点…”试试。",
+    "next": " · 下次 {{when}}",
+    "when": "当 {{filter}} 时",
+    "pause": "先停一下",
+    "resume": "继续"
+  },
+  "checkins": {
+    "title": "💓 主动来看看",
+    "body": "大约每小时一次（8:00–23:00），{{name}} 会把手头的事过一遍，真有要紧的才来找你。",
+    "brain": "🧠 大脑",
+    "brainBody": "{{name}} 用哪个模型想事情。可以在设置里加模型。",
+    "brainSet": "🧠 {{name}} 现在用“{{profile}}”想事情了"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "presets": {
+    "morning": "每天早上 8:00",
+    "weekdays": "工作日 9:00",
+    "evening": "每天晚上 21:00",
+    "hourly": "每小时",
+    "mondays": "每周一 10:00"
+  },
+  "title": "例行事项和目标",
+  "embeddedTitle": "例行事项",
+  "intro": "助理们自己会做的事——按时做、有事发生时做，或者一点点朝着某个目标推进。",
+  "newRoutine": "＋ 新的例行事项",
+  "easiest": "最简单的办法：直接在聊天里说——“每周五下午 5 点，帮我总结一下这周”。",
+  "empty": "还没有例行事项。",
+  "cronLine": "⏰ {{schedule}} · 下次 {{when}}",
+  "eventLine": "⚡ 当 {{filter}} 时",
+  "runNow": "▶ 现在就做",
+  "running": "▶️ 开始做“{{name}}”了",
+  "lastRun": "上次 {{when}}",
+  "trigger": {
+    "title": "⚡ 从哪儿都能叫醒",
+    "body": "往这个地址 POST 点什么都行（IFTTT、Zapier、GitHub、iOS 快捷指令…）。事件对得上的例行事项就会动起来。"
+  },
+  "form": {
+    "title": "新的例行事项",
+    "who": "谁来做",
+    "name": "名字（比如：早间简报）",
+    "onSchedule": "⏰ 按时做",
+    "onEvent": "⚡ 有事发生时做",
+    "prompt": "要它做什么？（比如：看看伦敦的天气，要带伞就告诉我）",
+    "saveFailed": "没存上：{{msg}}"
+  },
+  "presetAdded": "✨ 加好了——想换助理或时间，在下面改就行",
+  "presetFailed": "没加上：{{msg}}",
+  "week": {
+    "title": "📅 这周",
+    "empty": "还没有排上的事——先在上面加个例行事项吧。"
+  },
+  "history": {
+    "title": "🧾 做过的事",
+    "empty": "还什么都没做过。"
+  },
+  "goals": {
+    "title": "🎯 目标",
+    "new": "＋ 新目标",
+    "empty": "还没有目标。跟助理说一句“帮我三月前练出好身材”，它就会帮你盯着。",
+    "status": { "active": "进行中", "paused": "暂停了", "done": "完成了" },
+    "pause": "⏸ 先停一下",
+    "resume": "▶ 继续",
+    "markDone": "✓ 搞定了",
+    "formTitle": "新目标",
+    "titlePh": "标题（比如：摸清我的音乐口味）",
+    "whyPh": "这件事为什么重要？",
+    "cadence": "每隔多久看一次（分钟）"
+  }
+}

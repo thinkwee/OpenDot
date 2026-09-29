@@ -1,0 +1,264 @@
+{
+  "mailbox": {
+    "title": "📬 An email address for every agent",
+    "body": "Make one mailbox just for your agents (a fresh Gmail is perfect). Each agent gets its own address on it, so hotels, shops and landlords write to <i>your assistant</i>, not to you. Mail sent to an agent's address lands in its chat.",
+    "how": "<b>How it works:</b> the app password lets OpenDot sign in to this mailbox and read and send mail as a mail app would. Every agent's address is an alias of the same mailbox, e.g. <b>you+pip@gmail.com</b>. Mail to it arrives in this inbox, and what agents send goes out from this account, and only after you say OK.<br/><b>Use your own personal mailbox?</b> Then your front-desk agent also reads new mail sent to your normal address. That's why a separate mailbox just for your agents is the better choice.",
+    "passwordSaved": "password saved ✓",
+    "appPassword": "app password",
+    "stylePlus": "name+agent@… (any mailbox)",
+    "styleDomain": "agent@your-domain (catch-all)",
+    "serverSettings": "Server settings",
+    "smtpHost": "SMTP host",
+    "imapHost": "IMAP host",
+    "saved": "📬 Everyone has an address now"
+  },
+  "phoneAccount": {
+    "title": "📞 Phone numbers",
+    "body": "Hook up a Twilio account once, then give each agent its own number. Texts and voicemails to that number go straight to that agent.",
+    "tokenSaved": "auth token saved ✓",
+    "saved": "📞 Saved. Give each agent a number from its card."
+  },
+  "budget": {
+    "title": "🔕 How often they can nudge you",
+    "body": "Things your agents do on their own can buzz your phone at most <b>{{limit}}</b> times a day, and never between {{from}}:00 and {{to}}:00. The rest waits in the Inbox, with one quiet line in the evening. Replies to you and questions only you can answer always come through.",
+    "today": "Today:",
+    "todayCounts": "{{used}} sent · {{held}} waiting",
+    "changeWith": "Change it with <c1>DOT_DAILY_NUDGES</c1>, <c2>DOT_QUIET_FROM</c2> and <c3>DOT_QUIET_TO</c3>."
+  },
+  "page": {
+    "title": "🪪 Identity",
+    "intro": "Give an agent their own email address, phone number and calendar. Nothing is active until you set it up below — and anything that acts as you (sending, calling, spending) still needs your OK.",
+    "empty": "No agents yet — hatch one from Chats first.",
+    "notSetUp": "not set up yet"
+  },
+  "tabs": {
+    "email": "📧 Email",
+    "calendar": "📅 Calendar",
+    "phone": "📱 Phone"
+  },
+  "fields": {
+    "accountSid": "Account SID (AC…)",
+    "authToken": "Auth token",
+    "displayName": "display name",
+    "port": "port",
+    "username": "username",
+    "password": "password",
+    "folder": "folder (INBOX)",
+    "name": "name",
+    "caldavPassword": "password / app password"
+  },
+  "email": {
+    "send": "Send (SMTP)",
+    "receive": "Receive",
+    "imapPolling": "IMAP polling",
+    "webhook": "Webhook",
+    "pointAt": "Point Cloudflare Email Routing (or Mailgun/SendGrid inbound parse) at:",
+    "workerSnippet": "Cloudflare Email Worker snippet",
+    "showOtp": "Show verification-code / password-reset emails too (hidden by default)",
+    "testSend": "Send test email to myself",
+    "testImap": "Test IMAP login",
+    "saved": "📧 Saved",
+    "testSent": "✅ Test email sent to {{to}}",
+    "imapWorks_one": "✅ IMAP works — {{count}} message",
+    "imapWorks_other": "✅ IMAP works — {{count}} messages",
+    "noSubject": "(no subject)",
+    "sharedAddress": "{{name}}'s address is <b>{{address}}</b>, from your agents' mailbox.",
+    "noMailboxYet": "No address yet.",
+    "setUpMailbox": "Set up the agents' mailbox →",
+    "ownSettings": "Use a separate mailbox just for this agent"
+  },
+  "calendar": {
+    "ics": "ICS subscriptions (read-only)",
+    "icsHelp": "Paste a secret ICS link (Google Calendar → Settings → \"Secret address in iCal format\", or iCloud's public calendar link).",
+    "test": "Test",
+    "add": "Add",
+    "caldav": "CalDAV account (read/write, optional)",
+    "testCaldav": "Test CalDAV login",
+    "remindBefore": "Remind",
+    "remindAfter": "minutes before an event starts",
+    "events_one": "✅ {{count}} event in the next 14 days",
+    "events_other": "✅ {{count}} events in the next 14 days",
+    "found_one": "✅ Found {{count}} calendar",
+    "found_other": "✅ Found {{count}} calendars"
+  },
+  "phone": {
+    "pick": "Pick {{name}}'s number:",
+    "taken": " · taken",
+    "nowIs": "📱 {{name}} is now {{number}}",
+    "noNumbers": "No numbers on the account yet. Buy one in the Twilio console.",
+    "webhooksHelp": "In the Twilio console, set this number's webhooks:",
+    "saved": "📱 Saved",
+    "test": "Twilio test",
+    "connected": "✅ Connected to Twilio account “{{account}}”"
+  },
+  "recent": {
+    "title": "Recent",
+    "empty": "Nothing yet."
+  },
+  "wizard": {
+    "pickProvider": "Where's the mailbox?",
+    "addressPh": "myagents@gmail.com",
+    "receiving": "Reading mail",
+    "sending": "Sending mail",
+    "sendTest": "Also send a test email to this mailbox",
+    "test": "Test",
+    "testing": "Checking…",
+    "imapOk_one": "works, {{count}} email in the inbox",
+    "imapOk_other": "works, {{count}} emails in the inbox",
+    "smtpOk": "works",
+    "smtpSent": "works, a test email is on its way to {{to}}",
+    "allGood": "All good! Hit Save and every agent gets its own address.",
+    "serverSaid": "The server said:",
+    "noPlus": "Heads up: {{provider}} doesn't deliver name+agent@ addresses, so mail to your agents' own addresses may bounce. Use your own domain with the catch-all option, or pick another provider.",
+    "addresses": "Your agents' addresses"
+  },
+  "err": {
+    "auth": "That app password didn't work. Make sure you pasted the app password (not your normal password) and the address is right.",
+    "app_password": "The server wants an app password, not your normal password. The steps above show where to make one.",
+    "basic_auth_off": "Microsoft has switched off password sign-in for this mailbox, and OpenDot can't do Microsoft's own sign-in yet. A Gmail or Fastmail mailbox will work.",
+    "imap_off": "IMAP is turned off for this mailbox. Switch it on in your mail settings and test again.",
+    "unsafe_login": "The server blocked the login as unsafe. Check IMAP is on in your mail settings and that you pasted the 授权码 (authorization code).",
+    "dns": "Couldn't find that server. Check the host name for typos.",
+    "unreachable": "Couldn't reach the server. Check the host and port, and that this computer is online.",
+    "timeout": "The server took too long to answer. Check the port, or try again in a minute.",
+    "tls": "The secure connection didn't work. Usually the port and security setting don't match: 993 and 465 use SSL/TLS, 587 uses STARTTLS.",
+    "send_refused": "Signed in fine, but the server wouldn't send the test email.",
+    "no_password": "Paste the app password first.",
+    "other": "Something went wrong."
+  },
+  "links": {
+    "twoStep": "2-Step Verification",
+    "appPassword": "Create an app password",
+    "appleAccount": "Apple Account",
+    "help": "How-to",
+    "openMail": "Open webmail"
+  },
+  "providers": {
+    "gmail": {
+      "name": "Gmail",
+      "steps": [
+        "Turn on 2-Step Verification for this Google account. App passwords only show up once it's on.",
+        "Open App passwords, type a name like “OpenDot” and hit Create.",
+        "Copy the 16-letter password and paste it below. Spaces don't matter.",
+        "IMAP is already on for Gmail, so there's nothing else to do."
+      ],
+      "authHint": "With Gmail, a new app password fixes this nine times out of ten."
+    },
+    "outlook": {
+      "name": "Outlook / Hotmail",
+      "steps": [
+        "Turn on two-step verification in your Microsoft account's security settings.",
+        "Create an app password (Security → Advanced security options → App passwords).",
+        "Paste it below."
+      ],
+      "warn": "To be straight with you: Microsoft has been moving Outlook.com and Hotmail over to its own sign-in for mail apps, which OpenDot doesn't support yet. If Test says the password didn't work, a Gmail or Fastmail mailbox is the easy way round.",
+      "authHint": "Microsoft may simply not accept app passwords on this account any more."
+    },
+    "icloud": {
+      "name": "iCloud",
+      "steps": [
+        "Make sure iCloud Mail is on and you have an @icloud.com address.",
+        "Sign in at account.apple.com → Sign-In and Security → App-Specific Passwords, and make one called “OpenDot”.",
+        "Paste it below, with your full @icloud.com address."
+      ]
+    },
+    "fastmail": {
+      "name": "Fastmail",
+      "steps": [
+        "In Fastmail, go to Settings → Privacy & Security → Manage app passwords and access.",
+        "Click New app password, give it access to mail (IMAP/SMTP) and generate it.",
+        "Paste it below."
+      ]
+    },
+    "qq": {
+      "name": "QQ Mail",
+      "steps": [
+        "On the QQ Mail website: Settings → Account (账号与安全), and switch on the IMAP/SMTP service.",
+        "Confirm with your phone and you'll get a 16-letter authorization code (授权码).",
+        "Paste that code below. It's not your QQ password."
+      ],
+      "authHint": "QQ Mail only accepts the authorization code (授权码), never your QQ password."
+    },
+    "netease": {
+      "name": "163 Mail",
+      "steps": [
+        "On the 163 Mail website: Settings → POP3/SMTP/IMAP, and switch on the IMAP/SMTP service.",
+        "Confirm as asked and you'll get an authorization code (授权码). It's only shown once, so copy it.",
+        "Paste that code below. It's not your login password."
+      ],
+      "authHint": "163 Mail only accepts the authorization code (授权码), never your login password."
+    },
+    "other": {
+      "name": "Something else",
+      "steps": [
+        "Look up your provider's IMAP and SMTP settings and fill them in under Server settings.",
+        "If they offer app passwords, use one instead of your normal password."
+      ]
+    }
+  },
+  "twilio": {
+    "steps": [
+      "Sign up at Twilio (it's pay-as-you-go; numbers cost a dollar or so a month, texts a cent or two).",
+      "On the Twilio Console home page, find Account SID and Auth Token under Account Info.",
+      "Paste both below and hit Test & save."
+    ],
+    "signUp": "Sign up for Twilio",
+    "console": "Twilio Console",
+    "testSave": "Test & save",
+    "connected": "📞 Connected to {{name}}",
+    "connectedAs": "Connected: {{name}}",
+    "change": "Change account",
+    "trialNote": "This is a trial account: it can only text and call numbers you've verified in Twilio, and messages start with a trial note. Upgrade in the Twilio Console when you're ready.",
+    "yourNumbers": "Your numbers",
+    "noNumbers": "No numbers on this account yet. Get one below.",
+    "sms": "texts",
+    "voice": "calls",
+    "goesTo": "Texts and voicemail go to {{name}}",
+    "notPointed": "Belongs to {{name}}, but Twilio isn't sending it here yet.",
+    "fix": "Fix it",
+    "nobody": "Not given to anyone",
+    "nobodyOpt": "— nobody —",
+    "wiredToast": "📱 {{name}} is now {{number}}. Texts and voicemail go to them.",
+    "notWiredToast": "📱 Number saved for {{name}}, but Twilio can't reach OpenDot yet. See the note about the public link.",
+    "publicOk": "Twilio will reach your agents at {{url}}",
+    "public": {
+      "no_public_url": "Twilio needs a public https link to reach OpenDot. Run ./dot.sh link (the Cloudflare link works), or set DOT_PUBLIC_URL, then press Fix it.",
+      "private_link": "You're on a private Tailscale link, which Twilio can't reach. Set DOT_PUBLIC_URL to a public https address (for example a Cloudflare link or Tailscale Funnel), then press Fix it."
+    },
+    "getNumber": "Get a new number",
+    "type": {
+      "local": "Local",
+      "mobile": "Mobile",
+      "tollfree": "Toll-free"
+    },
+    "areaCode": "area code",
+    "contains": "contains digits",
+    "search": "Search",
+    "searching": "Searching…",
+    "priceLine": "Numbers like these cost {{price}} {{unit}} a month on your Twilio account.",
+    "priceUnknownLine": "Twilio didn't say the price here; check Pricing in the Twilio Console.",
+    "noneFound": "Nothing matched. Try another type, or drop the area code / digits.",
+    "giveTo": "Give it to",
+    "nobodyYet": "nobody yet",
+    "needsAddress": "Twilio needs your address on file for numbers here (add it in the Console first).",
+    "buy": "Buy",
+    "pricePer": "{{price}} {{unit}} a month",
+    "priceUnknown": "the monthly price shown in your Twilio Console",
+    "confirmBuy": "Buy {{number}}?\n\nThis costs real money on your Twilio account: {{price}}, until you release the number in Twilio.",
+    "bought": "📞 {{number}} is yours",
+    "err": {
+      "auth": "Twilio didn't accept that. Double-check the Account SID (starts with AC) and the Auth Token.",
+      "no_account": "Connect your Twilio account first.",
+      "not_found": "Twilio couldn't find that.",
+      "regulatory": "Twilio needs an address or ID documents for numbers in this country. Add them in the Twilio Console under Regulatory Compliance, then try again.",
+      "gone": "Someone just took that number. Search again.",
+      "trial": "Trial accounts are limited here. Upgrade in the Twilio Console to do this.",
+      "funds": "Not enough balance on your Twilio account. Top up in the Console.",
+      "confirm": "Please confirm the purchase first.",
+      "taken": "Another agent already has that number.",
+      "not_yours": "That number isn't on this Twilio account.",
+      "unreachable": "Couldn't reach Twilio. Check this computer is online.",
+      "twilio": "Twilio said no."
+    }
+  }
+}

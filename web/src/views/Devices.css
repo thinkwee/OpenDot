@@ -1,0 +1,51 @@
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.device-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity .15s, filter .15s;
+}
+.device-card.paused { opacity: .6; filter: grayscale(.4); }
+
+.device-icon { font-size: 26px; line-height: 1; }
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line);
+  flex: none;
+}
+.dot.ok { background: var(--ok); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 22%, transparent); }
+.dot.bad { background: var(--ink2); opacity: .5; }
+
+.code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin: 6px 0;
+  overflow: hidden;
+}
+.code-box code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.device-modal h2 { margin: 0 0 4px; }
+
+@media (max-width: 480px) {
+  .device-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,9 @@
+{
+  "hi": "嗨！我是 Pip。",
+  "intro": "你在现实世界里的私人助理团队。先把这台设备连到你的服务器上吧。",
+  "placeholder": "配对码（比如 1A2B-3C4D-5E6F）",
+  "connecting": "连接中…",
+  "connect": "连接",
+  "bad": "这个码不管用，可能过期了。运行 <code>./dot.sh pair</code> 拿个新的。",
+  "hint": "在服务器上运行 <code>./dot.sh pair</code>，然后用手机扫二维码。"
+}

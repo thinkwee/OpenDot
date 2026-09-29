@@ -1,0 +1,39 @@
+{
+  "title": "待办",
+  "col": {
+    "waiting": "等你一下",
+    "doing": "进行中",
+    "done": "已完成"
+  },
+  "doneWeek": "本周完成",
+  "everyone": "全部",
+  "approvals_other": "{{count}} 件事等你点头",
+  "approvalsSub": "去收件箱看看",
+  "empty": {
+    "waiting": "没有要你操心的 🎉",
+    "doing": "大家都闲着，交代点事吧",
+    "done": "还没有完成的事"
+  },
+  "kind": {
+    "watch": "盯梢",
+    "goal": "目标"
+  },
+  "of": "{{done}}/{{total}} 完成",
+  "steps_other": "{{count}} 步",
+  "helpers_other": "{{count}} 个帮手",
+  "watchMeta": "已看 {{n}} 次 · 每 {{every}} 小时",
+  "moreItems_other": "还有 {{count}} 项",
+  "less": "收起",
+  "yourTurn": "轮到你了",
+  "when": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "thisWeek": "这周",
+    "earlier": "更早"
+  },
+  "strip": "最近 14 天完成了多少",
+  "allDays": "全部日子",
+  "count_other": "{{count}} 件",
+  "openChat": "打开对话",
+  "showMore_other": "再看 {{count}} 件"
+}

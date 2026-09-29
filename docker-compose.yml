@@ -1,0 +1,66 @@
+# OpenDot via Docker Compose.
+#
+#   docker compose up -d                        # just the server, on 127.0.0.1:7878
+#   docker compose --profile tunnel up -d        # + a Cloudflare quick tunnel (no account needed)
+#   docker compose --profile search up -d        # + a local SearXNG for the agents' web_search
+#
+name: opendot
+
+services:
+  opendot:
+    build: .
+    image: opendot:latest
+    restart: unless-stopped
+    # Published only to loopback — matches dot.sh's own default (127.0.0.1). Reach it
+    # from another machine via the `tunnel` profile below (HTTPS) or your own reverse
+    # proxy, never by publishing this on 0.0.0.0.
+    ports:
+      - "127.0.0.1:7878:7878"
+    environment:
+      DOT_HOST: "0.0.0.0"
+      DOT_PORT: "7878"
+      DOT_DATA_DIR: /app/data
+      DOT_TIMEZONE: ${DOT_TIMEZONE:-Europe/London}
+      LLM_MODEL: ${LLM_MODEL:-gpt-5-mini}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_REASONING_EFFORT: ${LLM_REASONING_EFFORT:-}
+      # the agents' web_search reads this when the `search` profile is up.
+      DOT_SEARXNG_URL: ${DOT_SEARXNG_URL:-}
+    volumes:
+      - opendot-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:7878/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Zero-config HTTPS tunnel (no Cloudflare account) — same tool `./dot.sh tunnel` uses
+  # outside Docker. The public URL changes on every restart; use a named tunnel
+  # (DOT_TUNNEL_TOKEN) for a stable one instead.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    command: >
+      tunnel --no-autoupdate --url http://opendot:7878
+    depends_on:
+      opendot:
+        condition: service_healthy
+
+  # Local search backend for the agents' web_search tool — set DOT_SEARXNG_URL to
+  # http://searxng:8080 above (or in a .env next to this file) to point the agents'
+  # web_search at it instead of the public DuckDuckGo/ddgs fallback.
+  searxng:
+    image: searxng/searxng:latest
+    restart: unless-stopped
+    profiles: ["search"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - searxng-data:/etc/searxng
+
+volumes:
+  opendot-data:
+  searxng-data:

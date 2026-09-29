@@ -1,0 +1,6 @@
+.desk.clickable { cursor: pointer; }
+.back-link { color: var(--ink2); font-weight: 800; font-size: 14px; padding: 4px 0; margin-bottom: 8px; }
+.profile-head { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 24px; margin-bottom: 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--c) 28%, var(--panel)), var(--panel)); border: 1px solid var(--line); flex-wrap: wrap; }
+.profile-head h1 { margin: 0; }
+.profile-head p { margin: 2px 0 0; }
+.profile-status { color: var(--accent); font-weight: 800; font-size: 13px; }

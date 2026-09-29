@@ -1,0 +1,47 @@
+{
+  "title": "设备",
+  "lead": "让助理们用上你自己的 Mac 或电脑：打开应用、跑命令、读剪贴板、截个屏。有风险的事，还是会先问过你。",
+  "add": "添加设备",
+  "renamePrompt": "给这台设备改个名字",
+  "removeConfirm": "要移除“{{name}}”吗？之后想再用得重新配对。",
+  "removed": "已移除 {{name}}",
+  "empty": {
+    "title": "还没有配对任何设备。",
+    "hint": "把你的 Mac 或电脑配对上，助理们就能直接帮你用：打开日历、看看剪贴板里有什么、截个屏给你看。",
+    "addFirst": "添加第一台设备"
+  },
+  "online": "在线",
+  "lastSeen": "上次在线：{{when}}",
+  "ago": {
+    "never": "从没",
+    "min": "{{n}} 分钟前",
+    "hour": "{{n}} 小时前",
+    "day": "{{n}} 天前"
+  },
+  "caps": {
+    "shell": "命令行",
+    "applescript": "AppleScript",
+    "open": "打开",
+    "screenshot": "截屏",
+    "clipboard": "剪贴板",
+    "notify": "通知",
+    "list_apps": "应用",
+    "files": "文件",
+    "mouse": "鼠标",
+    "keyboard": "键盘"
+  },
+  "noCaps": "还没报上来能做什么",
+  "canUse": "助理们可以用",
+  "paused": "暂停中",
+  "rename": "改名",
+  "remove": "移除",
+  "modal": {
+    "intro": "在你想让助理们使用的 Mac 或电脑上，打开终端，运行：",
+    "gettingCode": "正在拿配对码…",
+    "oneLine": "或者一行搞定：",
+    "keepRunning": "然后让它一直开着：<code>python3 dot_node.py run</code>；在 macOS 上也可以装成开机自启：<code>./node/install_mac.sh</code>（配对之后再装）。",
+    "expires": "这个配对码只能用一次，10 分钟内有效。",
+    "agentsCan_other": "{{count}} 个助理可以申请用它",
+    "done": "好了"
+  }
+}

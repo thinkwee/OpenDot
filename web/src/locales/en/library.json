@@ -1,0 +1,18 @@
+{
+  "title": "Library",
+  "lead": "Every report, sheet, deck, image, app and receipt your agents have handed you.",
+  "chips": {
+    "all": "All",
+    "document": "Documents",
+    "spreadsheet": "Sheets",
+    "slides": "Slides",
+    "image": "Images",
+    "app": "Apps",
+    "receipt": "Receipts"
+  },
+  "search": "Search by title…",
+  "allAgents": "All agents",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "empty": "Nothing here yet. Ask an agent to build you a report, a spreadsheet, or a deck — it'll show up right here."
+}

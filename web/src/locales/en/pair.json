@@ -1,0 +1,9 @@
+{
+  "hi": "Hi! I'm Pip.",
+  "intro": "Your personal agent team, in the real world. Let's connect this device to your server.",
+  "placeholder": "Setup code (e.g. 1A2B-3C4D-5E6F)",
+  "connecting": "Connecting…",
+  "connect": "Connect",
+  "bad": "That code didn't work — it may have expired. Run <code>./dot.sh pair</code> for a new one.",
+  "hint": "On your server run <code>./dot.sh pair</code> and scan the QR code with your phone."
+}

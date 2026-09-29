@@ -1,0 +1,161 @@
+{
+  "title": "Ideas to steal",
+  "intro": "Things people hand off to an agent. Tap one to make it yours — you can change the words first.",
+  "back": "Back",
+  "count": "{{count}} ideas",
+  "cats": {
+    "all": "All",
+    "home": "Home",
+    "papers": "Papers & admin",
+    "out": "Getting out",
+    "health": "Health & habits",
+    "family": "Family & friends",
+    "work": "Work-ish",
+    "places": "Places"
+  },
+  "try": {
+    "title": "Make this one yours",
+    "hint": "Change anything you like — the more it sounds like you, the better.",
+    "make": "Make them ✨",
+    "settingUp": "Setting them up…",
+    "settingUpSub": "a name, a face, their own computer"
+  },
+  "items": [
+    [
+      "home",
+      "🪴",
+      "Water the fiddle-leaf every ten days — remind me, and if I send a photo, tell me if it looks sad."
+    ],
+    [
+      "home",
+      "🗑️",
+      "Tell me the night before which bin goes out. The council calendar makes my head hurt."
+    ],
+    [
+      "home",
+      "🔧",
+      "The bathroom tap won't stop dripping. Work out which part it needs from my photo and where nearby sells it."
+    ],
+    [
+      "home",
+      "🔥",
+      "The boiler's due a service. Find three well-reviewed engineers nearby and ask them for a price."
+    ],
+    [
+      "papers",
+      "🛂",
+      "Keep an eye on when our passports, the car's MOT and the home insurance run out, and nudge me a month early."
+    ],
+    [
+      "papers",
+      "🧾",
+      "I'll forward receipts as they come. Keep a tidy list for my tax return and flag anything I can claim."
+    ],
+    [
+      "papers",
+      "📮",
+      "I'll snap the letters that come in. Tell me which ones actually need me to do something."
+    ],
+    [
+      "papers",
+      "💉",
+      "Keep the kids' vaccination records in one place and tell me when the next ones are due."
+    ],
+    [
+      "out",
+      "🎾",
+      "Tell me the moment a tennis court frees up near me on Saturday morning."
+    ],
+    [
+      "out",
+      "🥾",
+      "Find me a two-hour walk less than an hour away by train, with a good café at the end."
+    ],
+    [
+      "out",
+      "🎭",
+      "Every Thursday, send me three things on this weekend that aren't a film or a museum."
+    ],
+    [
+      "out",
+      "🚲",
+      "Plan me a flat, quiet bike route to the office, and warn me before I leave if rain's coming."
+    ],
+    [
+      "health",
+      "🦷",
+      "It's been ages since my last dental check-up. Work out when I last went and nudge me to book."
+    ],
+    [
+      "health",
+      "😴",
+      "Every morning, ask me how I slept — one tap — and show me a little chart at the end of the month."
+    ],
+    [
+      "health",
+      "🥗",
+      "Here's a photo of my fridge. Plan five weeknight dinners from it, none over 30 minutes."
+    ],
+    [
+      "health",
+      "🧘",
+      "Get me to stretch for five minutes every afternoon — but never in the middle of a meeting."
+    ],
+    [
+      "family",
+      "🎂",
+      "Remember everyone's birthdays from the family chat and give me a gift idea a week before."
+    ],
+    [
+      "family",
+      "📸",
+      "Make a photo book of this year from our family chat, for Mum's 60th."
+    ],
+    [
+      "family",
+      "🐶",
+      "Find a dog sitter for the week of the 14th with proper reviews, and shortlist three."
+    ],
+    [
+      "family",
+      "📚",
+      "Keep track of which library books the kids have out and remind us two days before they're due."
+    ],
+    [
+      "work",
+      "📊",
+      "Every Monday at 9, turn last week's sales sheet into three lines I can paste to the team."
+    ],
+    [
+      "work",
+      "🗂️",
+      "Turn this messy folder of meeting notes into one page of decisions and to-dos."
+    ],
+    [
+      "work",
+      "🔎",
+      "Watch a few job boards for part-time design roles in Lisbon and send me only the good ones."
+    ],
+    [
+      "places",
+      "🧗",
+      "Here's the QR code off my climbing gym's poster. Keep my Tuesday evening sessions sorted."
+    ],
+    [
+      "places",
+      "🐾",
+      "Be our vet person: remind us about the cat's jabs and ask them about the flea stuff."
+    ],
+    [
+      "places",
+      "🏊",
+      "Here's the swim school's link. Tell me as soon as next term opens for sign-ups."
+    ],
+    [
+      "places",
+      "🏺",
+      "If a spot opens in the Saturday pottery class, tell me straight away."
+    ]
+  ],
+  "cta": "Got your own? Just say it →"
+}

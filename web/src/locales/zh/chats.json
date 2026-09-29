@@ -1,0 +1,186 @@
+{
+  "list": {
+    "title": "我的助理",
+    "newTitle": "新助理",
+    "new": "新建",
+    "workingOnIt": "正在办…",
+    "you": "我：",
+    "agentsCount_other": "{{count}} 个助理",
+    "waiting": "等你回复",
+    "someoneNew": "再找一位",
+    "someoneNewSub": "下一件想甩手的事，交给 TA"
+  },
+  "group": {
+    "title": "为一件事拉个群",
+    "desc": "拉几位助理进来，让他们分头干活，比如“波尔图旅行”或“爷爷的八十大寿”。",
+    "placeholder": "这个群是干嘛的？（比如：波尔图旅行）",
+    "start": "拉群",
+    "defaultTitle": "新群聊"
+  },
+  "ideas": [
+    "帮我记着家里护照和保修卡什么时候到期",
+    "周六那节陶艺课一有人退，就帮我占上",
+    "帮我找个能上门教琴的钢琴老师，孩子 9 岁",
+    "问三家擦窗师傅的报价，告诉我哪家最合适"
+  ],
+  "hire": {
+    "title": "想找谁帮忙？",
+    "readingPlace": "正在看看这个地方，给你安排人…",
+    "settingUp": "正在给你安排…",
+    "settingUpSub": "起名字、配头像、开邮箱，再给 TA 一台自己的电脑",
+    "intro": "每件想甩手的事，都配一位助理。说说是什么事就行。",
+    "make": "就 TA 了 ✨",
+    "orPick": "或者直接挑一位",
+    "fromPlace": "从一个地方来",
+    "fromPlaceDesc": "每个地方的二维码或链接都能变成一位助理：攀岩馆、宠物医院、孩子的游泳班都行。扫一下，就有人帮你打理和那儿有关的事。",
+    "scan": "扫二维码",
+    "fromPicture": "从图片识别",
+    "pasteLink": "…或者贴个链接",
+    "go": "去吧",
+    "groupLink": "或者拉几位进群，一起搞定一件事 →",
+    "noQr": "这张图里没找到二维码",
+    "ideas": "没想好？看看点子"
+  },
+  "scanner": {
+    "noCamera": "这里打不开摄像头，试试“从图片识别”吧。",
+    "point": "对准二维码"
+  },
+  "suggest": {
+    "dm": [
+      "家里要来一只小猫了。哪些常见的绿植得搬走？",
+      "飞波尔图的往返机票跌到 1200 块以下就告诉我。",
+      "找个人每周日提醒我给奶奶打电话，顺便帮我想点能聊的话题。",
+      "每周五晚上 6 点：看看天气预报，给我三个周末好去处。"
+    ],
+    "group": [
+      "帮我们规划 11 月 6–8 号的波尔图小长假。我们爱暴走，也爱吃海鲜。",
+      "爷爷下个月八十大寿。出出点子，做个他年轻时爱听的歌单，再把家族群里的老照片做成一本相册。"
+    ]
+  },
+  "chat": {
+    "notFound": "找不到这个聊天",
+    "drop": "把文件丢给你的助理",
+    "dropSub": "什么格式都行：PDF、文档、表格、图片、代码、压缩包…",
+    "card": "{{name}} 的名片",
+    "computer": "电脑",
+    "computerTitle": "助理的电脑",
+    "welcomeGroup": "欢迎来到「{{title}}」！",
+    "hiDm": "你好，我是 {{name}}！",
+    "groupIntro": "{{names}} 都在。{{lead}} 牵头分活儿。想直接找谁，就 @TA 的名字。",
+    "dmIntro": "{{tagline}} 我有自己的电脑，你不在的时候我也一直在忙。",
+    "uploadFailed": "{{name}} 没传上去：{{msg}}",
+    "src": {
+      "heartbeat": "💓 定时看看",
+      "handoff": "🤝 转交"
+    }
+  },
+  "run": {
+    "working": "{{name}} 正在忙",
+    "used": "{{name}} 做了",
+    "steps_other": "{{count}} 步",
+    "hiccups_other": "{{count}} 个小插曲"
+  },
+  "approval": {
+    "ask": "我可以{{what}}吗？",
+    "seeWhat": "看看具体内容",
+    "go": "去吧",
+    "notNow": "先别",
+    "less": "收起",
+    "dontAsk": "以后不用问了",
+    "dontAskFor": "{{domain}} 以后不用问了",
+    "okChat": "这个聊天里都行",
+    "neverAsk": "这种事以后都不用问",
+    "toastGo": "👍 去吧！",
+    "toastSkip": "👌 那就先不了"
+  },
+  "composer": {
+    "longPaste": "📎 粘贴的内容太长（{{n}} 字），已经存成文件附上了",
+    "allRole": "全员出动：一位牵头，大家分头干",
+    "attachTitle": "添加文件（也可以直接拖进来或粘贴）",
+    "attach": "添加文件",
+    "placeholderGroup": "跟大家说点什么…输入 @ 找人",
+    "placeholderDm": "要帮你做点什么？",
+    "stop": "停下",
+    "send": "发送",
+    "reading": "读取中…",
+    "stored": "已存好",
+    "remove": "移除",
+    "plusTitle": "加文件，或者设个固定的事",
+    "attachSub": "也可以直接拖进来或粘贴",
+    "every": "定期做…",
+    "everySub": "每天、每周或每月，到点就做"
+  },
+  "files": {
+    "button": "文件",
+    "title": "这个聊天里的文件",
+    "empty": "还没有文件。丢个文件进来，或者让助理帮你做份报告、表格、PPT 或者小网页。",
+    "delivered": "交给你的",
+    "made": "在 TA 们电脑上做的",
+    "sent": "你发的"
+  },
+  "team": {
+    "title_other": "派出 {{count}} 个小帮手分头干",
+    "progress": "{{done}}/{{count}} 完成",
+    "allDone": "全部完成",
+    "starting": "准备中…",
+    "doneSteps_other": "完成 · {{count}} 步",
+    "helper": "帮手 {{n}}",
+    "watch": "看它的电脑"
+  },
+  "card": {
+    "pickAny": "可以多选",
+    "typeOwn": "都不合适？直接在下面打字告诉我 ↓",
+    "continue": "就这个",
+    "youSaid": "你说"
+  },
+  "routine": {
+    "title": "定个固定的事",
+    "titleAgent": "要不要以后都这样来？",
+    "whenLbl": "时间：",
+    "atLbl": "",
+    "will": "会…",
+    "everyLbl": "多久一次",
+    "wdLbl": "星期几",
+    "dayLbl": "几号",
+    "timeLbl": "几点",
+    "whoLbl": "谁来做",
+    "every": {
+      "day": "每天",
+      "weekdays": "工作日",
+      "weekly": "每周",
+      "monthly": "每月"
+    },
+    "wd": {
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六",
+      "sun": "日"
+    },
+    "when": {
+      "day": "每天 {{time}}",
+      "weekdays": "工作日 {{time}}",
+      "weekly": "每周{{weekday}} {{time}}",
+      "monthly": "每月 {{day}} {{time}}"
+    },
+    "placeholder": "比如：看看天气预报，给我三个周末去处",
+    "create": "就这么定 ⏰",
+    "notNow": "先不用",
+    "made": "⏰ 好了！{{when}}",
+    "madeMsg": "⏰ 定好了：{{when}}，{{what}}",
+    "notNowMsg": "先不用啦，谢谢",
+    "skipped": "这次先不定",
+    "dayN_ordinal_other": "{{count}} 号",
+    "wdOpt": {
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六",
+      "sun": "周日"
+    }
+  }
+}

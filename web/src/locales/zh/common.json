@@ -1,0 +1,68 @@
+{
+  "save": "保存",
+  "cancel": "取消",
+  "close": "关闭",
+  "delete": "删除",
+  "edit": "编辑",
+  "back": "返回",
+  "loading": "加载中…",
+  "on": "开",
+  "off": "关",
+  "retry": "再试一次",
+  "copy": "复制",
+  "copied": "已复制",
+  "language": "语言",
+  "time": {
+    "now": "刚刚",
+    "min": "{{n}} 分钟",
+    "hour": "{{n}} 小时"
+  },
+  "nav": {
+    "agents": "助理",
+    "inbox": "收件箱",
+    "settings": "设置",
+    "whatIs": "OpenDot 是什么？",
+    "calendar": "日历",
+    "todo": "待办",
+    "examples": "抄个点子"
+  },
+  "status": {
+    "idle": "空闲",
+    "thinking": "想一想…",
+    "working": "忙着呢",
+    "waiting": "等你回复",
+    "sleeping": "睡着了",
+    "error": "出了点状况",
+    "live": "在线",
+    "reconnecting": "重新连接中"
+  },
+  "tools": {
+    "shell": "运行了",
+    "python": "跑了 Python",
+    "read_file": "读了",
+    "write_file": "写了",
+    "list_files": "翻了翻文件",
+    "web_search": "搜了",
+    "web_fetch": "看了",
+    "browser": "浏览器",
+    "remember": "记下了",
+    "forget": "忘掉了",
+    "notify": "告诉了你",
+    "publish_page": "做了个页面",
+    "schedule": "设了个例行事项",
+    "list_automations": "看了看例行事项",
+    "cancel_automation": "停了个例行事项",
+    "handoff": "交给了",
+    "delegate": "叫了几个帮手",
+    "send_email": "邮件",
+    "watch": "开始盯着",
+    "watch_done": "不再盯着",
+    "offer_choices": "给了选项",
+    "create_agent": "配了个助理",
+    "inParallel": "同时 {{n}} 个"
+  },
+  "errors": {
+    "generic": "哎，没成功：{{msg}}",
+    "sendFailed": "没发出去：{{msg}}"
+  }
+}

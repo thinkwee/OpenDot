@@ -1,0 +1,85 @@
+{
+  "more": {
+    "memory": "What it remembers",
+    "skills": "Skills",
+    "identity": "Email · phone · calendar setup",
+    "checkins": "Checking in on its own"
+  },
+  "letGo": {
+    "button": "Let go",
+    "ask": "Let {{name}} go? Their chat, routines and watches go too. (Their files and notes stay on disk.)",
+    "bye": "👋 Bye, {{name}}",
+    "keepOne": "Keep at least one agent around 🙂"
+  },
+  "backToChat": "‹ Back to chat",
+  "changeLook": "Change look",
+  "chat": "Chat",
+  "look": "Look",
+  "animals": {
+    "fox": "Fox",
+    "cat": "Cat",
+    "bunny": "Bunny",
+    "bear": "Bear",
+    "frog": "Frog",
+    "owl": "Owl",
+    "panda": "Panda",
+    "raccoon": "Raccoon",
+    "duck": "Duck",
+    "shiba": "Shiba",
+    "axolotl": "Axolotl",
+    "penguin": "Penguin"
+  },
+  "job": {
+    "label": "Takes care of",
+    "placeholder": "What's the one thing they look after?"
+  },
+  "knows": {
+    "label": "Knows",
+    "placeholder": "Anything useful for the job: addresses, account numbers, preferences…"
+  },
+  "boundary": {
+    "label": "Comes back to you when",
+    "placeholder": "Anything that costs money, speaks for you in a new way, or can't be undone."
+  },
+  "cells": {
+    "mail": "Mail",
+    "noAddress": "no address yet",
+    "phone": "Phone",
+    "noNumber": "no number",
+    "computer": "Computer",
+    "working": "working",
+    "ready": "ready",
+    "apps": "Apps",
+    "connected": "{{n}} connected",
+    "noneYet": "none yet"
+  },
+  "watching": {
+    "title": "Watching",
+    "empty": "Nothing right now. Try “tell me as soon as…” in chat.",
+    "detail": "{{filter}} · checked {{checks}}× · {{every}}",
+    "done": "done",
+    "stop": "Stop watching",
+    "every": {
+      "min": "every {{n}} min",
+      "hour": "every {{n}} h",
+      "hourly": "every hour",
+      "day": "every day",
+      "days": "every {{n}} days"
+    }
+  },
+  "routines": {
+    "title": "Routines",
+    "empty": "None yet. Try “every Monday at 9…” in chat.",
+    "next": " · next {{when}}",
+    "when": "when {{filter}}",
+    "pause": "Pause",
+    "resume": "Resume"
+  },
+  "checkins": {
+    "title": "💓 Check in on its own",
+    "body": "About once an hour (8:00–23:00) {{name}} looks over its job and only messages you if something really matters.",
+    "brain": "🧠 Brain",
+    "brainBody": "Which model {{name}} thinks with. Add models in Settings.",
+    "brainSet": "🧠 {{name}} now thinks with “{{profile}}”"
+  }
+}

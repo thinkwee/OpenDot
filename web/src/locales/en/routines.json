@@ -1,0 +1,56 @@
+{
+  "presets": {
+    "morning": "Every morning 8:00",
+    "weekdays": "Weekdays 9:00",
+    "evening": "Every evening 21:00",
+    "hourly": "Every hour",
+    "mondays": "Mondays 10:00"
+  },
+  "title": "Routines & Goals",
+  "embeddedTitle": "Routines",
+  "intro": "Things your agents do on their own — on a schedule, when something happens, or steadily toward a goal.",
+  "newRoutine": "＋ New routine",
+  "easiest": "Easiest: just say it in chat — “every Friday 5pm, summarise my week”.",
+  "empty": "No routines yet.",
+  "cronLine": "⏰ {{schedule}} · next {{when}}",
+  "eventLine": "⚡ when {{filter}}",
+  "runNow": "▶ Run now",
+  "running": "▶️ Running “{{name}}”",
+  "lastRun": "last run {{when}}",
+  "trigger": {
+    "title": "⚡ Trigger from anywhere",
+    "body": "POST anything to this URL (IFTTT, Zapier, GitHub, iOS Shortcuts…). Routines with a matching event filter wake up."
+  },
+  "form": {
+    "title": "New routine",
+    "who": "Who",
+    "name": "Name (e.g. Morning brief)",
+    "onSchedule": "⏰ On a schedule",
+    "onEvent": "⚡ When something happens",
+    "prompt": "What should they do? (e.g. Check the weather in London and tell me if I need an umbrella)",
+    "saveFailed": "Could not save: {{msg}}"
+  },
+  "presetAdded": "✨ Added — edit the agent or time below if you like",
+  "presetFailed": "Could not add preset: {{msg}}",
+  "week": {
+    "title": "📅 This week",
+    "empty": "No scheduled runs yet — add a routine above."
+  },
+  "history": {
+    "title": "🧾 Run history",
+    "empty": "Nothing has run yet."
+  },
+  "goals": {
+    "title": "🎯 Goals",
+    "new": "＋ New goal",
+    "empty": "No goals yet. Tell an agent “help me get fit by March” and it will track it.",
+    "status": { "active": "active", "paused": "paused", "done": "done" },
+    "pause": "⏸ Pause",
+    "resume": "▶ Resume",
+    "markDone": "✓ Mark done",
+    "formTitle": "New goal",
+    "titlePh": "Title (e.g. Learn my music taste)",
+    "whyPh": "Why does this matter?",
+    "cadence": "Check in every (minutes)"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "{{name}} 的电脑",
+  "live": "直播中",
+  "shrink": "缩小（Esc）",
+  "enlarge": "放大",
+  "tabs": {
+    "screen": "浏览器",
+    "terminal": "终端",
+    "files": "文件"
+  },
+  "idleLine": "闲着呢，等你交代事情",
+  "main": "主窗口",
+  "connecting": "连接中",
+  "browserAlt": "助理的浏览器",
+  "clickEnlarge": "点一下放大",
+  "browserAsleep": "助理上线后，浏览器就会醒过来。",
+  "term": {
+    "readOnly": "助理真实终端的实时画面（只能看）",
+    "typeInto": "我来打字"
+  },
+  "files": {
+    "home": "主目录",
+    "empty": "还是空的。助理做出来的文件都会出现在这里。"
+  },
+  "lead": "主助理",
+  "helperN": "帮手 {{n}}"
+}

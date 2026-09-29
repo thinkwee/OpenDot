@@ -1,0 +1,39 @@
+/* Ideas to steal — Memphis masonry of little requests */
+.examples { position: relative; }
+.ex-head { position: relative; }
+.ex-head { justify-content: flex-start; }
+.ex-head > div:not(.deco) { position: relative; z-index: 1; max-width: 640px; }
+.ex-back { display: flex; width: max-content; align-items: center; gap: 2px; margin-bottom: 10px; font-weight: 800; font-size: 13px; color: var(--ink2); }
+.ex-back:hover { color: var(--accent); }
+.ex-cats { display: flex; gap: 8px; overflow-x: auto; padding: 2px 4px 10px 2px; margin: 0 0 8px; scrollbar-width: none; }
+.ex-cats::-webkit-scrollbar { display: none; }
+.ex-cats .chip { flex: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 800; white-space: nowrap; }
+.ex-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--tint); border: 1.5px solid var(--edge); }
+
+.ex-grid { columns: 4 230px; column-gap: 16px; }
+.ex-card { display: flex; flex-direction: column; gap: 10px; width: 100%; margin: 0 0 16px; break-inside: avoid; text-align: left; padding: 16px 16px 14px; border-radius: 20px; color: var(--ink);
+  background: color-mix(in srgb, var(--tint) 22%, var(--panel)); border: 2.5px solid var(--edge); box-shadow: var(--hard);
+  transition: transform .2s var(--ease-spring), box-shadow .2s var(--ease-spring); animation: rise .4s var(--ease-out) both; position: relative; overflow: hidden; }
+.ex-card::after { content: ''; position: absolute; right: -14px; top: -14px; width: 46px; height: 46px; border-radius: 50%; background: var(--tint); border: 2.5px solid var(--edge); }
+.ex-card.r1::after { border-radius: 8px; transform: rotate(18deg); }
+.ex-card.r2::after { width: 0; height: 0; border-radius: 0; background: none; border: 22px solid transparent; border-bottom-color: var(--tint); right: -4px; top: -18px; }
+.ex-card.r3::after { width: 60px; height: 14px; border-radius: 8px; top: 10px; right: -20px; transform: rotate(-30deg); }
+.ex-card:hover { transform: translate(-2px, -3px) rotate(-.6deg); box-shadow: var(--hard-lg); }
+.ex-card.r1:hover { transform: translate(-2px, -3px) rotate(.6deg); }
+.ex-card:active { transform: translate(2px, 2px); box-shadow: none; }
+.ex-emoji { width: 50px; height: 50px; display: grid; place-items: center; font-size: 27px; border-radius: 16px; background: var(--panel); border: 2.5px solid var(--edge); box-shadow: var(--hard-sm); position: relative; z-index: 1; }
+.ex-text { font-weight: 700; font-size: 15px; line-height: 1.4; }
+.ex-tag { align-self: flex-start; font-weight: 800; font-size: 11.5px; padding: 2px 9px; border-radius: 999px; background: var(--panel); border: 1.5px solid var(--edge); color: var(--ink2); }
+.ex-own { display: block; margin: 8px auto 0; padding: 12px 20px; border-radius: 999px; font-family: var(--display); font-weight: 600; font-size: 16px; background: var(--m-yellow); color: #1e1b2e; border: 2.5px solid var(--edge); box-shadow: var(--hard); transition: transform .2s var(--ease-spring), box-shadow .2s; }
+.ex-own:hover { transform: translate(-2px, -2px); box-shadow: var(--hard-lg); }
+.ex-try textarea { resize: none; font-size: 15px; }
+:root[data-theme='dark'] .ex-card { background: color-mix(in srgb, var(--tint) 16%, var(--panel)); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .ex-card { background: color-mix(in srgb, var(--tint) 16%, var(--panel)); } }
+
+@media (max-width: 560px) {
+  .ex-grid { columns: 2 150px; column-gap: 10px; }
+  .ex-card { padding: 12px; gap: 8px; margin-bottom: 10px; border-radius: 16px; }
+  .ex-emoji { width: 40px; height: 40px; font-size: 21px; border-radius: 12px; }
+  .ex-text { font-size: 13.5px; }
+}
+@media (prefers-reduced-motion: reduce) { .ex-card { animation: none; } }

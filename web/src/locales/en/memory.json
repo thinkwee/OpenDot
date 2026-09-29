@@ -1,0 +1,14 @@
+{
+  "title": "Memory",
+  "intro": "Plain markdown files. See what your agents know, fix it, or make them forget.",
+  "files": {
+    "user": { "label": "👤 About you", "desc": "Shared by all agents. What they know about you." },
+    "memory": { "label": "🧠 Memory", "desc": "Facts and decisions this agent chose to keep." },
+    "soul": { "label": "🌱 Soul", "desc": "Personality, voice and working style." },
+    "heartbeat": { "label": "💓 Heartbeat", "desc": "What it checks when it wakes up on its own." },
+    "journal": { "label": "📓 Journal", "desc": "Its daily log (read-only)." }
+  },
+  "saved": "💾 Saved",
+  "edit": "✏️ Edit",
+  "empty": "_Nothing yet._"
+}

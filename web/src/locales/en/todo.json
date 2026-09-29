@@ -1,0 +1,45 @@
+{
+  "title": "Todo",
+  "col": {
+    "waiting": "Needs you",
+    "doing": "In progress",
+    "done": "Done"
+  },
+  "doneWeek": "done this week",
+  "everyone": "Everyone",
+  "approvals_one": "{{count}} thing waiting for your OK",
+  "approvals_other": "{{count}} things waiting for your OK",
+  "approvalsSub": "Open the inbox",
+  "empty": {
+    "waiting": "Nothing needs you 🎉",
+    "doing": "Everyone's free — ask for something",
+    "done": "Nothing finished yet"
+  },
+  "kind": {
+    "watch": "Watch",
+    "goal": "Goal"
+  },
+  "of": "{{done}} of {{total}} done",
+  "steps_one": "{{count}} step",
+  "steps_other": "{{count}} steps",
+  "helpers_one": "{{count}} helper",
+  "helpers_other": "{{count}} helpers",
+  "watchMeta": "{{n}} checks · every {{every}}h",
+  "moreItems_one": "{{count}} more",
+  "moreItems_other": "{{count}} more",
+  "less": "Show less",
+  "yourTurn": "Your turn",
+  "when": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "earlier": "Earlier"
+  },
+  "strip": "Done per day, last 14 days",
+  "allDays": "All days",
+  "count_one": "{{count}} job",
+  "count_other": "{{count}} jobs",
+  "openChat": "Open chat",
+  "showMore_one": "{{count}} more",
+  "showMore_other": "{{count}} more"
+}

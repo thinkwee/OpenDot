@@ -1,0 +1,44 @@
+{
+  "title": "📚 技能",
+  "intro": "助理们可以照着做的现成套路——通用开放格式的 SKILL.md 文件。可以从链接装一整套，助理做完值得重复的事后也会自己存一个。",
+  "install": {
+    "title": "🔗 从链接安装",
+    "body": "GitHub 仓库或文件夹链接、.zip，或者 SKILL.md 的原始链接都行。新技能会先检查有没有可疑的地方，没问题才能打开。",
+    "button": "安装",
+    "installing": "正在装…",
+    "added": "已添加",
+    "flagged": "🔍 装好了——有几个技能得先看一眼才能打开",
+    "done": "📚 技能装好了",
+    "clean": "看着没问题 ✓",
+    "flaggedCount_other": "有 {{count}} 处可疑",
+    "allow": "我看过了，可以打开"
+  },
+  "deleteAsk": "要删掉“{{name}}”这个技能吗？",
+  "source": {
+    "builtin": "自带",
+    "savedBy": "{{name}} 存的",
+    "installed": "装的"
+  },
+  "needsReview": "需要看一眼",
+  "reviewed": "看过了 ✓",
+  "files_other": "{{count}} 个文件",
+  "read": "看看 SKILL.md",
+  "empty": "还没有技能——在上面装一个吧。",
+  "discover": {
+    "title": "🔭 发现技能",
+    "body": "从 <a1>skills.sh</a1> 和 <a2>SkillsMP</a2> 上搜成千上万的开源技能。助理们缺什么本事的时候，也会自己来这儿找。",
+    "placeholder": "PDF 表格、Notion、Excel 图表、便宜机票…",
+    "chips": {
+      "pdf": "PDF", "excel": "Excel", "slides": "幻灯片", "notion": "Notion",
+      "travel": "旅行", "email": "邮件", "research": "调研", "design": "设计"
+    },
+    "nothing": "没找到——换几个词试试。",
+    "official": "官方",
+    "installed": "已安装",
+    "installs": "安装次数",
+    "stars": "GitHub 星标",
+    "preview": "先看看",
+    "from": "{{source}} · 来自 {{from}}",
+    "sourceLink": "来源"
+  }
+}

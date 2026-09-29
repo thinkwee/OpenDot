@@ -1,0 +1,68 @@
+{
+  "save": "Save",
+  "cancel": "Cancel",
+  "close": "Close",
+  "delete": "Delete",
+  "edit": "Edit",
+  "back": "Back",
+  "loading": "Loading…",
+  "on": "On",
+  "off": "Off",
+  "retry": "Try again",
+  "copy": "Copy",
+  "copied": "Copied",
+  "language": "Language",
+  "time": {
+    "now": "just now",
+    "min": "{{n}}m",
+    "hour": "{{n}}h"
+  },
+  "nav": {
+    "agents": "Agents",
+    "inbox": "Inbox",
+    "settings": "Settings",
+    "whatIs": "What is OpenDot?",
+    "calendar": "Calendar",
+    "todo": "Todo",
+    "examples": "Ideas to steal"
+  },
+  "status": {
+    "idle": "idle",
+    "thinking": "thinking…",
+    "working": "working",
+    "waiting": "waiting for you",
+    "sleeping": "sleeping",
+    "error": "hit a snag",
+    "live": "live",
+    "reconnecting": "reconnecting"
+  },
+  "tools": {
+    "shell": "ran",
+    "python": "ran Python",
+    "read_file": "read",
+    "write_file": "wrote",
+    "list_files": "looked at files",
+    "web_search": "searched",
+    "web_fetch": "read",
+    "browser": "browser",
+    "remember": "remembered",
+    "forget": "forgot",
+    "notify": "told you",
+    "publish_page": "made a page",
+    "schedule": "set a routine",
+    "list_automations": "checked routines",
+    "cancel_automation": "stopped a routine",
+    "handoff": "handed off to",
+    "delegate": "brought in helpers",
+    "send_email": "email",
+    "watch": "started watching",
+    "watch_done": "stopped watching",
+    "offer_choices": "offered",
+    "create_agent": "set someone up",
+    "inParallel": "{{n}} at once"
+  },
+  "errors": {
+    "generic": "Hmm, that didn't work: {{msg}}",
+    "sendFailed": "Couldn't send: {{msg}}"
+  }
+}

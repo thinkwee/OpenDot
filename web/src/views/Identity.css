@@ -1,0 +1,94 @@
+.id-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.id-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow .15s, border-color .15s;
+}
+.id-card.on {
+  border-color: var(--accent2);
+  box-shadow: var(--shadow);
+}
+.id-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.id-card-info b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id-detail-head {
+  align-items: center;
+  margin-bottom: 10px;
+}
+.id-detail h4 {
+  margin: 18px 0 8px;
+}
+.id-detail h4:first-of-type {
+  margin-top: 14px;
+}
+
+.id-tabs {
+  max-width: 460px;
+}
+
+.id-recent-row {
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--line);
+  color: var(--ink2);
+}
+.id-recent-row:last-child {
+  border-bottom: none;
+}
+
+
+@media (max-width: 480px) {
+  .id-cards {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+/* setup wizards (mailbox, Twilio) */
+.wz-q { margin: 12px 0 6px; font-weight: 700; }
+.wz-box {
+  background: var(--panel2);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.wz-steps { margin: 4px 0 8px; padding-left: 20px; }
+.wz-steps li { margin: 3px 0; }
+.wz-warn { color: var(--bad); }
+.wz-ok { color: var(--ok); }
+.wz-srv { align-items: center; }
+.wz-srv > b { min-width: 110px; }
+.wz-result {
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+.wz-line { padding: 5px 0; font-size: 13px; }
+.wz-line.ok b { color: var(--ok); }
+.wz-line.bad b { color: var(--bad); }
+.wz-detail { display: block; margin-top: 2px; word-break: break-word; }
+.wz-h { margin: 14px 0 6px; }
+.wz-num {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+  flex-wrap: wrap;
+}
+.wz-num:last-child { border-bottom: none; }
+.wz-num .grow { min-width: 180px; }

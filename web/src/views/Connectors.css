@@ -1,0 +1,30 @@
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+.cat-card {
+  border: 1.5px solid var(--line);
+  border-radius: var(--r, 14px);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel);
+  min-width: 0;
+}
+.cat-card.on {
+  grid-column: 1 / -1;
+  border-color: var(--accent2);
+}
+.cat-card > .btn { align-self: flex-start; }
+.cat-top { align-items: flex-start; }
+.cat-emoji { font-size: 24px; line-height: 1; }
+.cat-blurb { margin: 0; }
+.cat-form { display: flex; flex-direction: column; gap: 10px; }
+.cat-field { display: flex; flex-direction: column; gap: 4px; }
+.cat-field .input { flex: 1; min-width: 0; }
+.cat-warn { color: var(--bad); margin: 0; }
+@media (max-width: 480px) {
+  .cat-grid { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,21 @@
+{
+  "kind": { "report": "Report", "note": "Note", "email": "Email", "sms": "Text", "approval": "Approval" },
+  "src": { "heartbeat": "💓 heartbeat" },
+  "title": "Inbox",
+  "subtitle": "What your agents did while you were away, and what needs your OK.",
+  "markAll": "Mark all read",
+  "clearRead": "Clear read",
+  "clearReadTitle": "Remove everything you've already read",
+  "caughtUp": "✓ All caught up",
+  "cleared": "🧹 Cleared {{count}}",
+  "nothingToClear": "Nothing to clear",
+  "needsOk": "Needs your OK",
+  "updates": "Updates",
+  "all": "All",
+  "unread": "Unread",
+  "emptyUnread": "Nothing unread — all caught up.",
+  "empty": "All quiet. Turn on a heartbeat for an agent, or set up a routine.",
+  "noDetails": "_(no details)_",
+  "openThread": "Open “{{title}}”",
+  "openChat": "Open chat"
+}

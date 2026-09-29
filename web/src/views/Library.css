@@ -1,0 +1,3 @@
+/* View-specific tweaks for Library.jsx (most card styling lives in components/Deliverable.css). */
+.lib-toolbar select.input { padding-right: 8px; }
+.lib-agent-chip { display: inline-flex; align-items: center; gap: 4px; padding-left: 2px; }
