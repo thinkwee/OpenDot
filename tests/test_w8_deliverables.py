@@ -63,6 +63,20 @@ def test_make_document_docx_attaches_and_records_row():
     assert ctx.extra["attachments"][0]["id"] == r["id"]
 
 
+def test_docx_turns_markdown_tables_into_real_tables(tmp_path):
+    from docx import Document
+    out = tmp_path / "t.docx"
+    D._md_to_docx("## Overview\n\n| State | Count |\n|---|---:|\n| **Done** | 13 |\n"
+                  "| a \\| b | 6 |\nAfter the table.", out)
+    d = Document(out)
+    assert len(d.tables) == 1
+    rows = [[c.text for c in r.cells] for r in d.tables[0].rows]
+    assert rows == [["State", "Count"], ["Done", "13"], ["a | b", "6"]]
+    assert d.tables[0].rows[0].cells[0].paragraphs[0].runs[0].bold
+    assert not any("|" in p.text for p in d.paragraphs)
+    assert "After the table." in [p.text for p in d.paragraphs]
+
+
 def test_make_document_md_format():
     ag = _agent()
     ctx = _ctx(ag)

@@ -151,8 +151,15 @@ def _md_to_docx(markdown_text: str, out: Path, title: str = "") -> None:
     doc = Document()
     if title:
         doc.add_heading(title, level=0)
-    for line in markdown_text.splitlines():
+    rows: list[str] = []  # a markdown table being read, added when it ends
+    for line in markdown_text.splitlines() + [""]:
         stripped = line.strip()
+        if stripped.startswith("|"):
+            rows.append(stripped)
+            continue
+        if rows:
+            _add_table(doc, rows)
+            rows = []
         if not stripped:
             continue
         m = re.match(r"^(#{1,4})\s+(.*)", stripped)
@@ -167,6 +174,28 @@ def _md_to_docx(markdown_text: str, out: Path, title: str = "") -> None:
         else:
             _add_runs(doc.add_paragraph(), stripped)
     doc.save(out)
+
+
+def _cells(row: str) -> list[str]:
+    return [c.strip() for c in re.split(r"(?<!\\)\|", row.strip().strip("|"))]
+
+
+def _add_table(doc, rows: list[str]) -> None:
+    body = [_cells(r) for r in rows if not re.fullmatch(r"[|:\-\s]+", r)]
+    if not body:
+        return
+    width = max(len(r) for r in body)
+    table = doc.add_table(rows=len(body), cols=width)
+    table.style = "Table Grid"
+    for i, cells in enumerate(body):
+        for j in range(width):
+            p = table.cell(i, j).paragraphs[0]
+            text = cells[j].replace("\\|", "|") if j < len(cells) else ""
+            if i == 0 and len(rows) > 1 and re.fullmatch(r"[|:\-\s]+", rows[1]):
+                p.add_run(re.sub(r"\*\*(.+?)\*\*", r"\1", text)).bold = True  # header row
+            else:
+                _add_runs(p, text)
+    doc.add_paragraph()
 
 
 def _wrap_html(body: str, title: str = "") -> str:
