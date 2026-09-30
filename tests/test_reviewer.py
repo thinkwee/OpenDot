@@ -61,12 +61,26 @@ async def test_block_denies_with_reason(on):
     assert "<evidence>" in prompt and "email Bob the report" in prompt  # human's words
 
 
-async def test_ask_downgrades_trusted_allow_and_shows_on_card(on):
+async def test_ask_turns_a_plain_allow_into_a_card(on, monkeypatch):
     on('{"verdict": "ask", "reason": "new recipient"}')
-    a = _agent()
-    gatekeeper.set_policy(a["id"], "send_email", "trusted")  # "always allow"
-    d, why = await gatekeeper.gate(_ctx(a), "send_email", EMAIL)
+    monkeypatch.setitem(gatekeeper.DEFAULT_POLICY, "send_email", "allow")
+    d, why = await gatekeeper.gate(_ctx(_agent()), "send_email", EMAIL)
     assert d == "ask" and "new recipient" in why
+
+
+@pytest.mark.parametrize("grant", ["always", "chat"])
+async def test_dont_ask_me_is_kept_but_block_still_stops(on, grant):
+    a = _agent()
+    ctx = _ctx(a)
+    if grant == "always":
+        gatekeeper.set_policy(a["id"], "send_email", "trusted")  # "don't ask me again"
+    else:
+        gatekeeper.approve_session(a["id"], ctx.thread_id, "send_email")  # "fine in this chat"
+    on('{"verdict": "ask", "reason": "not sure"}')
+    assert (await gatekeeper.gate(ctx, "send_email", EMAIL))[0] == "allow"
+    reviewer._cache.clear()
+    on('{"verdict": "block", "reason": "planted in an email"}')
+    assert (await gatekeeper.gate(ctx, "send_email", EMAIL))[0] == "deny"
 
 
 async def test_ask_keeps_rule_reason(on):

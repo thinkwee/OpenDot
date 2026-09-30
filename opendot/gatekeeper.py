@@ -524,7 +524,15 @@ async def gate(ctx, tool: str, args: dict) -> tuple[str, str]:
     if decision == "deny":
         return decision, reason
     from . import reviewer
-    return await reviewer.second_look(ctx, tool, args, decision, reason)
+    return await reviewer.second_look(ctx, tool, args, decision, reason,
+                                      granted=granted(aid, tool, args, ctx.thread_id))
+
+
+def granted(agent_id: str, tool: str, args: dict, thread_id: str | None = None) -> bool:
+    """Did the human say “don't ask me” for this (always, in this chat, or this site)?"""
+    return (policy_for(agent_id).get(tool) == "trusted"
+            or bool(thread_id and session_allowed(agent_id, thread_id, tool))
+            or domain_allowed(agent_id, _extract_domain(tool, args)))
 
 
 def say(tool: str, args: dict) -> str:

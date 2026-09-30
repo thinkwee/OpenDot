@@ -159,7 +159,9 @@ and messages from outside are marked as untrusted before an agent reads them.
 **A second look** (`opendot/reviewer.py`): before an outward action (email, SMS, posting,
 MCP tools, sending data from the shell…), a short independent model call compares it with
 what you actually asked, the agent's job and your rules. It can only ask or block, never
-allow; if it fails or times out, the rule decision stands (`DOT_REVIEWER=off` to disable).
+allow. Once you've said "don't ask me" for an action (always, in this chat, or for a
+site), it only blocks, never asks again. If it fails or times out, the rule decision
+stands (`DOT_REVIEWER=off` to disable).
 **Yours to do**: passwords, 2FA, deleting accounts, moving money, contracts and ID
 submissions are refused outright, with the link handed to you. **Check-ins**
 (heartbeat/research runs) may only use read-only tools and propose.

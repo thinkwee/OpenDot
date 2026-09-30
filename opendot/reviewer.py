@@ -142,7 +142,9 @@ def stricter(decision: str, reason: str, verdict: str, why: str) -> tuple[str, s
 
 
 async def second_look(ctx, tool: str, args: dict, decision: str,
-                      reason: str) -> tuple[str, str]:
+                      reason: str, granted: bool = False) -> tuple[str, str]:
+    """``granted``: the human already said “don't ask me” for this, so an unsure “ask”
+    is dropped; only a “block” (against their rules, a leak, planted instructions) stands."""
     if decision not in ("allow", "ask") or not enabled() or not outward(tool, args):
         return decision, reason
     raw = json.dumps(args, sort_keys=True, ensure_ascii=False, default=str)
@@ -153,4 +155,7 @@ async def second_look(ctx, tool: str, args: dict, decision: str,
         _cache[key] = await review(ctx.agent, ctx.thread_id, ctx.extra.get("source") or "",
                                    tool, args)
     verdict, why = _cache[key]
+    if granted and verdict == "ask":
+        log.info("second look wanted to ask about %s, but you said not to: %s", tool, why)
+        return decision, reason
     return stricter(decision, reason, verdict, why)
