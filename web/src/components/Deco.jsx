@@ -40,7 +40,8 @@ const PRESETS = {
     ['plus', 12, 60, 12, 0, 'spin'], ['dots', 86, 36, 18, 0, 'float'],
   ],
   rail: [
-    ['circle', 18, 30, 10, 0, 'float'], ['triline', 60, 52, 14, 10, 'spin'], ['squig', 10, 70, 26, 0, 'drift'], ['plus', 64, 84, 10, 0, 'spin'],
+    // kept clear of the nav buttons, and no solid dot: next to a button it reads as "unread"
+    ['ring', 22, 58, 12, 0, 'float'], ['triline', 60, 50, 14, 10, 'spin'], ['squig', 10, 68, 26, 0, 'drift'], ['plus', 64, 76, 10, 0, 'spin'],
   ],
 }
 
