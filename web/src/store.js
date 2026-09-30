@@ -271,13 +271,17 @@ function handle(ev) {
     case 'thread':
       store.set({ threads: upsert(s.threads, ev.thread) })
       break
+    case 'thread_gone':
+      store.set({ threads: s.threads.filter((t) => t.id !== ev.thread_id) })
+      if (location.hash.includes(ev.thread_id)) location.hash = '#/chats'
+      break
     case 'worker':
       store.set({ workers: { ...s.workers, [ev.worker_id + ':' + ev.title]: ev } })
       break
     case 'approval': {
       const ap = ev.approval
       const approvals = ap.status === 'pending' ? upsert(s.approvals, ap) : s.approvals.filter((a) => a.id !== ap.id)
-      store.set({ approvals, inboxUnread: ap.status === 'pending' ? s.inboxUnread + 1 : s.inboxUnread })
+      store.set({ approvals })
       break
     }
     case 'inbox':

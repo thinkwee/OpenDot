@@ -441,7 +441,8 @@ async def _publish_page(ctx: Ctx, slug: str, html: str, title: str = "") -> dict
 
 
 # ---------------- receipts ----------------
-_RECEIPT_RE = re.compile(r"^(send_email|send_sms|create_event|device_.+)$")
+# create_event: an event a calendar app added (mcp__<app>__create_event)
+_RECEIPT_RE = re.compile(r"^(send_email|send_sms|(mcp__.+__)?create_event|device_.+)$")
 
 
 def _receipt_title(tool: str, args: dict) -> str:
@@ -449,7 +450,7 @@ def _receipt_title(tool: str, args: dict) -> str:
         return f"✉️ Email sent to {args.get('to', '?')}"
     if tool == "send_sms":
         return f"📱 SMS sent to {args.get('to', '?')}"
-    if tool == "create_event":
+    if tool.endswith("create_event"):
         return f"📅 Event created: {args.get('title') or args.get('summary') or '(untitled)'}"
     if tool.startswith("device_"):
         return f"🖥️ Device action: {tool.replace('device_', '')}"

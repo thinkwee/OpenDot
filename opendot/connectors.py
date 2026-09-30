@@ -1,16 +1,23 @@
 """Connectors: how OpenDot plugs into your other apps.
 
-1. MCP servers (stdio or streamable-HTTP) — their tools appear as ``mcp__<server>__<tool>``
-   and are gated by the Gatekeeper ("ask" by default until you trust them).
-2. Inbound events — webhooks (``POST /hook/<token>/<source>``), the iOS Share
-   Sheet / Shortcuts (``source=share``), and RSS feeds polled in the background.
-   Events wake up any automation whose ``event_filter`` matches.
+1. Apps (MCP servers) — local ones run as a program on this computer (stdio); online
+   ones are reached over HTTPS (streamable HTTP, or the older SSE), signed in with a
+   token or with the app's own "Sign in → Allow" page (OAuth, see ``mcp_oauth.py``).
+   Their tools appear as ``mcp__<app>__<tool>``, only for the agents you let use that
+   app, and go through the Gatekeeper like everything else.
+2. Inbound events — webhooks (``POST /hook/<token>/<source>``), the Share Sheet /
+   Shortcuts (``source=share``), and RSS feeds polled in the background. Events wake up
+   any automation whose ``event_filter`` matches.
 
 Config lives in data/connectors.json:
-{"mcp": {"github": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"],
-                    "env": {"GITHUB_TOKEN": "{{vault:GITHUB_TOKEN}}"}},
-         "notion": {"url": "https://mcp.notion.com/mcp"}},
- "rss":  {"hn": "https://news.ycombinator.com/rss"}}
+{"mcp": {"notion": {"url": "https://mcp.notion.com/mcp", "auth": "oauth",
+                    "app": "notion", "agents": ["ag_…"]},
+         "files": {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "~/Notes"],
+                   "agents": "all"}},
+ "rss":  {"news": "https://example.com/rss"}}
+
+``agents`` is who may use the app: a list of agent ids, or "all". Anything else in a
+spec (label, app, disabled) is for the UI.
 """
 
 from __future__ import annotations
@@ -19,6 +26,7 @@ import asyncio
 import contextlib
 import fnmatch
 import json
+import re
 import logging
 import time
 import xml.etree.ElementTree as ET
@@ -30,84 +38,347 @@ from .config import settings
 from .db import db, new_id
 
 log = logging.getLogger("opendot.connectors")
+CONNECT_TIMEOUT = 45  # seconds for a background (re)connect; a sign-in waits for you
 
 
 def load_config() -> dict:
     p = settings.DATA_DIR / "connectors.json"
     if not p.exists():
         p.write_text(json.dumps({"mcp": {}, "rss": {}}, indent=2))
-    return json.loads(p.read_text())
+    cfg = json.loads(p.read_text())
+    cfg.setdefault("mcp", {})
+    cfg.setdefault("rss", {})
+    if _upgrade(cfg):
+        save_config(cfg)
+    return cfg
+
+
+# Google's Gmail / Calendar / Drive MCP servers only answer projects in its Workspace
+# preview programme; apps added through them now use the built-in ones (same sign-in)
+_GOOGLE_MCP = {"https://gmailmcp.googleapis.com/mcp/v1": "gmail",
+               "https://calendarmcp.googleapis.com/mcp/v1": "google_calendar",
+               "https://drivemcp.googleapis.com/mcp/v1": "google_drive"}
+
+
+def _upgrade(cfg: dict) -> bool:
+    changed = False
+    for spec in cfg["mcp"].values():
+        kind = _GOOGLE_MCP.get(spec.get("url") or "")
+        if kind:
+            for k in ("url", "auth", "oauth_client", "headers", "transport", "tools"):
+                spec.pop(k, None)
+            spec["builtin"] = kind
+            changed = True
+    return changed
 
 
 def save_config(cfg: dict) -> None:
-    (settings.DATA_DIR / "connectors.json").write_text(json.dumps(cfg, indent=2))
+    p = settings.DATA_DIR / "connectors.json"
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(json.dumps(cfg, indent=2, ensure_ascii=False))
+    tmp.replace(p)
+
+
+def can_use(spec: dict, agent_id: str) -> bool:
+    """May this agent (or one of its ``<id>-wN`` helpers) use this app?"""
+    who = spec.get("agents", "all")
+    base = agent_id.split("-w")[0]
+    return who == "all" or base in (who or [])
+
+
+class NeedsSignIn(Exception):
+    """An app wants you to sign in again and nobody is at the screen to do it."""
+
+
+class Server:
+    """One app's live connection. It runs in its own task, because the MCP transports
+    must be entered and left in the same task; calls reach it through the session."""
+
+    def __init__(self, name: str, spec: dict) -> None:
+        self.name, self.spec = name, spec
+        self.status = "connecting"   # connecting | sign_in | connected | error | off
+        self.error = ""
+        self.tools: dict[str, dict] = {}  # full name -> {tool, schema, annotations, title}
+        self.session = None
+        self.info: dict = {}
+        self.auth_url = ""           # set while waiting for you to sign in
+        self.task: asyncio.Task | None = None
+        self.stop = asyncio.Event()
+        self.ready = asyncio.Event()  # connected, failed, or waiting for a sign-in
+
+    def public(self) -> dict:
+        return {"status": self.status, "error": self.error, "auth_url": self.auth_url,
+                "tools": [{"name": t["tool"], "title": t["title"], "description": t["description"],
+                           "read_only": t["read_only"], "destructive": t["destructive"]}
+                          for t in self.tools.values()],
+                "server": self.info}
 
 
 class MCPHub:
     def __init__(self) -> None:
-        self.sessions: dict[str, object] = {}
-        self.tools: dict[str, dict] = {}       # full name -> {server, tool, schema}
-        self.status: dict[str, str] = {}
-        self._stack: contextlib.AsyncExitStack | None = None
+        self.servers: dict[str, Server] = {}
+
+    # ---- compatibility views used by the rest of the app
+    @property
+    def status(self) -> dict[str, str]:
+        return {n: (s.status if s.status != "error" else f"error: {s.error}")
+                for n, s in self.servers.items()}
+
+    @property
+    def tools(self) -> dict[str, dict]:
+        return {k: v for s in self.servers.values() if s.status == "connected"
+                for k, v in s.tools.items()}
 
     async def start(self) -> None:
-        await self.stop()
-        self._stack = contextlib.AsyncExitStack()
-        from .gatekeeper import inject_secrets
-        for name, spec in load_config().get("mcp", {}).items():
-            spec = inject_secrets(spec)
-            try:
-                await asyncio.wait_for(self._connect(name, spec), 40)
-                self.status[name] = "connected"
-            except Exception as e:
-                log.warning("MCP %s failed: %s", name, e)
-                self.status[name] = f"error: {e}"[:200]
+        """Connect every app in data/connectors.json, each on its own."""
+        await self.stop_all()
+        for name, spec in load_config()["mcp"].items():
+            if not spec.get("disabled"):
+                self.launch(name, spec)
+
+    def launch(self, name: str, spec: dict, interactive: dict | None = None) -> Server:
+        """(Re)start one app's connection. ``interactive`` = {"redirect_uri": …} when
+        you're at the screen and can sign in; otherwise a needed sign-in just marks it."""
+        old = self.servers.get(name)
+        if old and old.task and not old.task.done():
+            old.stop.set()
+            old.task.cancel()
+        srv = Server(name, spec)
+        self.servers[name] = srv
+        srv.task = asyncio.create_task(self._run(srv, interactive))
+        return srv
+
+    async def remove(self, name: str) -> None:
+        srv = self.servers.pop(name, None)
+        if srv and srv.task:
+            srv.stop.set()
+            srv.task.cancel()
+            with contextlib.suppress(BaseException):
+                await asyncio.wait_for(srv.task, 5)
         bus.emit("connectors", status=self.status)
 
-    async def _connect(self, name: str, spec: dict) -> None:
+    async def _run(self, srv: Server, interactive: dict | None) -> None:
+        from .gatekeeper import inject_secrets
+        spec = inject_secrets(srv.spec)
+        try:
+            timeout = None if interactive else CONNECT_TIMEOUT
+            async with contextlib.AsyncExitStack() as stack:
+                session = await asyncio.wait_for(
+                    self._open(stack, srv, spec, interactive), timeout)
+                srv.session = session
+                await self._load_tools(srv, session)
+                srv.status, srv.error, srv.auth_url = "connected", "", ""
+                srv.ready.set()
+                bus.emit("connectors", status=self.status, app=srv.name)
+                await srv.stop.wait()
+        except asyncio.CancelledError:
+            raise
+        except BaseException as e:  # noqa: BLE001 — anything a transport throws
+            err = _root(e)
+            if isinstance(err, NeedsSignIn):
+                srv.status, srv.error = "sign_in", ""
+            else:
+                srv.status, srv.error = "error", _explain(err)
+                log.warning("app %s: %s", srv.name, srv.error)
+            srv.ready.set()
+            bus.emit("connectors", status=self.status, app=srv.name)
+        finally:
+            srv.session = None
+
+    async def _open(self, stack: contextlib.AsyncExitStack, srv: Server, spec: dict,
+                    interactive: dict | None):
         from mcp import ClientSession
-        if spec.get("url"):
-            from mcp.client.streamable_http import streamablehttp_client
-            read, write, _ = await self._stack.enter_async_context(
-                streamablehttp_client(spec["url"], headers=spec.get("headers")))
+        from mcp.types import Implementation
+        if spec.get("builtin"):  # an app that lives inside OpenDot (builtin_apps.py)
+            from mcp.client._memory import InMemoryTransport
+
+            from .builtin_apps import BUILTINS, signed_in
+            if not signed_in(spec["builtin"], srv.name):
+                raise NeedsSignIn()
+            read, write = await stack.enter_async_context(
+                InMemoryTransport(BUILTINS[spec["builtin"]](srv.name, spec)))
+        elif spec.get("url"):
+            from mcp.shared._httpx_utils import create_mcp_http_client
+            auth = None
+            if spec.get("auth") == "oauth":
+                from .mcp_oauth import provider_for, signed_in
+                if not interactive and not signed_in(srv.name):
+                    raise NeedsSignIn()  # never signed in: wait for you to press Connect
+                auth = provider_for(srv, spec, interactive)
+            headers = {k: v for k, v in (spec.get("headers") or {}).items() if v}
+            url = spec["url"]
+            if spec.get("transport") == "sse" or url.rstrip("/").endswith("/sse"):
+                from mcp.client.sse import sse_client
+                read, write = await stack.enter_async_context(
+                    sse_client(url, headers=headers, auth=auth, timeout=30))
+            else:
+                from mcp.client.streamable_http import streamable_http_client
+                client = await stack.enter_async_context(
+                    create_mcp_http_client(headers=headers, auth=auth))
+                if auth is not None:
+                    from .mcp_oauth import sign_in_first
+                    client._transport = sign_in_first(client._transport, srv.name, url)
+                read, write = await stack.enter_async_context(
+                    streamable_http_client(url, http_client=client))
         else:
             from mcp import StdioServerParameters
             from mcp.client.stdio import stdio_client
-            params = StdioServerParameters(command=spec["command"], args=spec.get("args", []),
-                                           env=spec.get("env") or None)
-            read, write = await self._stack.enter_async_context(stdio_client(params))
-        session = await self._stack.enter_async_context(ClientSession(read, write))
-        await session.initialize()
-        self.sessions[name] = session
-        for t in (await session.list_tools()).tools:
-            full = f"mcp__{name}__{t.name}"[:64]
-            self.tools[full] = {"server": name, "tool": t.name, "schema": {
-                "type": "function", "function": {
-                    "name": full, "description": f"[{name}] {(t.description or '')[:400]}",
+            import os
+            cwd = spec.get("cwd") or str(settings.DATA_DIR)
+            args = [os.path.expanduser(a) for a in spec.get("args", [])]
+            params = StdioServerParameters(command=spec["command"], args=args,
+                                           env=spec.get("env") or None, cwd=cwd)
+            errlog = open(settings.DATA_DIR / "logs-apps.txt", "a")  # noqa: SIM115
+            stack.callback(errlog.close)
+            read, write = await stack.enter_async_context(stdio_client(params, errlog=errlog))
+        session = await stack.enter_async_context(ClientSession(
+            read, write, client_info=Implementation(name="OpenDot", version="0.2")))
+        res = await session.initialize()
+        info = getattr(res, "server_info", None) or getattr(res, "serverInfo", None)
+        if info is not None:
+            srv.info = {"name": getattr(info, "name", ""), "version": getattr(info, "version", "")}
+        return session
+
+    async def _load_tools(self, srv: Server, session) -> None:
+        tools, cursor = [], None
+        for _ in range(20):  # paginated
+            res = await (session.list_tools(cursor=cursor) if cursor else session.list_tools())
+            tools += res.tools
+            cursor = getattr(res, "next_cursor", None) or getattr(res, "nextCursor", None)
+            if not cursor:
+                break
+        srv.tools = {}
+        for t in tools:
+            full = _full_name(srv.name, t.name)
+            ann = t.annotations
+            ro = bool(ann and (getattr(ann, "read_only_hint", None) or getattr(ann, "readOnlyHint", None)))
+            destr = getattr(ann, "destructive_hint", None) if ann else None
+            if destr is None and ann:
+                destr = getattr(ann, "destructiveHint", None)
+            title = (getattr(t, "title", None) or (ann and getattr(ann, "title", None)) or t.name)
+            srv.tools[full] = {
+                "server": srv.name, "tool": t.name, "title": title,
+                "description": _plain(t.description or "")[:600], "read_only": ro,
+                "destructive": bool(destr) if not ro else False,
+                "schema": {"type": "function", "function": {
+                    "name": full, "description": f"[{srv.spec.get('label') or srv.name}] "
+                                                 f"{(t.description or title)[:400]}",
                     "parameters": _schema(t)}}}
 
-    def tool_defs(self) -> list[dict]:
-        return [t["schema"] for t in self.tools.values()]
+    # ---- used by the agent loop
+    def tool_defs(self, agent_id: str | None = None) -> list[dict]:
+        return [t["schema"] for s in self.servers.values() if s.status == "connected"
+                and (agent_id is None or can_use(s.spec, agent_id))
+                for t in s.tools.values()]
 
-    async def call(self, full: str, args: dict) -> dict:
+    def tool_info(self, full: str) -> dict | None:
+        return self.tools.get(full)
+
+    def apps_for(self, agent_id: str) -> list[dict]:
+        """The apps this agent may use, connected or not (for its system prompt)."""
+        out = []
+        for name, spec in load_config()["mcp"].items():
+            if spec.get("disabled") or not can_use(spec, agent_id):
+                continue
+            srv = self.servers.get(name)
+            out.append({"name": name, "label": spec.get("label") or name,
+                        "status": srv.status if srv else "off"})
+        return out
+
+    async def call(self, full: str, args: dict, agent_id: str | None = None) -> dict:
         t = self.tools.get(full)
         if not t:
-            return {"error": f"connector tool {full} is not available"}
-        res = await self.sessions[t["server"]].call_tool(t["tool"], args)
-        texts = [getattr(c, "text", "") for c in res.content]
+            return {"error": f"the app for {full} isn't connected right now"}
+        srv = self.servers[t["server"]]
+        if agent_id and not can_use(srv.spec, agent_id):
+            return {"error": "this agent isn't allowed to use that app"}
+        try:
+            res = await asyncio.wait_for(srv.session.call_tool(t["tool"], args), 180)
+        except Exception as e:  # noqa: BLE001
+            err = _root(e)
+            if isinstance(err, NeedsSignIn):
+                srv.status = "sign_in"
+                bus.emit("connectors", status=self.status, app=srv.name)
+                return {"error": f"{srv.spec.get('label') or srv.name} needs you to sign in again "
+                                 "(Settings → Apps)."}
+            return {"error": _explain(err)}
+        parts = []
+        for c in res.content:
+            if getattr(c, "text", None):
+                parts.append(c.text)
+            elif getattr(c, "type", "") == "resource" and getattr(c, "resource", None) is not None:
+                parts.append(getattr(c.resource, "text", "") or str(getattr(c.resource, "uri", "")))
+        structured = getattr(res, "structured_content", None) or getattr(res, "structuredContent", None)
+        if not parts and structured:
+            parts.append(json.dumps(structured, ensure_ascii=False))
         is_err = getattr(res, "is_error", None)
         if is_err is None:
             is_err = getattr(res, "isError", False)
-        return {"result": "\n".join(x for x in texts if x)[:16000], "is_error": bool(is_err)}
+        text = "\n".join(parts)
+        if is_err and (srv.spec.get("auth") == "oauth" or srv.spec.get("builtin")) \
+                and _SIGNED_OUT.search(text):
+            # the app took the connection but not the sign-in (revoked, or never finished)
+            srv.status = "sign_in"
+            bus.emit("connectors", status=self.status, app=srv.name)
+            return {"error": f"{srv.spec.get('label') or srv.name} needs you to sign in again "
+                             "(Settings → Apps)."}
+        return {"result": "\n".join(x for x in parts if x)[:16000], "is_error": bool(is_err)}
 
-    async def stop(self) -> None:
-        if self._stack:
-            with contextlib.suppress(Exception):
-                await self._stack.aclose()
-        self._stack = None
-        self.sessions.clear()
-        self.tools.clear()
-        self.status.clear()
+    async def stop_all(self) -> None:
+        for name in list(self.servers):
+            srv = self.servers.pop(name)
+            if srv.task:
+                srv.stop.set()
+                srv.task.cancel()
+        await asyncio.sleep(0)
+
+    async def stop(self) -> None:  # server shutdown
+        await self.stop_all()
+
+
+_SIGNED_OUT = re.compile(r"needs you to sign in again|missing required authentication|invalid authentication credentials|"
+                         r"UNAUTHENTICATED|invalid_grant|token (has )?(expired|been revoked)", re.I)
+
+
+def _full_name(server: str, tool: str) -> str:
+    full = f"mcp__{server}__{tool}"
+    if len(full) <= 64:
+        return full
+    import hashlib
+    return full[:55] + "_" + hashlib.sha1(full.encode()).hexdigest()[:8]
+
+
+def _plain(text: str) -> str:
+    """A tool description as one readable line (servers often write Markdown)."""
+    import re
+    text = re.sub(r"`{1,3}|\*\*|__|^#+\s*|\s#+\s", " ", text, flags=re.M)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _root(e: BaseException) -> BaseException:
+    """The first real error inside anyio/asyncio exception groups and timeouts."""
+    while isinstance(e, BaseExceptionGroup) and e.exceptions:
+        e = e.exceptions[0]
+    return e
+
+
+def _explain(e: BaseException) -> str:
+    """One line a person can act on."""
+    name, msg = type(e).__name__, str(e)
+    low = msg.lower()
+    if isinstance(e, (asyncio.TimeoutError, TimeoutError)):
+        return "it didn't answer in time"
+    if isinstance(e, FileNotFoundError):
+        return f"can't find “{e.filename or msg}” on this computer — is it installed?"
+    if "401" in msg or "unauthorized" in low or "invalid_token" in low:
+        return "the app didn't accept the sign-in or token"
+    if "403" in msg or "forbidden" in low:
+        return "the app refused access (check the token's permissions)"
+    if "404" in msg:
+        return "nothing answered at that address"
+    if "connect" in low or name in ("ConnectError", "ConnectTimeout"):
+        return "couldn't reach it — check the address and your internet connection"
+    return (msg or name)[:240]
 
 
 def _schema(tool) -> dict:
@@ -165,208 +436,3 @@ async def rss_loop() -> None:
         await asyncio.sleep(900)
 
 
-# ---------------- app catalog ----------------
-# A short, curated list of MCP servers that are official (made by the app's own team)
-# or the MCP project's reference servers. Each entry says exactly what runs, what it
-# needs installed (Node for npx, uv for uvx), and which token to paste where. "{key}"
-# in command/args/env/url/headers is filled from the entry's fields; secret fields go
-# to the vault and are written as {{vault:NAME}}. Nothing here is OAuth: where an app
-# offers a hosted server we use its personal-token option.
-def _f(key, en, zh, *, secret=False, placeholder="", link="", help_en="", help_zh="",
-       optional=False, default=""):
-    return {"key": key, "label": {"en": en, "zh": zh}, "secret": secret,
-            "placeholder": placeholder, "link": link, "optional": optional,
-            "default": default, "help": {"en": help_en, "zh": help_zh}}
-
-
-CATALOG_CATEGORIES = [
-    {"id": "files", "label": {"en": "Files & notes", "zh": "文件和笔记"}},
-    {"id": "work", "label": {"en": "Work & tasks", "zh": "工作和待办"}},
-    {"id": "web", "label": {"en": "The web", "zh": "上网"}},
-    {"id": "home", "label": {"en": "Home", "zh": "家里"}},
-    {"id": "other", "label": {"en": "Anything else", "zh": "其他"}},
-]
-
-CATALOG: list[dict] = [
-    {"id": "files", "category": "files", "emoji": "📁", "needs": "node",
-     "name": {"en": "A folder", "zh": "一个文件夹"},
-     "blurb": {"en": "Let your agents read and tidy one folder on this computer — and nothing "
-                     "outside it.",
-               "zh": "让助理读写这台电脑上的某个文件夹，别的地方一概碰不到。"},
-     "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "{folder}"],
-     "fields": [_f("folder", "Folder path", "文件夹路径", placeholder="/Users/me/Documents")],
-     "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem"},
-    {"id": "obsidian", "category": "files", "emoji": "🟣", "needs": "node",
-     "name": {"en": "Obsidian vault", "zh": "Obsidian 笔记库"},
-     "blurb": {"en": "Your notes are just Markdown files, so this hands your vault folder to "
-                     "your agents: search, read, jot things down.",
-               "zh": "Obsidian 的笔记就是一堆 Markdown 文件，"
-                     "把笔记库文件夹交给助理：能搜、能读、能记。"},
-     "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "{folder}"],
-     "fields": [_f("folder", "Vault folder", "笔记库文件夹",
-                   placeholder="/Users/me/Obsidian/MyVault")],
-     "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/filesystem"},
-    {"id": "notion", "category": "files", "emoji": "📝", "needs": "node",
-     "name": {"en": "Notion", "zh": "Notion"},
-     "blurb": {"en": "Search, read and write the Notion pages you share with it. Notion's own "
-                     "server.",
-               "zh": "搜索、阅读、编辑你分享给它的 Notion 页面。Notion 官方出品。"},
-     "command": "npx", "args": ["-y", "@notionhq/notion-mcp-server"],
-     "env": {"NOTION_TOKEN": "{token}"},
-     "fields": [_f("token", "Integration secret", "集成密钥 (Internal Integration Secret)",
-                   secret=True, placeholder="ntn_…",
-                   link="https://www.notion.so/profile/integrations",
-                   help_en="Create an internal integration, copy its secret, then on each page "
-                           "you want shared: ••• → Connections → add it.",
-                   help_zh="新建一个内部集成，复制密钥；"
-                           "然后在想让助理看到的页面上点 ••• → 连接 → 加上它。")],
-     "source": "https://github.com/makenotion/notion-mcp-server"},
-    {"id": "github", "category": "work", "emoji": "🐙", "needs": None,
-     "name": {"en": "GitHub", "zh": "GitHub"},
-     "blurb": {"en": "Issues, pull requests and code. GitHub's own hosted server, nothing to "
-                     "install.",
-               "zh": "Issue、PR、代码都能看能管。GitHub 官方托管，不用装任何东西。"},
-     "url": "https://api.githubcopilot.com/mcp/",
-     "headers": {"Authorization": "Bearer {token}"},
-     "fields": [_f("token", "Personal access token", "个人访问令牌 (PAT)", secret=True,
-                   placeholder="github_pat_…",
-                   link="https://github.com/settings/personal-access-tokens/new",
-                   help_en="A fine-grained token with only the repos and permissions you want "
-                           "them to have.",
-                   help_zh="建一个 fine-grained 令牌，只勾你愿意给的仓库和权限。")],
-     "source": "https://github.com/github/github-mcp-server"},
-    {"id": "linear", "category": "work", "emoji": "📐", "needs": None,
-     "name": {"en": "Linear", "zh": "Linear"},
-     "blurb": {"en": "Find, create and update issues and projects. Linear's own hosted server.",
-               "zh": "查找、新建、更新 issue 和项目。Linear 官方托管。"},
-     "url": "https://mcp.linear.app/mcp",
-     "headers": {"Authorization": "Bearer {token}"},
-     "fields": [_f("token", "Personal API key", "个人 API key", secret=True,
-                   placeholder="lin_api_…",
-                   link="https://linear.app/settings/account/security",
-                   help_en="Settings → Security & access → Personal API keys.",
-                   help_zh="设置 → Security & access → Personal API keys。")],
-     "source": "https://linear.app/docs/mcp"},
-    {"id": "todoist", "category": "work", "emoji": "✅", "needs": "node",
-     "name": {"en": "Todoist", "zh": "Todoist"},
-     "blurb": {"en": "Add, move and tick off your tasks. Made by the Todoist team.",
-               "zh": "添加、挪动、勾掉你的待办。Todoist 团队自己做的。"},
-     "command": "npx", "args": ["-y", "@doist/todoist-mcp"],
-     "env": {"TODOIST_API_KEY": "{token}"},
-     "fields": [_f("token", "API token", "API 令牌", secret=True,
-                   link="https://app.todoist.com/app/settings/integrations/developer",
-                   help_en="Settings → Integrations → Developer → copy the API token.",
-                   help_zh="设置 → 集成 → 开发者 → 复制 API 令牌。")],
-     "source": "https://github.com/Doist/todoist-ai"},
-    {"id": "git", "category": "work", "emoji": "🌿", "needs": "uv",
-     "name": {"en": "A git repo", "zh": "一个 Git 仓库"},
-     "blurb": {"en": "Read history, diffs and branches of one repository on this computer.",
-               "zh": "查看这台电脑上某个仓库的历史、改动和分支。"},
-     "command": "uvx", "args": ["mcp-server-git", "--repository", "{repo}"],
-     "fields": [_f("repo", "Repository path", "仓库路径", placeholder="/Users/me/code/project")],
-     "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/git"},
-    {"id": "fetch", "category": "web", "emoji": "🌐", "needs": "uv",
-     "name": {"en": "Read web pages", "zh": "读网页"},
-     "blurb": {"en": "Open any link and read it as clean text. No account needed.",
-               "zh": "打开任何链接，读成干净的文字。不用注册。"},
-     "command": "uvx", "args": ["mcp-server-fetch"], "fields": [],
-     "source": "https://github.com/modelcontextprotocol/servers/tree/main/src/fetch"},
-    {"id": "brave-search", "category": "web", "emoji": "🦁", "needs": "node",
-     "name": {"en": "Brave Search", "zh": "Brave 搜索"},
-     "blurb": {"en": "Web, news and image search. Brave's own server; the free plan is plenty "
-                     "for one person.",
-               "zh": "网页、新闻、图片搜索。Brave 官方出品，个人用免费额度就够。"},
-     "command": "npx", "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
-     "env": {"BRAVE_API_KEY": "{token}"},
-     "fields": [_f("token", "API key", "API key", secret=True,
-                   link="https://api-dashboard.search.brave.com/app/keys",
-                   help_en="Sign up, pick the free plan, then copy a key from the dashboard.",
-                   help_zh="注册后选免费套餐，在控制台复制一个 key。")],
-     "source": "https://github.com/brave/brave-search-mcp-server"},
-    {"id": "browser", "category": "web", "emoji": "🧭", "needs": "node",
-     "name": {"en": "A web browser", "zh": "浏览器"},
-     "blurb": {"en": "Click through sites and fill in forms in a real (headless) browser. From "
-                     "the Playwright team.",
-               "zh": "在真的（无界面）浏览器里点网页、填表单。Playwright 团队出品。"},
-     "command": "npx", "args": ["-y", "@playwright/mcp@latest", "--headless", "--isolated"],
-     "fields": [],
-     "note": {"en": "If it can't find a browser, run `npx playwright install chrome` once.",
-              "zh": "如果提示找不到浏览器，先运行一次 `npx playwright install chrome`。"},
-     "source": "https://github.com/microsoft/playwright-mcp"},
-    {"id": "home-assistant", "category": "home", "emoji": "🏠", "needs": None,
-     "name": {"en": "Home Assistant", "zh": "Home Assistant"},
-     "blurb": {"en": "Lights, heating, sensors — whatever you've exposed to assistants. Built "
-                     "into Home Assistant.",
-               "zh": "灯、暖气、传感器——你开放给语音助手的设备都能用。Home Assistant 自带。"},
-     "url": "{ha_url}/api/mcp",
-     "headers": {"Authorization": "Bearer {token}"},
-     "fields": [_f("ha_url", "Home Assistant address", "Home Assistant 地址",
-                   default="http://homeassistant.local:8123",
-                   help_en="First add the “Model Context Protocol Server” integration in "
-                           "Settings → Devices & services.",
-                   help_zh="先在 设置 → 设备与服务 里添加“Model Context Protocol Server”集成。"),
-                _f("token", "Long-lived access token", "长期访问令牌", secret=True,
-                   link="https://my.home-assistant.io/redirect/profile_security/",
-                   help_en="Your profile → Security → Long-lived access tokens → Create.",
-                   help_zh="个人资料 → 安全 → 长期访问令牌 → 创建。")],
-     "source": "https://www.home-assistant.io/integrations/mcp_server/"},
-    {"id": "hosted", "category": "other", "emoji": "🔗", "needs": None,
-     "name": {"en": "Any hosted MCP link", "zh": "任意在线 MCP 链接"},
-     "blurb": {"en": "Got an MCP server URL from somewhere else (for example an automation "
-                     "service that bundles many apps)? Paste it here.",
-               "zh": "从别处拿到了一个 MCP 服务器链接"
-                     "（比如把很多应用打包好的自动化服务）？贴在这里。"},
-     "url": "{url}", "headers": {"Authorization": "Bearer {token}"},
-     "fields": [_f("url", "Server URL", "服务器链接", placeholder="https://…/mcp"),
-                _f("token", "Token (if it asks for one)", "令牌（需要的话）", secret=True,
-                   optional=True)],
-     "note": {"en": "Only links that work with a token or no login. Ones that need a browser "
-                    "sign-in (OAuth) won't connect yet.",
-              "zh": "只支持用令牌或不用登录的链接；需要在浏览器里登录授权（OAuth）的暂时连不上。"},
-     "source": ""},
-]
-
-
-def catalog_entry(entry_id: str) -> dict | None:
-    return next((e for e in CATALOG if e["id"] == entry_id), None)
-
-
-def build_spec(entry: dict, values: dict, vault_names: dict) -> dict:
-    """The data/connectors.json ``mcp`` spec for a catalog entry.
-
-    ``values``: field key → what the human typed (non-secrets). ``vault_names``: secret
-    field key → vault entry name. Optional fields left empty drop whatever used them."""
-    subs: dict[str, str | None] = {}
-    for f in entry.get("fields", []):
-        k = f["key"]
-        if f["secret"]:
-            subs[k] = f"{{{{vault:{vault_names[k]}}}}}" if k in vault_names else None
-        else:
-            v = str(values.get(k) or f.get("default") or "").strip()
-            subs[k] = (v.rstrip("/") if k.endswith("url") else v) or None
-        if subs[k] is None and not f.get("optional"):
-            raise ValueError(f"missing {k}")
-
-    def fill(s: str) -> str | None:
-        for k, v in subs.items():
-            if "{" + k + "}" in s:
-                if v is None:
-                    return None
-                s = s.replace("{" + k + "}", v)
-        return s
-
-    spec: dict = {}
-    if entry.get("url"):
-        spec["url"] = fill(entry["url"])
-        hdrs = {h: fill(v) for h, v in (entry.get("headers") or {}).items()}
-        hdrs = {h: v for h, v in hdrs.items() if v is not None}
-        if hdrs:
-            spec["headers"] = hdrs
-    else:
-        spec["command"] = entry["command"]
-        spec["args"] = [fill(a) for a in entry.get("args", [])]
-        env = {k: fill(v) for k, v in (entry.get("env") or {}).items()}
-        env = {k: v for k, v in env.items() if v is not None}
-        if env:
-            spec["env"] = env
-    return spec

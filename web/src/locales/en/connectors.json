@@ -1,14 +1,14 @@
 {
-  "title": "Apps & Connectors",
-  "lead": "Plug your agents into the rest of your digital life. Every app action goes through the Gatekeeper — nothing goes out as you until you say so.",
+  "title": "Advanced",
+  "lead": "For tinkerers: the raw app config, feeds, webhooks and the vault. Most people only need Settings → Apps.",
   "connecting": "Connecting…",
   "badJson": "That JSON doesn't look right: {{msg}}",
   "saveConnect": "Save & connect",
   "tools_one": "{{count}} tool",
   "tools_other": "{{count}} tools",
   "mcp": {
-    "title": "MCP apps",
-    "hintBefore": "Any Model Context Protocol server — local (command) or hosted (url). Secrets: write",
+    "title": "Apps config (JSON)",
+    "hintBefore": "The same apps as Settings → Apps, as data/connectors.json. Secrets: write",
     "hintAfter": ", the model never sees the value."
   },
   "feeds": {
@@ -23,34 +23,8 @@
   },
   "vault": {
     "title": "Vault",
-    "hint": "API keys and passwords for your agents. Stored on your server only; slipped in at the last moment and hidden from everything the model sees.",
+    "hint": "API keys, passwords and app sign-ins, encrypted on this computer. They're slipped in at the last moment and hidden from everything the model sees.",
     "empty": "empty",
     "valuePh": "secret value"
-  },
-  "catalog": {
-    "title": "Add an app",
-    "lead": "Popular apps your agents can use, set up in a minute. Most just need a token you copy from the app's settings. It goes into your vault, never to the model.",
-    "all": "All",
-    "needs": {
-      "node": "needs Node.js",
-      "uv": "needs uv",
-      "docker": "needs Docker"
-    },
-    "missing": {
-      "node": "Node.js isn't installed on this computer yet (npx not found). Get it from nodejs.org first.",
-      "uv": "uv isn't installed on this computer yet (uvx not found). Install it from docs.astral.sh/uv first.",
-      "docker": "Docker isn't installed on this computer yet."
-    },
-    "nothingToInstall": "nothing to install",
-    "added": "added ✓",
-    "add": "Add",
-    "addAnother": "Add another",
-    "optional": "optional",
-    "getIt": "Get it here",
-    "noSetup": "Nothing to fill in. Just add it.",
-    "vaultNote": "The token is kept in your vault on this computer.",
-    "source": "What this runs",
-    "addConnect": "Add & connect",
-    "addedToast": "🧩 {{name}} added. Connecting…"
   }
 }

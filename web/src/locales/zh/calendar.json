@@ -28,23 +28,13 @@
   "openCard": "看名片",
   "empty": {
     "title": "还没连上你的日历",
-    "body": "贴一个 Google / iCloud 日历的链接（私密的 iCal 地址）就行。助理的活动已经在下面了。",
-    "cta": "去连接"
+    "body": "在“应用”里连接 Google 日历、iCloud 或任意日历就好。助理们的安排已经在下面了。",
+    "cta": "去连接日历"
   },
-  "feeds": {
-    "title": "我的日历",
-    "body": "贴上 Google / iCloud 日历的 iCal 链接（只读）。你的日程会和助理的活动一起出现在「日历」里，助理也能看到你什么时候有空。",
-    "url": "https://calendar.google.com/…/basic.ics",
-    "name": "名字（可选）",
-    "add": "添加",
-    "remove": "移除",
-    "checking": "正在读取…",
-    "bad": "读不了这个链接：{{err}}",
-    "added": "加好了，读到 {{n}} 个日程 ✓",
-    "how": "去哪找这个链接？",
-    "howGoogle": "Google 日历：网页版 → 设置 → 选中日历 → 「iCal 格式的私密地址」。",
-    "howIcloud": "iCloud：日历 App → 日历旁的共享按钮 → 勾选「公开日历」→ 复制链接。",
-    "howPhone": "链接想加几个都行：工作的、家里的、孩子学校的，每个都有自己的颜色。"
-  },
-  "done": "已过"
+  "done": "已过",
+  "apps": {
+    "title": "日历",
+    "body": "日历现在是“应用”：在 设置 → 应用 里连接 Google 日历、iCloud、任意 CalDAV 账号或日历链接，并选好哪些助理能用。它们都会显示在“日历”页上。",
+    "cta": "去应用里连接日历"
+  }
 }

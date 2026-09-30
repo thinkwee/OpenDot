@@ -63,12 +63,10 @@ function IdCard({ agent, on, onClick }) {
     Promise.all([
       api(`/api/identity/email/${agent.id}`).catch(() => ({})),
       api(`/api/identity/phone/${agent.id}`).catch(() => ({})),
-      api(`/api/identity/calendar/${agent.id}`).catch(() => ({})),
-    ]).then(([email, phone, cal]) =>
+    ]).then(([email, phone]) =>
       setHas({
         email: !!email.address,
         phone: !!phone.from_number,
-        cal: (cal.ics_feeds || []).length > 0 || !!cal.caldav?.url,
       }),
     )
   }, [agent.id])
@@ -81,8 +79,7 @@ function IdCard({ agent, on, onClick }) {
         <div className="row gap6 wrap mt6">
           {has?.email && <span className="pill">📧</span>}
           {has?.phone && <span className="pill">📱</span>}
-          {has?.cal && <span className="pill">📅</span>}
-          {has && !has.email && !has.phone && !has.cal && (
+          {has && !has.email && !has.phone && (
             <span className="muted small">{t('page.notSetUp')}</span>
           )}
         </div>
@@ -91,7 +88,7 @@ function IdCard({ agent, on, onClick }) {
   )
 }
 
-const TABS = ['email', 'calendar', 'phone']
+const TABS = ['email', 'phone']
 
 export function AgentIdentity({ agent, hookToken }) {
   const { t } = useTranslation('identity')
@@ -111,7 +108,6 @@ export function AgentIdentity({ agent, hookToken }) {
         ))}
       </div>
       {tab === 'email' && <EmailPanel agent={agent} hookToken={hookToken} />}
-      {tab === 'calendar' && <CalendarPanel agent={agent} />}
       {tab === 'phone' && <PhonePanel agent={agent} hookToken={hookToken} />}
     </section>
   )
@@ -236,88 +232,6 @@ function EmailPanel({ agent, hookToken }) {
 }
 
 // ---------------- Calendar ----------------
-function CalendarPanel({ agent }) {
-  const { t } = useTranslation('identity')
-  const [cfg, setCfg] = useState(null)
-  const [feed, setFeed] = useState({ name: '', url: '' })
-  const load = () => api(`/api/identity/calendar/${agent.id}`).then(setCfg)
-  useEffect(load, [agent.id])
-  if (!cfg) return null
-
-  const save = async (next) => {
-    await api(`/api/identity/calendar/${agent.id}`, { method: 'PUT', body: next })
-    setCfg(next)
-  }
-  const addFeed = () => {
-    if (!feed.name || !feed.url) return
-    save({ ...cfg, ics_feeds: [...(cfg.ics_feeds || []), feed] })
-    setFeed({ name: '', url: '' })
-  }
-  const delFeed = (name) => save({ ...cfg, ics_feeds: (cfg.ics_feeds || []).filter((f) => f.name !== name) })
-  const testFeed = async (url) => {
-    try {
-      const r = await api(`/api/identity/calendar/${agent.id}/test-ics`, { method: 'POST', body: { url } })
-      toast(t('calendar.events', { count: r.events_next_14_days }))
-    } catch (e) {
-      toast('❌ ' + e.message)
-    }
-  }
-  const setCaldav = (patch) => setCfg({ ...cfg, caldav: { ...(cfg.caldav || {}), ...patch } })
-  const saveCaldavPass = async (v) => {
-    if (!v) return
-    const name = `CALDAV_${agent.id}`.toUpperCase()
-    await api('/api/vault', { method: 'POST', body: { name, value: v } })
-    save({ ...cfg, caldav: { ...(cfg.caldav || {}), password: `{{vault:${name}}}` } })
-  }
-  const testCaldav = async () => {
-    try {
-      const r = await api(`/api/identity/calendar/${agent.id}/test-caldav`, { method: 'POST' })
-      toast(t('calendar.found', { count: r.calendars }))
-    } catch (e) {
-      toast('❌ ' + e.message)
-    }
-  }
-
-  return (
-    <div>
-      <h4>{t('calendar.ics')}</h4>
-      <p className="muted small">{t('calendar.icsHelp')}</p>
-      {(cfg.ics_feeds || []).map((f) => (
-        <div key={f.name} className="row between feed">
-          <span><b>{f.name}</b> <small className="muted">{f.url}</small></span>
-          <div className="row gap6">
-            <button className="btn ghost sm" onClick={() => testFeed(f.url)}>{t('calendar.test')}</button>
-            <button className="btn ghost sm" onClick={() => delFeed(f.name)}>✕</button>
-          </div>
-        </div>
-      ))}
-      <div className="row gap6 mt8 wrap">
-        <input className="input" placeholder={t('fields.name')} value={feed.name} onChange={(e) => setFeed({ ...feed, name: e.target.value })} style={{ maxWidth: 140 }} />
-        <input className="input" placeholder="https://…/basic.ics" value={feed.url} onChange={(e) => setFeed({ ...feed, url: e.target.value })} />
-        <button className="btn" disabled={!feed.name || !feed.url} onClick={addFeed}>{t('calendar.add')}</button>
-      </div>
-
-      <h4>{t('calendar.caldav')}</h4>
-      <div className="row gap6 wrap">
-        <input className="input" placeholder="https://caldav.example/..." value={cfg.caldav?.url || ''} onChange={(e) => setCaldav({ url: e.target.value })} />
-        <input className="input" placeholder={t('fields.username')} value={cfg.caldav?.user || ''} onChange={(e) => setCaldav({ user: e.target.value })} />
-        <input className="input" type="password" placeholder={t('fields.caldavPassword')} onBlur={(e) => saveCaldavPass(e.target.value)} />
-      </div>
-      <div className="row gap6 mt8 wrap">
-        <button className="btn" onClick={() => save(cfg)}>{t('common:save')}</button>
-        <button className="btn ghost sm" onClick={testCaldav}>{t('calendar.testCaldav')}</button>
-      </div>
-
-      <label className="row gap6 small mt8">
-        {t('calendar.remindBefore')}
-        <input className="input" type="number" value={cfg.reminder_minutes ?? 30} onChange={(e) => setCfg({ ...cfg, reminder_minutes: Number(e.target.value) })} style={{ width: 70 }} />
-        {t('calendar.remindAfter')}
-      </label>
-    </div>
-  )
-}
-
-// ---------------- Phone ----------------
 function PhonePanel({ agent, hookToken }) {
   const { t } = useTranslation('identity')
   const [cfg, setCfg] = useState(null)

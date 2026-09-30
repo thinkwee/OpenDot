@@ -5,9 +5,10 @@ import { ChevronLeft, ChevronRight, Eye, Link2, Timer } from 'lucide-react'
 import { api, useStore } from '../store'
 import Mascot, { animalFor } from '../components/Mascot'
 import { go } from '../App'
+import { openApps } from './Apps'
 import './Calendar.css'
 
-// One timeline: your calendars (iPhone-synced, Google / iCloud links) and what your
+// One timeline: your calendars (iPhone-synced, and every calendar app) and what your
 // agents do (runs, routines, watches) — overlapping, so you can see who's on what.
 
 const HOUR = 46 // px per hour
@@ -153,7 +154,7 @@ export default function Calendar() {
             {c.error && <small className="bad">!</small>}
           </button>
         ))}
-        <button className="cal-chip add" onClick={() => go('settings', 'identity')}><Link2 size={13} /> {t('connect')}</button>
+        <button className="cal-chip add" onClick={() => openApps('calendar')}><Link2 size={13} /> {t('connect')}</button>
         {legendAgents.length > 0 && <span className="cal-legend-h">{t('agents')}</span>}
         {legendAgents.map((a) => (
           <button key={a.id} className={`cal-chip ${hidden.has('agent:' + a.id) ? 'off' : ''}`} onClick={() => toggle('agent:' + a.id)}>
@@ -166,7 +167,7 @@ export default function Calendar() {
         <div className="cal-empty">
           <b>{t('empty.title')}</b>
           <span className="muted">{t('empty.body')}</span>
-          <button className="btn sm" onClick={() => go('settings', 'identity')}>{t('empty.cta')}</button>
+          <button className="btn sm" onClick={() => openApps('calendar')}>{t('empty.cta')}</button>
         </div>
       )}
 
@@ -336,51 +337,5 @@ function Detail({ x, cal, agentById, onClose }) {
       </div>
     </div>,
     document.body,
-  )
-}
-
-// Settings → your calendar links (Google / iCloud "secret address in iCal format")
-export function MyCalendars() {
-  const { t } = useTranslation('calendar')
-  const [list, setList] = useState(null)
-  const [url, setUrl] = useState('')
-  const [name, setName] = useState('')
-  const [msg, setMsg] = useState('')
-  useEffect(() => { api('/api/agenda/feeds').then(setList).catch(() => setList([])) }, [])
-  if (!list) return <div className="card">…</div>
-  const put = async (next) => setList(await api('/api/agenda/feeds', { method: 'PUT', body: next }))
-  const add = async () => {
-    setMsg(t('feeds.checking'))
-    const r = await api('/api/agenda/feeds/test', { method: 'POST', body: { url } })
-    if (!r.ok) return setMsg(t('feeds.bad', { err: r.error }))
-    await put([...list, { url, name: name || r.account }])
-    setUrl('')
-    setName('')
-    setMsg(t('feeds.added', { n: r.count }))
-  }
-  return (
-    <div className="card" style={{ gridColumn: '1 / -1' }}>
-      <h3>{t('feeds.title')}</h3>
-      <p className="muted small">{t('feeds.body')}</p>
-      {list.map((f, i) => (
-        <div key={i} className="idc-item">
-          <i className="cal-dot" style={{ background: f.color || ACCOUNT_COLOR[f.account] || '#FFD37A' }} />
-          <div className="grow" style={{ minWidth: 0 }}><b>{f.name}</b><small className="ellipsis">{f.account || f.url}</small></div>
-          <button className="btn ghost sm" onClick={() => put(list.filter((_, j) => j !== i))}>{t('feeds.remove')}</button>
-        </div>
-      ))}
-      <div className="row gap8 wrap mt8">
-        <input className="input" style={{ flex: '1 1 260px' }} placeholder={t('feeds.url')} value={url} onChange={(e) => setUrl(e.target.value)} />
-        <input className="input" style={{ flex: '0 1 160px' }} placeholder={t('feeds.name')} value={name} onChange={(e) => setName(e.target.value)} />
-        <button className="btn" disabled={!url.trim()} onClick={add}>{t('feeds.add')}</button>
-      </div>
-      {msg && <p className="small mt8">{msg}</p>}
-      <details className="mt8">
-        <summary className="muted small">{t('feeds.how')}</summary>
-        <p className="muted small">{t('feeds.howGoogle')}</p>
-        <p className="muted small">{t('feeds.howIcloud')}</p>
-        <p className="muted small">{t('feeds.howPhone')}</p>
-      </details>
-    </div>
   )
 }

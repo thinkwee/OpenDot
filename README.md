@@ -98,6 +98,7 @@ Everything they took on, on one board: needs you, in progress, done.
 
 - **Nothing goes out in your name without asking.** Emails, texts and posts wait for your OK, and get a second look first.
 - **Some things are always yours:** payments, passwords, deleting accounts, contracts.
+- **Apps go only to the agents you choose.** They can look things up in them; adding or changing anything asks you first.
 - **Your data stays on your computer**, in plain files you can read.
 - **Nothing is lost** if the computer restarts.
 
@@ -119,6 +120,8 @@ git clone https://github.com/thinkwee/OpenDot && cd OpenDot
 ```
 
 It installs everything, asks which AI to use, and opens OpenDot in your browser. For your phone, run `./dot.sh link`.
+
+Then connect the apps you use under **Settings → Apps**: Notion, Gmail, Google Calendar or iCloud, Outlook, Todoist, Linear and more, most with one tap.
 
 Works on macOS and Linux, with any AI model: OpenAI, Claude, Gemini, DeepSeek, or one running on your own computer. English and 中文.
 

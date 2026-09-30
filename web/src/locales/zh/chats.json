@@ -72,7 +72,10 @@
     "src": {
       "heartbeat": "💓 定时看看",
       "handoff": "🤝 转交"
-    }
+    },
+    "dissolve": "解散",
+    "dissolveAsk": "解散「{{title}}」？群里正在做的事会停下，群里的定时任务和盯梢会结束，聊天记录会删除。助理和各自的记忆都还在。",
+    "dissolved": "👋「{{title}}」已解散"
   },
   "run": {
     "working": "{{name}} 正在忙",

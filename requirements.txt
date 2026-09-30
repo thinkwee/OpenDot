@@ -7,7 +7,7 @@ playwright>=1.45
 python-multipart>=0.0.9
 html2text>=2024.2
 ddgs>=9.0
-mcp>=1.2
+mcp>=2.2,<3  # apps (MCP): the 2.x client API
 qrcode>=7.4
 # identity
 pypinyin>=0.51
@@ -26,6 +26,7 @@ python-frontmatter>=1.1
 # push
 PyJWT>=2.9
 cryptography>=42
+keyring>=25  # the vault key goes in the OS keychain when there is one
 h2>=4.1
 # deliverables
 python-docx>=1.1

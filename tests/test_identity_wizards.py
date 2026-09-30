@@ -1,6 +1,5 @@
 """Setup wizards: the mailbox "Test" button (imaplib/smtplib mocked), the Twilio
-test / search / buy / assign flow (httpx mocked — nothing real is bought), and the
-MCP app catalog."""
+test / search / buy / assign flow (httpx mocked — nothing real is bought)."""
 
 from __future__ import annotations
 
@@ -13,9 +12,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from opendot import gatekeeper
-from opendot.connectors import CATALOG, CATALOG_CATEGORIES, build_spec, catalog_entry
 from opendot.db import db, new_id
-from opendot.ext import app_catalog
 from opendot.ext import email as email_mod
 from opendot.ext import phone as phone_mod
 
@@ -355,57 +352,3 @@ def test_twilio_assign_refuses_someone_elses_number(twilio):
         assert r.status_code == 409
         c.post(f"/api/identity/phone/{a['id']}/unassign")
     assert "from_number" not in phone_mod.get_config(a["id"])
-
-
-# ---------------- app catalog ----------------
-def test_catalog_shape():
-    cats = {c["id"] for c in CATALOG_CATEGORIES}
-    ids = [e["id"] for e in CATALOG]
-    assert len(ids) == len(set(ids)) and 6 <= len(ids) <= 20
-    for e in CATALOG:
-        assert e["category"] in cats
-        assert e["name"]["en"] and e["name"]["zh"] and e["blurb"]["en"] and e["blurb"]["zh"]
-        assert e["needs"] in (None, "node", "uv", "docker")
-        assert bool(e.get("url")) != bool(e.get("command"))
-        if e.get("command"):
-            assert {"npx": "node", "uvx": "uv", "docker": "docker"}[e["command"]] == e["needs"]
-        for f in e["fields"]:
-            assert f["label"]["en"] and f["label"]["zh"]
-            assert "{" + f["key"] + "}" in repr(e)  # every field is used somewhere
-            if f["link"]:
-                assert f["link"].startswith("https://")
-
-
-def test_build_spec_secrets_become_vault_placeholders():
-    notion = build_spec(catalog_entry("notion"), {}, {"token": "MCP_NOTION_TOKEN"})
-    assert notion == {"command": "npx", "args": ["-y", "@notionhq/notion-mcp-server"],
-                      "env": {"NOTION_TOKEN": "{{vault:MCP_NOTION_TOKEN}}"}}
-    ha = build_spec(catalog_entry("home-assistant"), {"ha_url": "http://ha.lan:8123/"},
-                    {"token": "T"})
-    assert ha == {"url": "http://ha.lan:8123/api/mcp",
-                  "headers": {"Authorization": "Bearer {{vault:T}}"}}
-    hosted = build_spec(catalog_entry("hosted"), {"url": "https://x.example/mcp"}, {})
-    assert hosted == {"url": "https://x.example/mcp"}  # optional token left out
-    with pytest.raises(ValueError):
-        build_spec(catalog_entry("files"), {}, {})
-
-
-def test_add_from_catalog(monkeypatch):
-    started = []
-    monkeypatch.setattr(app_catalog, "spawn", lambda coro: (started.append(1), coro.close()))
-    with _client(app_catalog.router) as c:
-        cat = c.get("/api/connectors/catalog").json()
-        assert {"categories", "entries", "have", "installed"} <= set(cat)
-        r1 = c.post("/api/connectors/catalog/files", json={"values": {"folder": "/tmp/a"}}).json()
-        r2 = c.post("/api/connectors/catalog/files", json={"values": {"folder": "/tmp/b"}}).json()
-        r3 = c.post("/api/connectors/catalog/todoist", json={"values": {"token": "sk"}}).json()
-        bad = c.post("/api/connectors/catalog/github", json={"values": {}})
-        installed = c.get("/api/connectors/catalog").json()["installed"]
-    assert r1["name"] == "files" and r2["name"] == "files-2"
-    assert r2["spec"]["args"][-1] == "/tmp/b"
-    assert r3["spec"]["env"] == {"TODOIST_API_KEY": "{{vault:MCP_TODOIST_TOKEN}}"}
-    assert gatekeeper.vault_all()["MCP_TODOIST_TOKEN"] == "sk"
-    assert bad.status_code == 400
-    assert {"files", "files-2", "todoist"} <= set(installed)
-    assert started == [1, 1, 1]
-    gatekeeper.vault_set("MCP_TODOIST_TOKEN", None)

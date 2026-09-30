@@ -19,7 +19,7 @@ def _agent(origin="manual"):
 
 @pytest.mark.parametrize("tool,args", [
     ("web_search", {"query": "flights"}), ("web_fetch", {"url": "https://x.io"}),
-    ("read_email", {"id": "1"}), ("calendar_events", {}), ("iphone_calendar", {}),
+    ("read_email", {"id": "1"}), ("iphone_calendar", {}),
     ("notify", {"title": "found something"}), ("offer_choices", {"options": ["Go ahead"]}),
     ("browser", {"action": "goto", "url": "https://x.io"}),
 ])

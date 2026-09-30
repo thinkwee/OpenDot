@@ -9,6 +9,7 @@ import { go } from '../App'
 import Channels from './Channels'
 import Devices from './Devices'
 import Connectors from './Connectors'
+import Apps from './Apps'
 import Skills from './Skills'
 import AgentIds from './AgentIds'
 import Boundary from '../components/Boundary'
@@ -16,16 +17,18 @@ import Boundary from '../components/Boundary'
 // #/settings/<tab>: general stuff plus the ways your team connects to the rest of your life
 const TABS = [
   ['general', '⚙️'],
+  ['apps', '🧩'],
   ['identity', '🪪'],
   ['channels', '💬'],
   ['devices', '💻'],
-  ['connectors', '🧩'],
   ['skills', '📚'],
+  ['advanced', '🛠️'],
 ]
 
 export default function Settings({ sub }) {
   const { t } = useTranslation('settings')
-  const tab = TABS.find((x) => x[0] === sub) ? sub : 'general'
+  const want = sub === 'connectors' ? 'apps' : sub // old links
+  const tab = TABS.find((x) => x[0] === want) ? want : 'general'
   return (
     <div>
       <header className="page-head">
@@ -44,7 +47,8 @@ export default function Settings({ sub }) {
         {tab === 'identity' && <AgentIds />}
         {tab === 'channels' && <Channels />}
         {tab === 'devices' && <Devices />}
-        {tab === 'connectors' && <Connectors />}
+        {tab === 'apps' && <Apps />}
+        {tab === 'advanced' && <Connectors />}
         {tab === 'skills' && <Skills />}
       </Boundary>
     </div>

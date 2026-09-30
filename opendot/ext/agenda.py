@@ -1,13 +1,13 @@
 """Agenda — one timeline of your calendars and what your agents do.
 
 Your side: events synced from the iPhone (every account on it: iCloud, Google,
-Exchange…), your own calendar links (Google / iCloud secret iCal URLs, kv
-``calendars:mine``) and any calendar an agent was given (``identity:calendar:<id>``).
+Exchange…) and every calendar connected in Settings → Apps (Google Calendar, iCloud,
+CalDAV, iCal links; ``builtin_apps.calendar_events``).
 
 Their side: when each routine fires and each watch checks (chats aren't plans, so
 replies don't show).
 
-Links: an event gets the agents that created it (``create_event`` /
+Links: an event gets the agents that created it (a calendar app's ``create_event`` /
 ``iphone_add_event``), are watching for it (a watch or routine naming it) or have
 talked about it in a chat — so you can see who's looking after which of your plans.
 """
@@ -22,7 +22,7 @@ import re
 import time
 
 import httpx
-from fastapi import APIRouter, Body
+from fastapi import APIRouter
 
 from .. import memory
 from ..db import db
@@ -31,7 +31,7 @@ from ..scheduler import next_cron
 log = logging.getLogger("opendot.ext.agenda")
 router = APIRouter(prefix="/api/agenda")
 
-MINE = "calendars:mine"
+CALENDAR_APPS = ("google_calendar", "caldav", "ics")
 _ics_cache: dict[str, tuple[float, list[dict]]] = {}
 ICS_TTL = 300
 HELPER = re.compile(r"-w\d+$")
@@ -97,8 +97,9 @@ async def _ics(url: str, start: dt.datetime, end: dt.datetime) -> list[dict]:
     return evs
 
 
-def feeds() -> list[dict]:
-    return db.kv_get(MINE) or []
+def _range_now() -> tuple[dt.datetime, dt.datetime]:
+    now = memory.now_local()
+    return now, now + dt.timedelta(days=14)
 
 
 # ---------------------------------------------------------------- your calendars
@@ -108,9 +109,9 @@ async def your_events(t0: float, t1: float) -> tuple[list[dict], list[dict]]:
     out: list[dict] = []
     cals: dict[str, dict] = {}
 
-    def cal(key: str, name: str, account: str, color: str, source: str, agent_id=None):
+    def cal(key: str, name: str, account: str, color: str, source: str, app: str = ""):
         cals.setdefault(key, {"key": key, "name": name, "account": account, "color": color,
-                              "source": source, "agent_id": agent_id})
+                              "source": source, "app": app})
         return key
 
     # the iPhone: every account it has
@@ -127,38 +128,40 @@ async def your_events(t0: float, t1: float) -> tuple[list[dict], list[dict]]:
         if ev and ev["end"] >= t0 and ev["start"] <= t1:
             out.append(ev)
 
-    # your own links, then calendars an agent was given
+    # every calendar connected in Settings → Apps
+    from ..connectors import load_config
     jobs = []
-    for i, f in enumerate(feeds()):
-        if f.get("url") and f.get("on", True):
-            k = cal(f"mine:{i}", f.get("name") or account_of(f["url"]) or "Calendar",
-                    account_of(f["url"], f.get("account") or ""), f.get("color") or "", "link")
-            jobs.append((k, f["url"]))
-    for row in db.q("SELECT k, v FROM kv WHERE k LIKE 'identity:calendar:%'"):
-        aid = row["k"].rsplit(":", 1)[-1]
-        try:
-            cfg = json.loads(row["v"]) or {}
-        except Exception:
-            continue
-        for f in cfg.get("ics_feeds") or []:
-            if f.get("url"):
-                k = cal(f"agent:{aid}:{f.get('name')}", f.get("name") or "Calendar",
-                        account_of(f["url"]), "", "agent", aid)
-                jobs.append((k, f["url"]))
+    for n, sp in load_config()["mcp"].items():
+        if sp.get("builtin") in CALENDAR_APPS and not sp.get("disabled"):
+            acct = {"icloud-calendar": "iCloud", "google-calendar": "Google"}.get(sp.get("app")) \
+                or account_of(str((sp.get("settings") or {}).get("url") or ""), n)
+            jobs.append((cal(f"app:{n}", sp.get("label") or n, acct, "", "app", app=n), n, sp))
 
-    async def one(k, url):
+    async def one(k, n, sp):
+        from ..builtin_apps import calendar_events
         try:
-            return k, await _ics(url, start, end)
-        except Exception as e:
-            log.info("calendar link failed (%s): %s", k, e)
-            cals[k]["error"] = str(e)[:120]
+            return k, await calendar_events(n, sp, start, end)
+        except Exception as e:  # noqa: BLE001 — one calendar failing doesn't hide the others
+            log.info("calendar %s failed: %s", n, e)
+            cals[k]["error"] = str(e)[:160]
             return k, []
 
-    for k, evs in await asyncio.gather(*(one(k, u) for k, u in jobs)):
+    for k, evs in await asyncio.gather(*(one(*j) for j in jobs)):
         for e in evs:
-            ev = _event(e, calendar=k)
+            # an account with several calendars (Google, iCloud) shows each on its own
+            ck = k
+            if e.get("calendar") and e["calendar"] != cals[k]["name"]:
+                ck = cal(f"{k}:{e['calendar']}", e["calendar"], cals[k]["account"] or cals[k]["name"],
+                         e.get("color") or "", "app", app=cals[k]["app"])
+            ev = _event(e, calendar=ck)
             if ev:
                 out.append(ev)
+
+    # an account whose events all sit in its named calendars needn't show itself too
+    used = {ev["calendar"] for ev in out}
+    for k in [k for k, c in cals.items() if c["source"] == "app" and not c.get("error")
+              and k not in used and any(o.startswith(k + ":") for o in cals)]:
+        del cals[k]
 
     # the same event from two places (phone + link) shows once
     seen, uniq = set(), []
@@ -234,9 +237,9 @@ def link(events: list[dict], items: list[dict], t0: float, t1: float) -> None:
         ev["agents"].append({"agent_id": aid, "how": how, "thread_id": thread_id})
 
     # it put the event there
-    for s in db.q("SELECT agent_id, thread_id, args FROM steps WHERE tool IN "
-                  "('create_event','iphone_add_event') AND status='done' AND created > ?",
-                  t0 - 60 * 86400):
+    for s in db.q("SELECT agent_id, thread_id, args FROM steps WHERE (tool IN "
+                  "('create_event','iphone_add_event') OR tool LIKE 'mcp\\_\\_%\\_\\_create\\_event' "
+                  "ESCAPE '\\') AND status='done' AND created > ?", t0 - 60 * 86400):
         args = s["args"] if isinstance(s["args"], dict) else json.loads(s["args"] or "{}")
         for ev in by_title.get(str(args.get("title") or "").strip().lower(), []):
             add(ev, s["agent_id"], "created", s["thread_id"])
@@ -267,35 +270,3 @@ async def agenda(start: float, end: float):
     items = agent_items(start, end)
     link(events, items, start, end)
     return {"events": events, "calendars": calendars, "items": items, "now": time.time()}
-
-
-@router.get("/feeds")
-async def get_feeds():
-    return feeds()
-
-
-@router.put("/feeds")
-async def put_feeds(body: list = Body(...)):
-    clean = []
-    for f in body[:20]:
-        url = str(f.get("url") or "").strip()
-        if not url:
-            continue
-        clean.append({"name": str(f.get("name") or "")[:40] or account_of(url) or "Calendar",
-                      "url": url, "color": str(f.get("color") or "")[:16],
-                      "account": account_of(url, str(f.get("account") or "")),
-                      "on": bool(f.get("on", True))})
-    db.kv_set(MINE, clean)
-    _ics_cache.clear()
-    return clean
-
-
-@router.post("/feeds/test")
-async def test_feed(body: dict = Body(...)):
-    now = memory.now_local()
-    try:
-        evs = await _ics(str(body.get("url") or ""), now - dt.timedelta(days=7),
-                         now + dt.timedelta(days=30))
-    except Exception as e:
-        return {"ok": False, "error": str(e)[:200]}
-    return {"ok": True, "count": len(evs), "account": account_of(str(body.get("url") or ""))}

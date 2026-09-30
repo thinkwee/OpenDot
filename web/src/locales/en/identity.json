@@ -33,7 +33,6 @@
   },
   "tabs": {
     "email": "📧 Email",
-    "calendar": "📅 Calendar",
     "phone": "📱 Phone"
   },
   "fields": {
@@ -66,20 +65,6 @@
     "noMailboxYet": "No address yet.",
     "setUpMailbox": "Set up the agents' mailbox →",
     "ownSettings": "Use a separate mailbox just for this agent"
-  },
-  "calendar": {
-    "ics": "ICS subscriptions (read-only)",
-    "icsHelp": "Paste a secret ICS link (Google Calendar → Settings → \"Secret address in iCal format\", or iCloud's public calendar link).",
-    "test": "Test",
-    "add": "Add",
-    "caldav": "CalDAV account (read/write, optional)",
-    "testCaldav": "Test CalDAV login",
-    "remindBefore": "Remind",
-    "remindAfter": "minutes before an event starts",
-    "events_one": "✅ {{count}} event in the next 14 days",
-    "events_other": "✅ {{count}} events in the next 14 days",
-    "found_one": "✅ Found {{count}} calendar",
-    "found_other": "✅ Found {{count}} calendars"
   },
   "phone": {
     "pick": "Pick {{name}}'s number:",

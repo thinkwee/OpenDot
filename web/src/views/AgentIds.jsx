@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { api, toast, useStore } from '../store'
 import Mascot, { animalFor } from '../components/Mascot'
-import { MyCalendars } from './Calendar'
+import { openApps } from './Apps'
 import { COUNTRIES, PROVIDERS, countryName, errOf, providerFor, publicUrlText } from './idWizard'
 import './Identity.css'
 
@@ -12,9 +12,21 @@ export default function AgentIds() {
   return (
     <div className="cards">
       <Mailbox />
-      <MyCalendars />
+      <Calendars />
       <PhoneAccount />
       <Budget />
+    </div>
+  )
+}
+
+// Calendars are apps now; this card just points there for anyone looking here.
+function Calendars() {
+  const { t } = useTranslation('calendar')
+  return (
+    <div className="card">
+      <h3>{t('apps.title')}</h3>
+      <p className="muted small">{t('apps.body')}</p>
+      <button className="btn sm" onClick={() => openApps('calendar')}>{t('apps.cta')}</button>
     </div>
   )
 }

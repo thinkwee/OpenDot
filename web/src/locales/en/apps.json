@@ -1,0 +1,125 @@
+{
+  "title": "Apps",
+  "lead": "Connect the apps you already use. Each agent only sees the apps you give it, reading is fine, and anything that changes something asks you first.",
+  "none": "Nothing connected yet. Pick an app below.",
+  "directory": "Connect an app",
+  "search": "Search apps",
+  "all": "All",
+  "added": "added",
+  "kind": {
+    "oauth": "Sign in",
+    "google": "Google sign-in",
+    "open": "Free, no account",
+    "key": "Paste a key",
+    "local": "Runs on this computer",
+    "microsoft": "Microsoft sign-in",
+    "account": "Account + app password",
+    "link": "Paste a link"
+  },
+  "how": {
+    "oauth": "You'll sign in on {{name}}'s own page and press Allow. OpenDot never sees your password, and you can disconnect any time.",
+    "google": "You'll sign in with Google and choose what to allow. OpenDot only asks for what this app needs.",
+    "open": "Nothing to sign in to. It works right away.",
+    "key": "Paste a key from your {{name}} settings. It's kept encrypted on this computer and never shown to the model.",
+    "local": "This runs as a small program on this computer.",
+    "microsoft": "You'll sign in to Microsoft with a short code and choose what to allow. Mail is drafts only: agents write, you send.",
+    "account": "Type the account's user name and an app password. It's checked right away, then stored encrypted on this computer; the model never sees it.",
+    "link": "Paste the link and you're done. Read only: agents can see your events but can't change them. Keep the link private, anyone who has it can read the calendar."
+  },
+  "missing": {
+    "node": "This needs Node.js on this computer (nodejs.org). Install it, then come back.",
+    "uv": "This needs uv on this computer (docs.astral.sh/uv). Install it, then come back."
+  },
+  "optional": "optional",
+  "getIt": "Get it",
+  "about": "About",
+  "connect": "Connect",
+  "connectSignIn": "Connect & sign in",
+  "safety": "Reading is allowed; adding, changing or sending things asks you first. You can change that per action later.",
+  "connectedToast": "✅ {{name}} is connected",
+  "signInToast": "🔐 Finish signing in to {{name}} in the new window",
+  "connectingToast": "🔌 Connecting {{name}}…",
+  "status": {
+    "connected": "connected",
+    "connecting": "connecting",
+    "sign_in": "needs sign-in",
+    "error": "couldn't connect",
+    "off": "off"
+  },
+  "toolsCount_one": "{{count}} action",
+  "toolsCount_other": "{{count}} actions",
+  "signIn": "Sign in",
+  "signInAgain": "Sign in again",
+  "retry": "Try again",
+  "turnOff": "Turn off",
+  "turnOn": "Turn on",
+  "remove": "Disconnect",
+  "confirmRemove": "Disconnect {{name}}? Your agents won't be able to use it, and its sign-in is forgotten.",
+  "removed": "{{name}} disconnected",
+  "who": {
+    "title": "Who can use it",
+    "everyone": "Everyone",
+    "all": "every agent",
+    "some_one": "{{count}} agent",
+    "some_other": "{{count}} agents"
+  },
+  "tools": {
+    "title": "What agents may do",
+    "hint": "Allow = just do it · Ask = check with you first · Never = not allowed.",
+    "readOnly": "reads only",
+    "allow": "Allow",
+    "ask": "Ask",
+    "never": "Never"
+  },
+  "google": {
+    "title": "Set up Google once",
+    "lead": "Google only lets apps you register yourself use Gmail, Calendar and Drive. It takes about five minutes, once; after that each Google app is one tap.",
+    "https": "Google only accepts sign-in addresses that are https:// or localhost. Do this step on the computer running OpenDot (at {{local}}), or through an https link.",
+    "clientId": "Client ID",
+    "clientSecret": "Client secret",
+    "privacy": "Both stay encrypted on this computer. The client belongs to you, so no one else is involved.",
+    "save": "Save and continue",
+    "saved": "Google is set up",
+    "tunnel": "You opened OpenDot through a temporary link: it changes if the tunnel restarts. Signing in now works fine, and apps you've signed in keep working after it changes. Only a later sign-in would need the new link added here, or a fixed address: localhost on that computer (or through an SSH tunnel: ssh -L 7878:localhost:7878 your-server), or a Tailscale https link.",
+    "remote": "Add the localhost address below as well as this one, so signing in also works from {{local}} on the computer running OpenDot.",
+    "bothAddrs": "Add both (press “Add URI” twice):",
+    "fixed": "never changes",
+    "temporary": "temporary, changes on restart",
+    "thisLink": "this link",
+    "mismatch": "If Google says “redirect_uri_mismatch”: add {{addr}} to your Google client's Authorised redirect URIs (Google Cloud → Clients), then press Sign in again.",
+    "blocked": "If Google says “Access blocked … Error 403: access_denied”: in Google Cloud → Google Auth Platform → Audience, add the Google account you're signing in with under Test users (or press Publish app)."
+  },
+  "copied": "Copied",
+  "custom": {
+    "title": "Add your own",
+    "blurb": "Any MCP server: a link, or a program on this computer.",
+    "lead": "For apps not in the list. If the link needs a sign-in, OpenDot will open it for you.",
+    "link": "A link",
+    "program": "A program",
+    "name": "Name",
+    "url": "Server link",
+    "token": "Token",
+    "tokenHint": "Only if the app gave you one. Otherwise leave it empty.",
+    "command": "Command",
+    "caution": "Only add servers you trust: they see whatever your agents send them."
+  },
+  "card": {
+    "title": "Connect {{name}}",
+    "button": "Connect",
+    "done": "Connected ✓"
+  },
+  "localOnly": "{{name}} only allows signing in on the computer running OpenDot. Open http://localhost:7878 there and connect it from that screen.",
+  "microsoft": {
+    "title": "Set up Microsoft once",
+    "lead": "Microsoft needs an app registration of your own to let OpenDot read Outlook and OneDrive. It's free and takes a few minutes, once.",
+    "clientId": "Application (client) ID",
+    "privacy": "Kept encrypted on this computer. There's no secret to paste.",
+    "saved": "Microsoft is set up"
+  },
+  "device": {
+    "title": "Sign in to {{name}}",
+    "step1": "1. Open this page, on any device:",
+    "step2": "2. Type this code and sign in:",
+    "waiting": "Waiting for you to finish…"
+  }
+}

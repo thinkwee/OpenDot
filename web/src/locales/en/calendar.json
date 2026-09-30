@@ -27,24 +27,14 @@
   "openChat": "Open chat",
   "openCard": "See card",
   "empty": {
-    "title": "Your calendar isn't connected yet",
-    "body": "Paste a Google / iCloud calendar link (the secret iCal address). Your agents' work is already below.",
-    "cta": "Connect"
+    "title": "No calendars connected yet",
+    "body": "Connect Google Calendar, iCloud or any calendar in Apps. Your agents' plans are already below.",
+    "cta": "Connect a calendar"
   },
-  "feeds": {
-    "title": "My calendars",
-    "body": "Paste a Google / iCloud calendar link (iCal, read-only). Your events show up in Calendar next to what your agents do, and agents can see when you're free.",
-    "url": "https://calendar.google.com/…/basic.ics",
-    "name": "Name (optional)",
-    "add": "Add",
-    "remove": "Remove",
-    "checking": "Reading it…",
-    "bad": "Couldn't read that link: {{err}}",
-    "added": "Added, found {{n}} events ✓",
-    "how": "Where do I find this link?",
-    "howGoogle": "Google Calendar: web → Settings → pick the calendar → \"Secret address in iCal format\".",
-    "howIcloud": "iCloud: Calendar app → share button next to the calendar → Public Calendar → copy link.",
-    "howPhone": "Add as many links as you like (work, home, the kids' school). Each one gets its own colour."
-  },
-  "done": "past"
+  "done": "past",
+  "apps": {
+    "title": "Calendars",
+    "body": "Your calendars are apps: connect Google Calendar, iCloud, any CalDAV account or a calendar link in Settings → Apps, and pick which agents may use each one. They all show on the Calendar page.",
+    "cta": "Open Calendars in Apps"
+  }
 }

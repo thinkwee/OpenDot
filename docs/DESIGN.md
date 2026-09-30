@@ -42,8 +42,9 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   in the agent's folder.
 - **Todo and calendar** (`ext/todo.py`, `ext/agenda.py`): a task opens on an agent's
   first real step and closes with the run (done / waiting on you / stopped / failed);
-  agents keep a checklist with the `todo` tool. The agenda merges your calendar links
-  with the times routines fire and watches check.
+  agents keep a checklist with the `todo` tool. The agenda merges every calendar app
+  (and the iPhone's calendars) with the times routines fire and watches check, and
+  `ext/calendar.py` reminds you shortly before each event.
 
 ## Models
 
@@ -81,13 +82,56 @@ Edit `.env` and `./dot.sh restart` to change it by hand.
   transcribed. Webhooks are verified with Twilio's signature, so the server needs a
   public HTTPS address (set `DOT_PUBLIC_URL` if you're behind a proxy).
 
+## Apps
+
+Settings → Apps connects agents to the apps you use, through MCP (the Model Context
+Protocol) — `opendot/connectors.py`, `opendot/mcp_oauth.py`, `opendot/ext/apps.py`.
+
+- **The directory** (`opendot/app_directory.py`) lists official servers only, each
+  checked to answer as an MCP server: sign-in apps (Notion, Linear, Todoist, Asana,
+  Jira & Confluence, Airtable, Canva, Feishu…), no-account ones (Kiwi.com flights, Exa,
+  Hugging Face…), key-based ones (GitHub, Amap, Home Assistant), and local programs
+  (a folder, an Obsidian vault, a Git repo). "Add your own" takes any MCP link or command.
+- **Signing in** uses the app's own page (OAuth 2.1 with PKCE and dynamic client
+  registration, from the MCP SDK). The browser comes back to `/oauth/callback`; the
+  one-time `state` ties it to the sign-in in progress. Tokens, their expiry and the
+  app's sign-in metadata live in the vault, so a restart refreshes quietly instead of
+  asking you to sign in again. Tokens only ride in the HTTPS header to that one app.
+- **Built-in apps** (`opendot/builtin_apps.py`, `opendot/google_apps.py`) are ordinary
+  MCP servers that run inside OpenDot, connected in memory, for services whose official
+  server personal accounts can't use:
+  - **Gmail, Google Calendar, Google Drive** talk to the ordinary Google APIs (Google's
+    own MCP servers for them only answer projects in its Workspace preview programme).
+    Google needs a sign-in client of your own (the Apps page walks you through it once);
+    scopes are pinned to what each app needs, and Gmail is read + drafts, never sending.
+    Google Maps uses Google's own MCP server.
+  - **Outlook & OneDrive** sign in with a short code at microsoft.com/devicelogin;
+    drafts-only for mail.
+  - **Calendars**: iCloud or any CalDAV account (an app-specific password, checked when
+    you add it), or any calendar's private iCal link (read only).
+- **Calendars are apps**: Google Calendar, iCloud, CalDAV and calendar links are all
+  added in Settings → Apps and given to agents like any other app; the Calendar page
+  shows all of them. Older calendar settings (links on the Calendar page, a calendar per
+  agent) move into Apps on the first start.
+- **Who can use it**: each app is given to specific agents (the front desk by default);
+  others never see its tools. Helpers inherit their lead's apps.
+- **What they may do**: actions the app marks read-only are allowed, anything else asks
+  you first; you can set each action to allow / ask / never. Check-ins may only read.
+  Every app action also gets the second look, and "yours to do" (payments, passwords…)
+  is refused whatever the app offers.
+
+Each app runs in its own task: one that fails or needs a sign-in doesn't hold up the
+others, and you can reconnect it on its own.
+
 ## Safety
 
 **Every tool call goes through the Gatekeeper** (`opendot/gatekeeper.py`): allow, ask or
 deny, per tool and per agent, with rules you can change in Settings. Anything that
 speaks for you (sending email or SMS, posting, deleting outside the agent's folder) asks
 first. Passwords live in a vault as `{{vault:NAME}}` placeholders that are filled in only
-when the tool runs, so the model never sees them, and they're masked in logs. Mail, pages
+when the tool runs, so the model never sees them, and they're masked in logs. The vault
+is encrypted at rest (`data/vault.enc`), with its key in the OS keychain when there is
+one, otherwise in `data/vault.key`. Mail, pages
 and messages from outside are marked as untrusted before an agent reads them.
 
 **A second look** (`opendot/reviewer.py`): before an outward action (email, SMS, posting,
@@ -178,7 +222,8 @@ async def start() -> None: ...           # optional: background work
 ```
 
 Skills are folders with a `SKILL.md` (see `skills/`); any MCP server can be connected
-from Settings → Other apps.
+from Settings → Apps → Add your own. An app that should live inside OpenDot is an
+`MCPServer` in `opendot/builtin_apps.py`.
 
 ## Development
 

@@ -1,14 +1,14 @@
 {
-  "title": "应用和连接",
-  "lead": "把助理们接进你数字生活的方方面面。所有应用里的动作都要经过 守门员，你没点头，就不会以你的名义发出任何东西。",
+  "title": "高级",
+  "lead": "给爱折腾的人：应用的原始配置、订阅源、Webhook 和保险箱。大多数人只需要“设置 → 应用”。",
   "connecting": "连接中…",
   "badJson": "这段 JSON 好像不太对：{{msg}}",
   "saveConnect": "保存并连接",
   "tools_other": "{{count}} 个工具",
   "mcp": {
-    "title": "MCP 应用",
-    "hintBefore": "任何 Model Context Protocol 服务都行，本地的（command）或者托管的（url）。密钥写成",
-    "hintAfter": "，模型永远看不到真实的值。"
+    "title": "应用配置（JSON）",
+    "hintBefore": "和“设置 → 应用”里是同一批应用，也就是 data/connectors.json。密钥写成",
+    "hintAfter": "，模型永远看不到真实值。"
   },
   "feeds": {
     "title": "订阅源",
@@ -22,34 +22,8 @@
   },
   "vault": {
     "title": "保险箱",
-    "hint": "给助理们用的 API key 和密码。只存在你自己的服务器上，用到的最后一刻才填进去，模型看到的内容里一律打码。",
+    "hint": "API Key、密码和应用登录信息，加密存在这台电脑上。只在最后一刻填进去，模型看到的任何内容里都不会出现。",
     "empty": "空的",
     "valuePh": "密钥内容"
-  },
-  "catalog": {
-    "title": "添加应用",
-    "lead": "常用的应用，一分钟就能接上。大多数只要从应用设置里复制一个令牌。令牌存在你的保险箱里，模型永远看不到。",
-    "all": "全部",
-    "needs": {
-      "node": "需要 Node.js",
-      "uv": "需要 uv",
-      "docker": "需要 Docker"
-    },
-    "missing": {
-      "node": "这台电脑还没装 Node.js（找不到 npx），先去 nodejs.org 装一下。",
-      "uv": "这台电脑还没装 uv（找不到 uvx），先去 docs.astral.sh/uv 装一下。",
-      "docker": "这台电脑还没装 Docker。"
-    },
-    "nothingToInstall": "不用装东西",
-    "added": "已添加 ✓",
-    "add": "添加",
-    "addAnother": "再加一个",
-    "optional": "可不填",
-    "getIt": "去这里拿",
-    "noSetup": "什么都不用填，直接添加。",
-    "vaultNote": "令牌存在这台电脑的保险箱里。",
-    "source": "它实际运行的是什么",
-    "addConnect": "添加并连接",
-    "addedToast": "🧩 {{name}} 加好了，正在连接…"
   }
 }

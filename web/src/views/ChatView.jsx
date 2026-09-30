@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowUp, Loader2, Monitor, Paperclip, Plus, Square, Upload, X } from 'lucide-react'
+import { ArrowUp, Loader2, LogOut, Monitor, Paperclip, Plus, Square, Upload, X } from 'lucide-react'
 import { useDropzone } from 'react-dropzone'
 import { api, getToken, loadThread, store, useStore, toast } from '../store'
 import Mascot, { animalFor, helperAnimal } from '../components/Mascot'
@@ -10,6 +10,7 @@ import DeliverableCard, { fmtSize } from '../components/Deliverable'
 import { FileIcon, agentFile, openFile } from '../components/FileViewer'
 import { QuestionCard, RoutineCard } from '../components/ChoiceCard'
 import { AgentStack } from './ChatList'
+import { AppOffer } from './Apps'
 import { go } from '../App'
 import { md, stepLabel } from '../util'
 import './core.css'
@@ -135,6 +136,19 @@ export default function ChatView({ threadId, desktop, computerOpen, onToggleComp
         </div>
         </button>
         <FilesButton threadId={threadId} />
+        {thread.kind === 'group' && (
+          <button className="btn ghost sm" title={t('chat.dissolve')} onClick={async () => {
+            if (!window.confirm(t('chat.dissolveAsk', { title: thread.title }))) return
+            try {
+              await api(`/api/threads/${threadId}`, { method: 'DELETE' })
+              store.set((s) => ({ threads: s.threads.filter((x) => x.id !== threadId) }))
+              toast(t('chat.dissolved', { title: thread.title }))
+              go('chats')
+            } catch (e) { toast('😵 ' + e.message) }
+          }}>
+            <LogOut size={15} /> <span className="hide-sm">{t('chat.dissolve')}</span>
+          </button>
+        )}
         <button className={`btn ghost sm ${computerOpen ? 'on' : ''}`} onClick={onToggleComputer} title={t('chat.computerTitle')}>
           <Monitor size={15} /> <span className="hide-sm">{t('chat.computer')}</span>
         </button>
@@ -238,6 +252,7 @@ function Reply({ choices, agent, members, threadId, answer }) {
   const card = typeof choices[0] === 'object' ? choices[0] : null
   if (!card) return <Choices options={choices} threadId={threadId} answer={answer} />
   if (card.card === 'question') return <QuestionCard card={card} threadId={threadId} answer={answer} />
+  if (card.card === 'app') return <AppOffer card={card} agent={agent} />
   if (card.card === 'routine') {
     const who = [agent, ...(members || [])].filter(Boolean)
     return <RoutineCard proposal={card} agents={who} threadId={threadId} answer={answer} />

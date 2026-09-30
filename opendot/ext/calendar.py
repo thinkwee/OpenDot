@@ -1,14 +1,15 @@
-"""Agent calendar — read-only ICS subscriptions (Google/iCloud secret links) and an
-optional read/write CalDAV account.
+"""Your calendars: reminders, and moving older calendar settings into Apps.
 
-Config (per agent, kv ``identity:calendar:<agent_id>``):
-    {"ics_feeds": [{"name": "personal", "url": "https://.../basic.ics"}],
-     "caldav": {"url": "https://caldav.example/...", "user": "..",
-                "password": "{{vault:X}}"} | null,
-     "reminder_minutes": 30}
+Calendars are apps (Settings → Apps → Calendars): Google Calendar, iCloud, any CalDAV
+account, or a calendar's private iCal link. Like any app you pick which agents may use
+each one, and its own tools let them read it (and add events, if it can). The Calendar
+page shows all of them next to what your agents are doing (``agenda.py``).
 
-Background loop (every 5 min) fires ``calendar:<feed>`` events for events starting
-within ``reminder_minutes`` and drops a short nudge card in the Inbox.
+This module:
+- a background loop (every 5 min) that drops a "starting soon" note in the Inbox and
+  fires a ``calendar:<name>`` event (so a watch can react) shortly before each event;
+- ``move_old_calendars``: older versions kept calendar links on the Calendar page and a
+  calendar per agent; on the first start they become calendar apps.
 """
 
 from __future__ import annotations
@@ -16,32 +17,20 @@ from __future__ import annotations
 import asyncio
 import datetime as dt
 import logging
-
-import httpx
-import icalendar
-import recurring_ical_events
-from fastapi import APIRouter, Body, HTTPException
+import time
 
 from .. import memory
-from ..connectors import ingest_event
 from ..db import db, new_id
-from ..gatekeeper import inject_secrets
-from ..tools import S, fn, register_tool
 from .lang import tr
 
 log = logging.getLogger("opendot.ext.calendar")
-router = APIRouter()
+
+POLL_SECONDS = 300
+REMIND = "calendar:remind_minutes"  # 0 = no reminders
+NOTIFIED = "calendar:notified"
+MOVED = "calendar:moved_to_apps"
 
 _running = False
-POLL_SECONDS = 300
-
-
-def get_config(agent_id: str) -> dict | None:
-    return db.kv_get(f"identity:calendar:{agent_id}")
-
-
-def set_config(agent_id: str, cfg: dict) -> None:
-    db.kv_set(f"identity:calendar:{agent_id}", cfg)
 
 
 def _parse_dt(s: str) -> dt.datetime:
@@ -57,160 +46,56 @@ def _parse_dt(s: str) -> dt.datetime:
 
 
 def _ev_dict(e) -> dict:
+    """An iCalendar VEVENT → the plain dict every calendar source returns."""
     start = e.get("DTSTART").dt
     end = e.get("DTEND").dt if e.get("DTEND") else start
     return {"title": str(e.get("SUMMARY", "") or ""),
-           "start": start.isoformat() if hasattr(start, "isoformat") else str(start),
-           "end": end.isoformat() if hasattr(end, "isoformat") else str(end),
-           "location": str(e.get("LOCATION", "") or ""),
-           "notes": str(e.get("DESCRIPTION", "") or "")[:800],
-           "uid": str(e.get("UID", "") or "")}
+            "start": start.isoformat() if hasattr(start, "isoformat") else str(start),
+            "end": end.isoformat() if hasattr(end, "isoformat") else str(end),
+            "location": str(e.get("LOCATION", "") or ""),
+            "notes": str(e.get("DESCRIPTION", "") or "")[:800],
+            "uid": str(e.get("UID", "") or "")}
 
 
-async def _fetch_ics_events(url: str, start: dt.datetime, end: dt.datetime) -> list[dict]:
-    async with httpx.AsyncClient(timeout=20, follow_redirects=True) as c:
-        r = await c.get(url)
-        r.raise_for_status()
-    cal = icalendar.Calendar.from_ical(r.content)
-    events = recurring_ical_events.of(cal).between(start, end)
-    return [_ev_dict(e) for e in events]
+# ---------------- reminders ----------------
+def _front_desk() -> str | None:
+    a = db.one("SELECT id FROM agents WHERE origin='default' ORDER BY created LIMIT 1") \
+        or db.one("SELECT id FROM agents ORDER BY created LIMIT 1")
+    return a["id"] if a else None
 
 
-def _caldav_client(cfg: dict):
-    import caldav
-    return caldav.DAVClient(url=cfg["url"], username=cfg.get("user"),
-                            password=cfg.get("password"))
-
-
-def _caldav_events(cfg: dict, start: dt.datetime, end: dt.datetime) -> list[dict]:
-    client = _caldav_client(cfg)
-    out = []
-    for cal in client.principal().calendars():
-        for ev in cal.date_search(start=start, end=end):
-            comp = ev.icalendar_component
-            out.append(_ev_dict(comp))
-    return out
-
-
-def _caldav_create(cfg: dict, title: str, start: dt.datetime, end: dt.datetime,
-                   location: str = "", notes: str = "") -> dict:
-    client = _caldav_client(cfg)
-    cals = client.principal().calendars()
-    if not cals:
-        raise RuntimeError("no calendars found on this CalDAV account")
-    ev = cals[0].save_event(dtstart=start, dtend=end, summary=title, location=location,
-                            description=notes)
-    uid = ""
-    try:
-        uid = str(ev.icalendar_instance.subcomponents[0].get("UID"))
-    except Exception:
-        pass
-    return {"uid": uid}
-
-
-async def _all_events(cfg: dict, start: dt.datetime, end: dt.datetime) -> list[dict]:
-    out: list[dict] = []
-    for feed in cfg.get("ics_feeds", []):
-        try:
-            evs = await _fetch_ics_events(feed["url"], start, end)
-        except Exception as e:
-            log.warning("ics feed %s failed: %s", feed.get("name"), e)
-            continue
-        for e in evs:
-            e["feed"] = feed.get("name") or "ics"
-            out.append(e)
-    caldav_cfg = cfg.get("caldav")
-    if caldav_cfg and caldav_cfg.get("url"):
-        cd = inject_secrets(caldav_cfg)
-        try:
-            evs = await asyncio.to_thread(_caldav_events, cd, start, end)
-        except Exception as e:
-            log.warning("caldav fetch failed: %s", e)
-        else:
-            for e in evs:
-                e["feed"] = "caldav"
-                out.append(e)
-    out.sort(key=lambda e: e["start"])
-    return out
-
-
-# ---------------- tools ----------------
-async def _calendar_events(ctx, start: str = "", end: str = "") -> dict:
-    cfg = get_config(ctx.agent["id"])
-    if not cfg or not (cfg.get("ics_feeds") or cfg.get("caldav")):
-        return {"error": "no calendar configured for this agent yet — set it up in "
-                         "Apps → Identity"}
-    s = _parse_dt(start)
-    e = _parse_dt(end) if end else s + dt.timedelta(days=7)
-    return {"events": await _all_events(cfg, s, e)}
-
-
-async def _create_event(ctx, title: str, start: str, end: str, location: str = "",
-                        notes: str = "") -> dict:
-    cfg = get_config(ctx.agent["id"])
-    caldav_cfg = cfg and cfg.get("caldav")
-    if not caldav_cfg or not caldav_cfg.get("url"):
-        return {"error": "no CalDAV account configured — ICS feeds are read-only, add a "
-                         "CalDAV account in Apps → Identity to create events"}
-    cd = inject_secrets(caldav_cfg)
-    s, e = _parse_dt(start), _parse_dt(end)
-    try:
-        res = await asyncio.to_thread(_caldav_create, cd, title, s, e, location, notes)
-    except Exception as ex:
-        return {"error": str(ex)}
-    return {"ok": True, **res}
-
-
-register_tool("calendar_events",
-    fn("calendar_events", "List your calendar events between two ISO datetimes (default: "
-       "next 7 days).", {"start": S, "end": S}),
-    _calendar_events, policy="allow")
-register_tool("create_event",
-    fn("create_event", "Create a calendar event (CalDAV account only — ICS subscriptions "
-       "are read-only). A human approves it first.",
-       {"title": S, "start": S, "end": S, "location": S, "notes": S},
-       ["title", "start", "end"]),
-    _create_event, policy="ask")
-
-
-# ---------------- background reminders ----------------
 async def _tick() -> None:
-    now = memory.now_local()
-    for ag in db.q("SELECT id FROM agents"):
-        cfg = get_config(ag["id"])
-        if not cfg or not (cfg.get("ics_feeds") or cfg.get("caldav")):
+    from ..connectors import ingest_event
+    from .agenda import your_events
+    window = int(db.kv_get(REMIND, 30) or 0)
+    if window <= 0:
+        return
+    now = time.time()
+    events, cals = await your_events(now, now + (window + 6) * 60)
+    # the phone already reminds you of what it synced
+    names = {c["key"]: c for c in cals if c.get("source") != "iphone"}
+    notified = set(db.kv_get(NOTIFIED, []))
+    fresh = False
+    for e in events:
+        cal = names.get(e.get("calendar"))
+        if not cal or e.get("all_day"):
             continue
-        window = int(cfg.get("reminder_minutes", 30))
-        try:
-            events = await _all_events(cfg, now, now + dt.timedelta(minutes=window + 6))
-        except Exception as e:
-            log.warning("calendar tick for %s failed: %s", ag["id"], e)
+        key = f"{e['calendar']}:{e['id']}:{int(e['start'])}"
+        mins = (e["start"] - now) / 60
+        if key in notified or mins > window or mins < -2:
             continue
-        notified = set(db.kv_get(f"identity:calendar:notified:{ag['id']}", []))
-        changed = False
-        for e in events:
-            key = f"{e['feed']}:{e['uid']}:{e['start']}"
-            if key in notified:
-                continue
-            try:
-                start_dt = dt.datetime.fromisoformat(e["start"])
-            except ValueError:
-                continue
-            if start_dt.tzinfo is None:
-                start_dt = start_dt.replace(tzinfo=now.tzinfo)
-            mins = (start_dt - now).total_seconds() / 60
-            if mins > window or mins < -2:
-                continue
-            notified.add(key)
-            changed = True
-            await ingest_event(f"calendar:{e['feed']}", "upcoming", e)
-            when = start_dt.strftime("%H:%M")
-            db.insert("inbox", id=new_id("in_"), agent_id=ag["id"], kind="note",
-                      title=tr(f"📅 Starting soon: {e['title']}", f"📅 马上开始：{e['title']}"),
-                      body=f"{when}" + (f" · {e['location']}" if e.get("location") else ""),
-                      status="unread")
-        if changed:
-            db.kv_set(f"identity:calendar:notified:{ag['id']}", list(notified)[-500:])
+        notified.add(key)
+        fresh = True
+        when = dt.datetime.fromtimestamp(e["start"], memory.now_local().tzinfo).strftime("%H:%M")
+        await ingest_event(f"calendar:{cal['name']}", "upcoming",
+                           {"title": e["title"], "start": when, "location": e.get("location", ""),
+                            "calendar": cal["name"]})
+        db.insert("inbox", id=new_id("in_"), agent_id=_front_desk(), kind="note",
+                  title=tr(f"📅 Starting soon: {e['title']}", f"📅 马上开始：{e['title']}"),
+                  body=when + (f" · {e['location']}" if e.get("location") else ""),
+                  status="unread")
+    if fresh:
+        db.kv_set(NOTIFIED, list(notified)[-500:])
 
 
 async def start() -> None:
@@ -220,7 +105,7 @@ async def start() -> None:
         try:
             await _tick()
         except Exception:
-            log.exception("calendar tick failed")
+            log.exception("calendar reminders failed")
         await asyncio.sleep(POLL_SECONDS)
 
 
@@ -229,53 +114,41 @@ async def stop() -> None:
     _running = False
 
 
-# ---------------- config / test API ----------------
-@router.get("/api/identity/calendar/{agent_id}")
-async def api_get(agent_id: str):
-    return get_config(agent_id) or {"ics_feeds": [], "reminder_minutes": 30}
-
-
-@router.put("/api/identity/calendar/{agent_id}")
-async def api_put(agent_id: str, body: dict = Body(...)):
-    set_config(agent_id, body)
-    return {"ok": True}
-
-
-@router.post("/api/identity/calendar/{agent_id}/test-ics")
-async def api_test_ics(agent_id: str, body: dict = Body(...)):
-    url = body.get("url")
-    if not url:
-        raise HTTPException(400, "no url")
-    now = memory.now_local()
-    try:
-        events = await _fetch_ics_events(url, now, now + dt.timedelta(days=14))
-    except Exception as e:
-        raise HTTPException(400, str(e))
-    return {"ok": True, "events_next_14_days": len(events),
-           "sample": [e["title"] for e in events[:5]]}
-
-
-@router.post("/api/identity/calendar/{agent_id}/test-caldav")
-async def api_test_caldav(agent_id: str):
-    cfg = get_config(agent_id)
-    if not cfg or not cfg.get("caldav", {}).get("url"):
-        raise HTTPException(400, "CalDAV not configured")
-    cd = inject_secrets(cfg["caldav"])
-    try:
-        n = await asyncio.to_thread(lambda: len(_caldav_client(cd).principal().calendars()))
-    except Exception as e:
-        raise HTTPException(400, str(e))
-    return {"ok": True, "calendars": n}
-
-
-def PROMPT(agent: dict) -> str | None:
-    cfg = get_config(agent["id"])
-    feeds = cfg.get("ics_feeds") if cfg else None
-    caldav_on = bool(cfg and cfg.get("caldav", {}).get("url"))
-    if not feeds and not caldav_on:
-        return None
-    names = ", ".join(f["name"] for f in (feeds or []) if f.get("name")) or "your feed(s)"
-    return (f"# Calendar\nYou can see {names}"
-           + (" and a writable CalDAV calendar" if caldav_on else "")
-           + ". Use `calendar_events` for today's agenda or upcoming things"
-           + (" and `create_event` to add one (a human confirms first)." if caldav_on else "."))
+# ---------------- older settings → calendar apps ----------------
+def move_old_calendars() -> list[str]:
+    """Calendar links from the Calendar page (everyone could see them) and each agent's
+    own calendar become calendar apps, used by the same agents as before. Runs once,
+    before the apps start."""
+    if db.kv_get(MOVED):
+        return []
+    from ..gatekeeper import inject_secrets
+    from .apps import install
+    added: list[str] = []
+    remind = None
+    for f in db.kv_get("calendars:mine") or []:
+        if f.get("url"):
+            added.append(install("calendar-link", {"url": f["url"]}, "all", label=f.get("name"),
+                                 disabled=not f.get("on", True)))
+    for row in db.q("SELECT k, v FROM kv WHERE k LIKE 'identity:calendar:%'"):
+        aid = row["k"].rsplit(":", 1)[-1]
+        cfg = db.kv_get(row["k"]) or {}
+        if not isinstance(cfg, dict) or not db.one("SELECT id FROM agents WHERE id=?", aid):
+            continue
+        remind = remind if remind is not None else cfg.get("reminder_minutes")
+        for f in cfg.get("ics_feeds") or []:
+            if f.get("url"):
+                added.append(install("calendar-link", {"url": f["url"]}, [aid], label=f.get("name")))
+        dav = inject_secrets(cfg.get("caldav") or {})
+        if dav.get("url") and dav.get("user"):
+            app = "icloud-calendar" if "icloud" in dav["url"] else "caldav"
+            added.append(install(app, {"url": dav["url"], "user": dav["user"],
+                                       "password": dav.get("password", "")}, [aid]))
+    if remind is not None:
+        db.kv_set(REMIND, int(remind))
+    with db.lock:
+        db.conn.execute("DELETE FROM kv WHERE k='calendars:mine' OR k LIKE 'identity:calendar:%'")
+        db.conn.commit()
+    db.kv_set(MOVED, time.time())
+    if added:
+        log.info("moved %d calendar(s) into Apps: %s", len(added), ", ".join(added))
+    return added

@@ -42,6 +42,11 @@ async def lifespan(app: FastAPI):
     bus.bind(asyncio.get_running_loop())
     ensure_default_agents()
     cut_off = durable.recover()  # before anything runs: clear what a restart left behind
+    try:  # older calendar settings become calendar apps, before the apps start
+        from .ext.calendar import move_old_calendars
+        move_old_calendars()
+    except Exception:
+        log.exception("moving old calendars into Apps failed")
     bg = [asyncio.create_task(scheduler_loop()), asyncio.create_task(rss_loop()),
           asyncio.create_task(mcp_hub.start())]
     for m in ext.MODULES:
@@ -183,7 +188,9 @@ async def bootstrap():
     return {
         "agents": _agents(),
         "threads": _threads(),
-        "inbox_unread": db.one("SELECT count(*) n FROM inbox WHERE status='unread'")["n"],
+        # asks waiting on you are counted from "approvals", so their notices aren't counted twice
+        "inbox_unread": db.one("SELECT count(*) n FROM inbox WHERE status='unread' "
+                               "AND kind!='approval'")["n"],
         "approvals": db.q("SELECT * FROM approvals WHERE status='pending'"),
         "model": llm.model, "timezone": settings.TIMEZONE,
         "connectors": mcp_hub.status,
@@ -212,7 +219,20 @@ async def create_thread(body: dict = Body(...)):
 
 @app.delete("/api/threads/{tid}")
 async def delete_thread(tid: str):
+    """Dissolve a group chat: its work stops, its routines and watches end, and it's
+    gone from every screen. A one-to-one chat stays (it's how you reach that agent)."""
+    t = db.one("SELECT * FROM threads WHERE id=?", tid)
+    if not t:
+        return {"ok": True}
+    if t["kind"] != "group":
+        raise HTTPException(400, "only group chats can be dissolved")
+    stop_thread(tid)
+    with db.lock:
+        db.conn.execute("UPDATE automations SET enabled=0 WHERE thread_id=?", (tid,))
+        db.conn.execute("DELETE FROM messages WHERE thread_id=?", (tid,))
+        db.conn.commit()
     db.delete("threads", tid)
+    bus.emit("thread_gone", thread_id=tid)
     return {"ok": True}
 
 
@@ -411,12 +431,8 @@ async def approvals():
 
 @app.post("/api/approvals/{apid}")
 async def approve(apid: str, body: dict = Body(...)):
-    ap = gatekeeper.decide(apid, bool(body.get("approve")), bool(body.get("always")),
-                         scope=body.get("scope"))
-    with db.lock:
-        db.conn.execute("UPDATE inbox SET status='done' WHERE ref=?", (apid,))
-        db.conn.commit()
-    return ap
+    return gatekeeper.decide(apid, bool(body.get("approve")), bool(body.get("always")),
+                             scope=body.get("scope"))
 
 
 # ---------------- automations ----------------
@@ -498,8 +514,10 @@ async def connectors():
 
 @app.put("/api/connectors")
 async def put_connectors(body: dict = Body(...)):
+    before = load_config().get("mcp")
     save_config(body)
-    spawn(mcp_hub.start())
+    if body.get("mcp") != before:  # the hand-written apps JSON changed
+        spawn(mcp_hub.start())
     return {"ok": True}
 
 

@@ -68,9 +68,38 @@ def test_watch_checks_sit_at_their_times(client, auth_headers):
     db.conn.commit()
 
 
-def test_calendar_links_are_stored_with_account(client, auth_headers):
-    r = client.put("/api/agenda/feeds", headers=auth_headers, json=[
-        {"url": "https://calendar.google.com/calendar/ical/x/private-y/basic.ics"},
-        {"url": ""}]).json()
-    assert len(r) == 1 and r[0]["account"] == "Google" and r[0]["name"] == "Google"
-    client.put("/api/agenda/feeds", headers=auth_headers, json=[])
+def test_calendar_apps_show_on_the_calendar(client, auth_headers, monkeypatch):
+    """Every calendar app is on the Calendar page; an account with several calendars
+    shows each one, and one that fails says so without hiding the rest."""
+    from opendot import builtin_apps
+    from opendot.connectors import load_config, save_config
+    now = time.time()
+    iso = lambda t: time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(t))  # noqa: E731
+
+    async def fake(name, spec, start, end):
+        if name == "broken":
+            raise RuntimeError("the account didn't answer")
+        return [{"title": "Standup", "start": iso(now + 3600), "end": iso(now + 5400),
+                 "calendar": "Work", "color": "#f00", "uid": "a"},
+                {"title": "Gym", "start": iso(now + 7200), "end": iso(now + 9000),
+                 "calendar": "Me", "uid": "b"}]
+
+    monkeypatch.setattr(builtin_apps, "calendar_events", fake)
+    cfg = load_config()
+    cfg["mcp"] = {"google-calendar": {"builtin": "google_calendar", "app": "google-calendar",
+                                      "label": "Google Calendar", "agents": "all"},
+                  "broken": {"builtin": "caldav", "label": "Fastmail", "agents": "all",
+                             "settings": {"url": "https://caldav.fastmail.com"}},
+                  "off": {"builtin": "ics", "label": "Off", "agents": "all", "disabled": True},
+                  "notion": {"url": "https://mcp.notion.com/mcp", "agents": "all"}}
+    save_config(cfg)
+    try:
+        r = client.get(f"/api/agenda?start={now}&end={now + 86400}", headers=auth_headers).json()
+    finally:
+        cfg["mcp"] = {}
+        save_config(cfg)
+    by = {c["name"]: c for c in r["calendars"]}
+    assert {"Work", "Me", "Fastmail"} <= set(by) and "Off" not in by and "notion" not in by
+    assert by["Work"]["account"] == "Google" and by["Work"]["color"] == "#f00"
+    assert by["Fastmail"]["error"] and by["Fastmail"]["account"] == "Fastmail"
+    assert {e["title"] for e in r["events"]} >= {"Standup", "Gym"}

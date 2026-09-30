@@ -42,7 +42,9 @@ def enabled() -> bool:
 def outward(tool: str, args: dict) -> bool:
     """Does this action leave the house or speak for the human?"""
     a = args or {}
-    if tool in OUTWARD or tool.startswith("mcp__"):
+    if tool.startswith("mcp__"):  # an app action, unless the app says it only reads
+        return not gatekeeper.app_tool_rule(tool)[1]
+    if tool in OUTWARD:
         return True
     if tool in ("shell", "python"):
         cmd = a.get("command") or a.get("code") or ""

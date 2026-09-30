@@ -3,11 +3,12 @@
   "lead": "你的助理们住在你自己的电脑上。在这里给它们配上自己的邮箱和号码，再连上你常用的应用。",
   "tabs": {
     "general": "通用",
+    "apps": "应用",
     "identity": "助理的身份",
     "channels": "聊天应用",
     "devices": "你的电脑",
-    "connectors": "其他应用",
-    "skills": "技能包"
+    "skills": "技能包",
+    "advanced": "高级"
   },
   "pair": {
     "title": "连上手机",

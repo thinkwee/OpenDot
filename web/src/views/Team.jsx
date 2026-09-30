@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Eye, Mail, Monitor, Pause, Phone, Play, Plug, Timer, Trash2 } from 'lucide-react'
 import { api, store, toast, useStore } from '../store'
+import AppIcon from '../components/AppIcon'
 import Mascot, { ANIMALS, animalFor } from '../components/Mascot'
 import { go } from '../App'
 import Memory from './Memory'
@@ -39,7 +40,7 @@ function AgentCard({ agent, tab }) {
   useEffect(() => {
     api('/api/identity/addresses').then((m) => setAddr(m[agent.id] || '')).catch(() => setAddr(''))
     api(`/api/identity/phone/${agent.id}`).then((c) => setPhone(c.from_number || '')).catch(() => setPhone(''))
-    api('/api/connectors').then((c) => setApps(Object.keys(c.status || {}).length)).catch(() => setApps(0))
+    api('/api/apps').then((d) => setApps(d.installed.filter((a) => !a.disabled && (a.agents === 'all' || (a.agents || []).includes(agent.id))).length)).catch(() => setApps(0))
     loadRoutines()
     const on = () => loadRoutines()
     window.addEventListener('dot:automation', on)
@@ -112,7 +113,7 @@ function AgentCard({ agent, tab }) {
           <Cell ico={<Mail size={17} />} label={t('cells.mail')} value={addr} empty={t('cells.noAddress')} onClick={() => go('settings', 'identity')} />
           <Cell ico={<Phone size={17} />} label={t('cells.phone')} value={phone} empty={t('cells.noNumber')} onClick={() => { location.hash = `#/team/${agent.id}/identity` }} />
           <Cell ico={<Monitor size={17} />} label={t('cells.computer')} value={busy ? agent.status_text || t('cells.working') : t('cells.ready')} onClick={() => dm && go('chats', dm.id)} />
-          <Cell ico={<Plug size={17} />} label={t('cells.apps')} value={apps ? t('cells.connected', { n: apps }) : ''} empty={t('cells.noneYet')} onClick={() => go('settings', 'connectors')} />
+          <Cell ico={<Plug size={17} />} label={t('cells.apps')} value={apps ? t('cells.connected', { n: apps }) : ''} empty={t('cells.noneYet')} onClick={() => go('settings', 'apps')} />
         </div>
 
         <Editable label={t('knows.label')} value={agent.context} placeholder={t('knows.placeholder')} onSave={(v) => patch({ context: v })} />
@@ -220,6 +221,54 @@ function Editable({ label, value, placeholder, onSave }) {
   )
 }
 
+// which connected apps this agent may use (Settings → Apps has the rest)
+function AgentApps({ agent }) {
+  const { t, i18n } = useTranslation('agent')
+  const [d, setD] = useState(null)
+  const load = () => api('/api/apps').then(setD).catch(() => {})
+  useEffect(() => { load() }, [agent.id])
+  if (!d) return null
+  const byApp = Object.fromEntries(d.apps.map((a) => [a.id, a]))
+  const allowed = (a) => a.agents === 'all' || (a.agents || []).includes(agent.id)
+  const toggle = async (a) => {
+    const ids = a.agents === 'all' ? null : a.agents || []
+    let next
+    if (allowed(a)) next = ids === null ? [] : ids.filter((x) => x !== agent.id)
+    else next = [...(ids || []), agent.id]
+    if (a.agents === 'all') {  // turning one agent off an "everyone" app: keep the others
+      const everyone = (await api('/api/agents')).map((x) => x.id)
+      next = everyone.filter((x) => x !== agent.id)
+    }
+    await api(`/api/apps/installed/${a.name}`, { method: 'PATCH', body: { agents: next } })
+    load()
+  }
+  return (
+    <div className="card">
+      <h3>{t('apps.title')}</h3>
+      <p className="muted small">{t('apps.body', { name: agent.name })}</p>
+      {d.installed.length === 0 && <p className="small muted">{t('apps.none')}</p>}
+      <div className="col gap6 mt8">
+        {d.installed.map((a) => {
+          const app = byApp[a.app]
+          return (
+            <label key={a.name} className="row gap8 between">
+              <span className="row gap8 min0">
+                <AppIcon app={app || { label: a.label }} size={26} />
+                <span className="ellipsis">{app ? (app.name[i18n.language] || app.name.en) : a.label}</span>
+              </span>
+              <span className="switch">
+                <input type="checkbox" checked={allowed(a)} onChange={() => toggle(a)} />
+                <span />
+              </span>
+            </label>
+          )
+        })}
+      </div>
+      <a className="btn ghost sm mt8" href="#/settings/apps">{t('apps.more')}</a>
+    </div>
+  )
+}
+
 function CheckIns({ agent }) {
   const { t } = useTranslation('agent')
   const [profiles, setProfiles] = useState([])
@@ -252,6 +301,7 @@ function CheckIns({ agent }) {
           <b>{agent.heartbeat ? t('common:on') : t('common:off')}</b>
         </label>
       </div>
+      <AgentApps agent={agent} />
       {profiles.length > 1 && (
         <div className="card">
           <h3>{t('checkins.brain')}</h3>

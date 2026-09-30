@@ -74,13 +74,84 @@ _waiters: dict[str, asyncio.Future] = {}
 
 
 # ---------------- vault ----------------
+# Secrets (passwords, API keys, app sign-ins) are encrypted at rest in data/vault.enc.
+# The key lives in the OS keychain when there is one (macOS Keychain, Windows Credential
+# Locker, a Linux secret service) and otherwise in data/vault.key, readable only by you.
+# An old plaintext data/vault.json is moved over on first use.
+_vault_cache: dict[str, str] | None = None
+_vault_key: bytes | None = None
+
+
 def _vault_path():
-    return settings.DATA_DIR / "vault.json"
+    return settings.DATA_DIR / "vault.enc"
+
+
+def _keychain_id() -> str:
+    return f"vault:{settings.DATA_DIR.resolve()}"
+
+
+def _key() -> bytes:
+    global _vault_key
+    if _vault_key:
+        return _vault_key
+    from cryptography.fernet import Fernet
+    kfile = settings.DATA_DIR / "vault.key"
+    keychain = None
+    try:  # the OS keychain first
+        import keyring
+        stored = keyring.get_password("OpenDot", _keychain_id())
+        keychain = keyring
+    except Exception:  # none here (headless Linux, a container, a locked keychain…)
+        stored = None
+    if stored:
+        _vault_key = stored.encode()
+    elif kfile.exists():
+        _vault_key = kfile.read_bytes().strip()
+    elif _vault_path().exists():
+        raise RuntimeError("the vault's key isn't available (is the keychain locked?)")
+    else:  # first run: make a key
+        new = Fernet.generate_key()
+        try:
+            keychain.set_password("OpenDot", _keychain_id(), new.decode())
+            ok = keychain.get_password("OpenDot", _keychain_id()) == new.decode()
+        except Exception:
+            ok = False
+        if not ok:
+            kfile.write_bytes(new)
+            kfile.chmod(0o600)
+        _vault_key = new
+    return _vault_key
 
 
 def vault_all() -> dict[str, str]:
+    global _vault_cache
+    if _vault_cache is not None:
+        return dict(_vault_cache)
+    from cryptography.fernet import Fernet, InvalidToken
+    p, legacy = _vault_path(), settings.DATA_DIR / "vault.json"
+    data: dict[str, str] = {}
+    if p.exists():
+        try:
+            data = json.loads(Fernet(_key()).decrypt(p.read_bytes()))
+        except (InvalidToken, ValueError) as e:
+            raise RuntimeError("the vault can't be opened with this computer's key") from e
+    if legacy.exists():  # move an old plaintext vault into the encrypted one
+        data = {**json.loads(legacy.read_text() or "{}"), **data}
+        _vault_write(data)
+        legacy.unlink()
+    _vault_cache = data
+    return dict(data)
+
+
+def _vault_write(data: dict[str, str]) -> None:
+    from cryptography.fernet import Fernet
+    global _vault_cache
     p = _vault_path()
-    return json.loads(p.read_text()) if p.exists() else {}
+    tmp = p.with_suffix(".tmp")
+    tmp.write_bytes(Fernet(_key()).encrypt(json.dumps(data).encode()))
+    tmp.chmod(0o600)
+    tmp.replace(p)
+    _vault_cache = dict(data)
 
 
 def vault_set(name: str, value: str | None) -> None:
@@ -89,9 +160,13 @@ def vault_set(name: str, value: str | None) -> None:
         v.pop(name, None)
     else:
         v[name] = value
-    p = _vault_path()
-    p.write_text(json.dumps(v))
-    p.chmod(0o600)
+    _vault_write(v)
+
+
+def vault_reset_cache() -> None:
+    """For tests that point DATA_DIR somewhere new."""
+    global _vault_cache, _vault_key
+    _vault_cache = _vault_key = None
 
 
 def inject_secrets(args: dict) -> dict:
@@ -184,7 +259,7 @@ def check_paths(agent_id: str, cmd: str) -> tuple[str, str] | None:
     """Path guard for shell/python: deny secrets, other agents' data and browser
     remote-control ports; ask before touching or deleting things outside the agent's
     home. A best-effort tripwire over the command text, not a sandbox."""
-    if "vault.json" in cmd:
+    if re.search(r"vault\.(json|enc|key|tmp)", cmd):
         return "deny", PRIVATE_DATA
     if SECRETS_RE.search(cmd):
         return "deny", PERSONAL
@@ -358,7 +433,7 @@ def yours_reason(agent_id: str, tool: str, args: dict, key: str) -> str:
 # ---------------- look, don't touch ----------------
 # background check-ins (heartbeat / research) may only read, then propose
 READ_ONLY = {
-    "web_search", "web_fetch", "read_file", "list_files", "calendar_events", "list_emails",
+    "web_search", "web_fetch", "read_file", "list_files", "list_emails",
     "read_email", "iphone_status", "iphone_health", "iphone_calendar", "iphone_reminders",
     "iphone_location", "list_automations", "list_goals", "read_skill", "read_skill_file",
     "find_skills", "read_upload", "device_list", "notify", "offer_choices",
@@ -376,7 +451,20 @@ def read_only_run(source: str | None) -> bool:
 def look_only_ok(tool: str, args: dict) -> bool:
     if tool == "browser":
         return (args or {}).get("action") in BROWSER_READ
+    if tool.startswith("mcp__"):
+        return app_tool_rule(tool)[1]
     return tool in READ_ONLY
+
+
+def app_tool_rule(tool: str) -> tuple[str | None, bool]:
+    """(your rule for this app action — "allow" | "ask" | "never" | None, whether the app
+    marks it read-only)."""
+    from .connectors import load_config, mcp_hub
+    info = mcp_hub.tool_info(tool)
+    if not info:
+        return None, False
+    spec = load_config()["mcp"].get(info["server"]) or {}
+    return (spec.get("tools") or {}).get(info["tool"]), bool(info["read_only"])
 
 
 def assess(agent_id: str, tool: str, args: dict, thread_id: str | None = None,
@@ -390,6 +478,14 @@ def assess(agent_id: str, tool: str, args: dict, thread_id: str | None = None,
     pol = policy_for(agent_id)
     decision = pol.get(tool, MCP_DEFAULT if tool.startswith("mcp__") else "ask")
     reason = ""
+    if tool.startswith("mcp__"):
+        rule, read_only = app_tool_rule(tool)
+        if rule == "never":
+            return "deny", "you've set this app action to “never”"
+        if rule in ("allow", "ask"):
+            decision = rule
+        elif tool not in pol:  # nothing set: reading is fine, changing things asks
+            decision = "allow" if read_only else "ask"
     if tool in ("shell", "python"):
         cmd = args.get("command") or args.get("code") or ""
         for pat, why in SHELL_DENY:
@@ -520,9 +616,19 @@ async def request_approval(agent_id: str, thread_id: str, tool: str, args: dict,
     except asyncio.TimeoutError:
         ok = False
         db.update("approvals", ap["id"], status="expired", decided=time.time())
+        _close_notice(ap["id"])
+        bus.emit("approval", approval=db.one("SELECT * FROM approvals WHERE id=?", ap["id"]))
     finally:
         _waiters.pop(ap["id"], None)
     return ok
+
+
+def _close_notice(approval_id: str) -> None:
+    """An answered (or expired) ask no longer needs you, so its inbox notice is done."""
+    with db.lock:
+        db.conn.execute("UPDATE inbox SET status='done' WHERE kind='approval' AND ref=?",
+                        (approval_id,))
+        db.conn.commit()
 
 
 def _earlier_approval(job_id: str | None, attempt: int, tool: str, args: dict) -> dict | None:
@@ -548,6 +654,7 @@ def decide(approval_id: str, approve: bool, always: bool = False,
     # committed before anyone waiting is woken — a restart can't lose the answer
     db.update("approvals", approval_id, status="approved" if approve else "denied",
               decided=time.time())
+    _close_notice(approval_id)
     if approve:
         if scope == "always" or (always and scope is None):
             set_policy(ap["agent_id"], ap["tool"], "trusted")

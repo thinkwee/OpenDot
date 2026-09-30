@@ -73,7 +73,10 @@
     "src": {
       "heartbeat": "💓 heartbeat",
       "handoff": "🤝 handoff"
-    }
+    },
+    "dissolve": "Dissolve",
+    "dissolveAsk": "Dissolve “{{title}}”? Any work in it stops, its routines and watches end, and the chat is deleted. Your agents and their memories stay.",
+    "dissolved": "👋 “{{title}}” is dissolved"
   },
   "run": {
     "working": "{{name}} is working",

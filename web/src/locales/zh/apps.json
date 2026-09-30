@@ -1,0 +1,125 @@
+{
+  "title": "应用",
+  "lead": "连上你平时用的应用。每个助理只看得到你交给它的应用；读东西没问题，要改动或发出什么都会先问你。",
+  "none": "还没连任何应用。从下面挑一个吧。",
+  "directory": "连接一个应用",
+  "search": "搜索应用",
+  "all": "全部",
+  "added": "已添加",
+  "kind": {
+    "oauth": "登录授权",
+    "google": "Google 登录",
+    "open": "免费，不用账号",
+    "key": "填一个 Key",
+    "local": "在这台电脑上运行",
+    "microsoft": "微软登录",
+    "account": "账号 + App 密码",
+    "link": "贴一个链接"
+  },
+  "how": {
+    "oauth": "你会在 {{name}} 自己的页面上登录，点“允许”就好。OpenDot 永远看不到你的密码，随时可以断开。",
+    "google": "你会用 Google 登录，并自己选择允许哪些权限。OpenDot 只要这个应用需要的那部分。",
+    "open": "不用登录，连上就能用。",
+    "key": "从 {{name}} 的设置里复制一个 Key 贴进来。它会加密存在这台电脑上，模型永远看不到。",
+    "local": "它会在这台电脑上作为一个小程序运行。",
+    "microsoft": "你会用一串短码登录微软，并自己选择允许哪些权限。邮件只写草稿：助理写，你来发。",
+    "account": "填上账号的用户名和一个 App 专用密码。填好会马上试一下能不能登上，之后加密存在这台电脑上，模型永远看不到。",
+    "link": "贴上链接就好。只读：助理能看到你的日程，但改不了。这个链接请别给别人，拿到它的人都能看你的日历。"
+  },
+  "missing": {
+    "node": "需要先在这台电脑上装 Node.js（nodejs.org），装好再回来。",
+    "uv": "需要先在这台电脑上装 uv（docs.astral.sh/uv），装好再回来。"
+  },
+  "optional": "可选",
+  "getIt": "去获取",
+  "about": "了解一下",
+  "connect": "连接",
+  "connectSignIn": "连接并登录",
+  "safety": "读取可以直接进行；新增、修改或发送东西会先问你。之后每个动作都能单独调整。",
+  "connectedToast": "✅ {{name}} 已连接",
+  "signInToast": "🔐 在新窗口里登录 {{name}} 就好",
+  "connectingToast": "🔌 正在连接 {{name}}…",
+  "status": {
+    "connected": "已连接",
+    "connecting": "连接中",
+    "sign_in": "需要登录",
+    "error": "没连上",
+    "off": "已关闭"
+  },
+  "toolsCount_one": "{{count}} 个动作",
+  "toolsCount_other": "{{count}} 个动作",
+  "signIn": "登录",
+  "signInAgain": "重新登录",
+  "retry": "再试一次",
+  "turnOff": "关闭",
+  "turnOn": "打开",
+  "remove": "断开",
+  "confirmRemove": "断开 {{name}}？助理们就用不了它了，登录信息也会一起删掉。",
+  "removed": "已断开 {{name}}",
+  "who": {
+    "title": "谁能用",
+    "everyone": "所有助理",
+    "all": "所有助理",
+    "some_one": "{{count}} 个助理",
+    "some_other": "{{count}} 个助理"
+  },
+  "tools": {
+    "title": "助理可以做什么",
+    "hint": "允许 = 直接做 · 先问 = 先问你 · 不许 = 不能做。",
+    "readOnly": "只读",
+    "allow": "允许",
+    "ask": "先问",
+    "never": "不许"
+  },
+  "google": {
+    "title": "先设置一次 Google",
+    "lead": "Google 只允许你自己登记的应用使用 Gmail、日历和云端硬盘。只需要做一次，大约五分钟；之后每个 Google 应用都是一键连接。",
+    "https": "Google 只接受 https:// 或 localhost 的登录地址。请在运行 OpenDot 的那台电脑上（{{local}}）做这一步，或者用一个 https 链接。",
+    "clientId": "客户端 ID",
+    "clientSecret": "客户端密钥",
+    "privacy": "两样都会加密存在这台电脑上。这个客户端属于你自己，不经过任何其他人。",
+    "save": "保存并继续",
+    "saved": "Google 设置好了",
+    "tunnel": "你现在是用临时链接打开的 OpenDot，隧道重启后这个地址会变。现在直接登录没问题，已经登录的应用在地址变了之后也照常能用。只有以后需要重新登录时，才要把新地址加到这里，或者改用固定地址：在那台电脑上用 localhost（远程服务器可以用 SSH 转发：ssh -L 7878:localhost:7878 你的服务器），或者 Tailscale 的 https 链接。",
+    "remote": "除了这个地址，把下面的 localhost 地址也加上，这样在运行 OpenDot 的那台电脑上用 {{local}} 也能登录。",
+    "bothAddrs": "两个都加上（点两次“添加 URI”）：",
+    "fixed": "永远不变",
+    "temporary": "临时的，重启就会变",
+    "thisLink": "当前链接",
+    "mismatch": "如果 Google 显示“redirect_uri_mismatch”：把 {{addr}} 加到你 Google 客户端的“已获授权的重定向 URI”里（Google Cloud → 客户端），然后再点一次登录。",
+    "blocked": "如果 Google 显示“Access blocked… Error 403: access_denied”：到 Google Cloud → Google Auth Platform → 受众（Audience），在“测试用户”里加上你要登录的这个 Google 账号（或者直接点“发布应用”）。"
+  },
+  "copied": "已复制",
+  "custom": {
+    "title": "添加其他应用",
+    "blurb": "任何 MCP 服务：一个链接，或这台电脑上的一个程序。",
+    "lead": "给列表里没有的应用用。如果这个链接需要登录，OpenDot 会帮你打开登录页。",
+    "link": "链接",
+    "program": "程序",
+    "name": "名字",
+    "url": "服务链接",
+    "token": "令牌",
+    "tokenHint": "应用给了你令牌才填，没有就留空。",
+    "command": "命令",
+    "caution": "只添加你信任的服务：助理发给它的内容它都能看到。"
+  },
+  "card": {
+    "title": "连接 {{name}}",
+    "button": "连接",
+    "done": "已连接 ✓"
+  },
+  "localOnly": "{{name}} 只允许在运行 OpenDot 的那台电脑上登录。请在那台电脑上打开 http://localhost:7878 再连接。",
+  "microsoft": {
+    "title": "先设置一次微软",
+    "lead": "微软需要你自己登记一个应用，OpenDot 才能读取 Outlook 和 OneDrive。免费，只做一次，几分钟就好。",
+    "clientId": "应用程序(客户端) ID",
+    "privacy": "加密存在这台电脑上。不需要填任何密钥。",
+    "saved": "微软设置好了"
+  },
+  "device": {
+    "title": "登录 {{name}}",
+    "step1": "1. 在任意设备上打开这个页面：",
+    "step2": "2. 输入这个代码并登录：",
+    "waiting": "等你完成登录…"
+  }
+}

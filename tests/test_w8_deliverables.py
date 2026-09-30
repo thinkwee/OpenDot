@@ -330,6 +330,7 @@ def test_share_unknown_id_404s(client, auth_headers):
     ("send_email", {"to": "friend@example.com", "subject": "hi"}, "friend@example.com"),
     ("send_sms", {"to": "+15551234"}, "+15551234"),
     ("create_event", {"title": "Standup"}, "Standup"),
+    ("mcp__icloud-calendar__create_event", {"title": "Dentist"}, "Dentist"),
     ("device_notify", {}, "device_notify".replace("device_", "")),
 ])
 def test_receipt_created_from_step_event(tool, args, expect_in_title):

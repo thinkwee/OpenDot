@@ -371,7 +371,7 @@ h2, h3 { font-weight: 600; }
 .page img, .page video { max-width: 100%; }
 @media (max-width: 700px) {
   /* tabs wrap onto a second line instead of scrolling sideways */
-  .hub-tabs { flex-wrap: wrap; overflow-x: visible; }
+  .hub-tabs { flex-wrap: wrap; overflow-x: visible; border-radius: 22px; }
   .hub-tabs button { padding: 7px 12px; font-size: 13px; }
   .page { overflow-x: hidden; }
   .row.wrap > .input, .row > .input { min-width: 0; flex: 1 1 160px; }

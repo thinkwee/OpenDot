@@ -80,6 +80,9 @@ def recover() -> list[dict]:
         c.execute("UPDATE approvals SET status='expired', decided=? WHERE status='pending' AND "
                   "(job_id IS NULL OR job_id NOT IN (%s))" % ",".join("?" * len(keep_jobs)),
                   (now, *keep_jobs))
+        # their inbox notices go with them
+        c.execute("UPDATE inbox SET status='done' WHERE kind='approval' AND status!='done' AND "
+                  "ref NOT IN (SELECT id FROM approvals WHERE status='pending')")
         c.commit()
     # Todo cards: a resumed job carries on with its own card; any other live one stopped
     try:

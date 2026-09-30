@@ -33,7 +33,6 @@
   },
   "tabs": {
     "email": "📧 邮箱",
-    "calendar": "📅 日历",
     "phone": "📱 电话"
   },
   "fields": {
@@ -65,18 +64,6 @@
     "noMailboxYet": "还没有邮箱地址。",
     "setUpMailbox": "去设置助理邮箱 →",
     "ownSettings": "给这个助理单独用一个邮箱"
-  },
-  "calendar": {
-    "ics": "ICS 订阅（只读）",
-    "icsHelp": "贴一个私密的 ICS 链接（Google 日历 → 设置 → “iCal 格式的私密地址”，或者 iCloud 的公开日历链接）。",
-    "test": "试一下",
-    "add": "添加",
-    "caldav": "CalDAV 账号（可读可写，选填）",
-    "testCaldav": "试试 CalDAV 能不能登上",
-    "remindBefore": "活动开始前",
-    "remindAfter": "分钟提醒",
-    "events_other": "✅ 接下来 14 天有 {{count}} 个安排",
-    "found_other": "✅ 找到 {{count}} 个日历"
   },
   "phone": {
     "pick": "给 {{name}} 挑个号码：",

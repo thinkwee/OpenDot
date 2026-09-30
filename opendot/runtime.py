@@ -50,7 +50,7 @@ PALETTE = ["#FFB38A", "#8FD6B8", "#B9A6F2", "#8EC5FF", "#FFD37A", "#FF9CB8", "#7
            "#C8E07E"]
 
 # tools that only decorate the reply; text the model writes next to them is kept
-REPLY_TOOLS = {"offer_choices", "suggest_routine"}
+REPLY_TOOLS = {"offer_choices", "suggest_routine", "suggest_app"}
 
 _locks: dict[str, asyncio.Lock] = {}
 _cancel: set[str] = set()
@@ -428,7 +428,7 @@ async def run_tool(ctx: Ctx, name: str, args: dict) -> dict:
             effect = durable.effect_begin(job_id, attempt, ctx.thread_id, name, args)
             try:
                 if name.startswith("mcp__"):
-                    result = await mcp_hub.call(name, inject_secrets(args))
+                    result = await mcp_hub.call(name, inject_secrets(args), aid)
                 elif name in EXEC:
                     result = await EXEC[name](ctx, **inject_secrets(args))
                 else:
@@ -517,7 +517,7 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             msgs.append({"role": "user", "content": prompt})
         if len(msgs) == 1 or msgs[-1]["role"] != "user":
             msgs.append({"role": "user", "content": "(continue)"})
-        extra = mcp_hub.tool_defs()
+        extra = mcp_hub.tool_defs(agent_id)
         tools = tool_list(ctx, thread["kind"] == "group", extra)
         from .ext import workfiles
         try:

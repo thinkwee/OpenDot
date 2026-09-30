@@ -3,11 +3,12 @@
   "lead": "Your agents live on your own computer. Give them their own addresses and numbers, and connect them to your apps here.",
   "tabs": {
     "general": "General",
+    "apps": "Apps",
     "identity": "Agent identities",
     "channels": "Chat apps",
     "devices": "Your computers",
-    "connectors": "Other apps",
-    "skills": "Skill packs"
+    "skills": "Skill packs",
+    "advanced": "Advanced"
   },
   "pair": {
     "title": "Pair a phone",

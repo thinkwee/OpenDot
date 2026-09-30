@@ -81,5 +81,11 @@
     "brain": "🧠 Brain",
     "brainBody": "Which model {{name}} thinks with. Add models in Settings.",
     "brainSet": "🧠 {{name}} now thinks with “{{profile}}”"
+  },
+  "apps": {
+    "title": "Apps it can use",
+    "body": "{{name}} only sees the apps switched on here.",
+    "none": "No apps connected yet.",
+    "more": "Connect apps →"
   }
 }
