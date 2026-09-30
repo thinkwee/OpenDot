@@ -260,6 +260,209 @@ export const SHAPES = {
     ],
     eyes: [[36, 53], [64, 53]], mouth: [50, 77], ms: 0.6, ck: [[26, 66], [74, 66]],
   },
+
+  // round fuzzy ears, big ink nose, a eucalyptus leaf tucked behind one ear
+  koala: {
+    back: [
+      { c: [18, 34, 17] },
+      { c: [82, 34, 17] },
+      { c: [18, 36, 9], f: white, w: 0, o: 0.6 },
+      { c: [82, 36, 9], f: white, w: 0, o: 0.6 },
+    ],
+    head: 'M50 22C74 22 88 38 88 58C88 78 72 90 50 90C28 90 12 78 12 58C12 38 26 22 50 22Z',
+    front: [{ e: [50, 64, 8, 11], f: 'ink', w: 0 }, { e: [47, 59, 2, 3], f: white, w: 0, o: 0.7 }],
+    top: [
+      { d: 'M80 20C84 8 98 6 98 6C99 16 92 24 80 20Z', f: teal, w: 3 },
+      { d: 'M81 19L94 9', f: 'none', w: 2.4 },
+    ],
+    eyes: [[33, 52], [67, 52]], es: 0.85, mouth: [50, 81], ms: 0.6, ck: [[22, 68], [78, 68]],
+  },
+
+  // yellow zigzag mane, white muzzle
+  lion: {
+    back: [
+      { d: 'M83 56L92 68L78 74L79 89L64 86L56 100L45 89L32 96L28 81L13 80L18 65L6 56L18 47L13 32L28 31L32 16L45 23L56 12L64 26L79 23L78 38L92 44L83 56Z', f: yellow },
+      { c: [28, 30, 9] },
+      { c: [72, 30, 9] },
+    ],
+    head: 'M50 28C67 28 80 41 80 58C80 75 67 88 50 88C33 88 20 75 20 58C20 41 33 28 50 28Z',
+    front: [
+      { e: [50, 72, 13, 9], f: white, w: 3 },
+      { d: 'M44 64L56 64L50 70Z', f: 'ink', w: 2.5 },
+    ],
+    eyes: [[39, 53], [61, 53]], es: 0.8, mouth: [50, 76], ms: 0.55, ck: [[28, 67], [72, 67]],
+  },
+
+  // ink stripes on the brow and cheeks, cheek tufts, white muzzle
+  tiger: {
+    back: [
+      { c: [22, 28, 11] },
+      { c: [78, 28, 11] },
+      { c: [22, 28, 5], f: 'ink', w: 0 },
+      { c: [78, 28, 5], f: 'ink', w: 0 },
+    ],
+    head: 'M50 20C74 20 88 32 90 50L98 60L88 64C84 80 70 90 50 90C30 90 16 80 12 64L2 60L10 50C12 32 26 20 50 20Z',
+    clip: [
+      { d: 'M42 18L46 33L50 21L54 33L58 18Z', f: 'ink', w: 0 },
+      { d: 'M8 43L27 48L10 53ZM6 60L24 62L9 68ZM92 43L73 48L90 53ZM94 60L76 62L91 68Z', f: 'ink', w: 0 },
+      { e: [50, 75, 17, 12], f: white, w: 0 },
+    ],
+    front: [{ d: 'M44 64Q50 61 56 64Q55 69 50 69Q45 69 44 64Z', f: 'ink', w: 0 }],
+    eyes: [[35, 50], [65, 50]], es: 0.85, mouth: [50, 77], ms: 0.7, ck: [[22, 64], [78, 64]],
+  },
+
+  // pink snout, a yellow flower behind one ear
+  pig: {
+    back: [
+      { d: 'M18 40L14 12L42 26Z' },
+      { d: 'M58 26L86 12L82 40Z' },
+      { d: 'M21 32L19 19L33 26Z', f: pink, w: 0 },
+      { d: 'M67 26L81 19L79 32Z', f: pink, w: 0 },
+    ],
+    head: 'M50 22C74 22 90 38 90 58C90 78 74 90 50 90C26 90 10 78 10 58C10 38 26 22 50 22Z',
+    front: [
+      { e: [50, 66, 14, 10], f: pink, w: 3.5 },
+      { e: [45, 66, 2.4, 3.6], f: 'ink', w: 0 },
+      { e: [55, 66, 2.4, 3.6], f: 'ink', w: 0 },
+    ],
+    top: [
+      { c: [90, 14, 5], f: yellow, w: 2.5 },
+      { c: [97, 21, 5], f: yellow, w: 2.5 },
+      { c: [94, 30, 5], f: yellow, w: 2.5 },
+      { c: [84, 30, 5], f: yellow, w: 2.5 },
+      { c: [82, 20, 5], f: yellow, w: 2.5 },
+      { c: [89, 23, 4], f: coral, w: 2.5 },
+    ],
+    eyes: [[34, 50], [66, 50]], mouth: [50, 82], ms: 0.6, ck: [[21, 64], [79, 64]],
+  },
+
+  // huge round ears, whiskers, a wedge of cheese worn as a hat
+  mouse: {
+    back: [
+      { c: [20, 32, 19] },
+      { c: [80, 32, 19] },
+      { c: [20, 32, 11], f: pink, w: 0 },
+      { c: [80, 32, 11], f: pink, w: 0 },
+    ],
+    head: 'M50 32C72 32 86 46 86 62C86 80 70 90 50 90C30 90 14 80 14 62C14 46 28 32 50 32Z',
+    front: [{ c: [50, 69, 4], f: 'ink', w: 0 }],
+    top: [
+      { d: 'M36 70L18 65M36 74L18 77M64 70L82 65M64 74L82 77', f: 'none', w: 2.5 },
+      { d: 'M36 38L62 26L66 40L38 46Z', f: yellow, w: 3 },
+      { c: [50, 37, 2.2], f: 'ink', w: 0, o: 0.5 },
+      { c: [58, 36, 1.6], f: 'ink', w: 0, o: 0.5 },
+    ],
+    eyes: [[38, 58], [62, 58]], es: 0.85, mouth: [50, 79], ms: 0.55, ck: [[25, 72], [75, 72]],
+  },
+
+  // a white wool cloud on top, floppy side ears
+  sheep: {
+    back: [{ e: [15, 56, 12, 6, 20] }, { e: [85, 56, 12, 6, -20] }],
+    head: 'M50 30C68 30 80 44 80 62C80 80 66 90 50 90C34 90 20 80 20 62C20 44 32 30 50 30Z',
+    front: [{ d: 'M46 70L54 70L50 74Z', f: 'ink', w: 2 }],
+    top: [{ d: 'M20 46Q12 34 25 29Q26 16 41 19Q50 8 59 19Q74 16 75 29Q88 34 80 46Q66 52 50 47Q34 52 20 46Z', f: white, w: 4 }],
+    eyes: [[40, 60], [60, 60]], es: 0.8, mouth: [50, 80], ms: 0.55, ck: [[29, 72], [71, 72]],
+  },
+
+  // a crown of spikes, white face, an apple stuck on top
+  hedgehog: {
+    back: [{ d: 'M14 72L18 71L6 63L18 56L10 44L24 42L22 28L35 32L40 19L50 29L60 19L65 32L78 28L76 42L90 44L82 56L94 63L82 71L86 72Z', f: 'ink', w: 3 }],
+    head: 'M50 32C72 32 86 46 86 64C86 80 70 90 50 90C30 90 14 80 14 64C14 46 28 32 50 32Z',
+    clip: [{ d: 'M0 100V66C14 62 30 52 50 58C70 52 86 62 100 66V100Z', f: white, w: 0 }],
+    front: [{ c: [50, 71, 4.5], f: 'ink', w: 0 }],
+    top: [
+      { c: [72, 20, 7], f: coral, w: 3 },
+      { d: 'M72 13L74 7', f: 'none', w: 3 },
+      { d: 'M74 9Q80 3 85 7Q80 12 74 9Z', f: teal, w: 2 },
+    ],
+    eyes: [[38, 62], [62, 62]], es: 0.8, mouth: [50, 80], ms: 0.55, ck: [[25, 74], [75, 74]],
+  },
+
+  // big side ears, a pale face, a little coral fez with a tassel
+  monkey: {
+    back: [
+      { c: [12, 55, 12] },
+      { c: [88, 55, 12] },
+      { c: [12, 55, 6], f: white, w: 0, o: 0.7 },
+      { c: [88, 55, 6], f: white, w: 0, o: 0.7 },
+    ],
+    head: 'M50 20C72 20 88 36 88 57C88 78 72 90 50 90C28 90 12 78 12 57C12 36 28 20 50 20Z',
+    clip: [{ d: 'M50 44C56 34 78 34 78 54C78 64 74 70 72 72C74 84 62 90 50 90C38 90 26 84 28 72C26 70 22 64 22 54C22 34 44 34 50 44Z', f: white, w: 0 }],
+    front: [{ c: [47, 66, 1.6], f: 'ink', w: 0 }, { c: [53, 66, 1.6], f: 'ink', w: 0 }],
+    top: [
+      { d: 'M40 23L60 23L57 8L43 8Z', f: coral, w: 3 },
+      { d: 'M50 8Q59 8 61 16', f: 'none', w: 2.5 },
+      { c: [61, 18, 2.4], f: 'ink', w: 0 },
+    ],
+    eyes: [[39, 54], [61, 54]], es: 0.85, mouth: [50, 77], ms: 0.7, ck: [[28, 70], [72, 70]],
+  },
+
+  // white horns, ink patches, big pink muzzle
+  cow: {
+    back: [
+      { d: 'M28 28C18 26 13 16 17 7C21 15 28 17 35 19Z', f: white, w: 3.5 },
+      { d: 'M72 28C82 26 87 16 83 7C79 15 72 17 65 19Z', f: white, w: 3.5 },
+      { e: [10, 42, 11, 6, -20] },
+      { e: [90, 42, 11, 6, 20] },
+    ],
+    head: 'M50 20C72 20 84 32 84 50C84 70 74 90 50 90C26 90 16 70 16 50C16 32 28 20 50 20Z',
+    clip: [
+      { d: 'M14 30C26 24 36 34 31 44C26 52 15 48 12 42Z', f: 'ink', w: 0 },
+      { d: 'M62 21C72 16 81 23 79 31C75 38 64 34 62 28Z', f: 'ink', w: 0 },
+    ],
+    front: [
+      { e: [50, 74, 22, 13], f: pink, w: 3.5 },
+      { e: [42, 72, 2.6, 3.6], f: 'ink', w: 0 },
+      { e: [58, 72, 2.6, 3.6], f: 'ink', w: 0 },
+    ],
+    eyes: [[36, 49], [64, 49]], es: 0.85, mouth: [50, 81], ms: 0.5, ck: [[22, 60], [78, 60]],
+  },
+
+  // yellow antlers, white freckles, pale muzzle
+  deer: {
+    back: [
+      { d: 'M32 30L24 6M26 15L14 10M28 21L36 11M68 30L76 6M74 15L86 10M72 21L64 11', f: 'none', w: 10 },
+      { d: 'M32 30L24 6M26 15L14 10M28 21L36 11M68 30L76 6M74 15L86 10M72 21L64 11', f: 'none', s: yellow, w: 4.4 },
+      { d: 'M26 42C12 42 3 32 5 27C15 25 25 31 29 37Z' },
+      { d: 'M74 42C88 42 97 32 95 27C85 25 75 31 71 37Z' },
+    ],
+    head: 'M50 26C68 26 80 38 80 54C80 74 64 90 50 90C36 90 20 74 20 54C20 38 32 26 50 26Z',
+    clip: [
+      { c: [40, 35, 2.4], f: white, w: 0 },
+      { c: [50, 32, 2.4], f: white, w: 0 },
+      { c: [60, 35, 2.4], f: white, w: 0 },
+      { e: [50, 81, 15, 11], f: white, w: 0 },
+    ],
+    front: [{ e: [50, 72, 5, 3.6], f: 'ink', w: 0 }],
+    eyes: [[38, 53], [62, 53]], es: 0.85, mouth: [50, 81], ms: 0.55, ck: [[27, 65], [73, 65]],
+  },
+
+  // smooth round head, whisker muzzle, a beach ball balanced on top
+  seal: {
+    head: 'M50 24C74 24 90 40 90 60C90 80 74 90 50 90C26 90 10 80 10 60C10 40 26 24 50 24Z',
+    front: [
+      { e: [43, 69, 9, 7], f: white, w: 3 },
+      { e: [57, 69, 9, 7], f: white, w: 3 },
+      { e: [50, 63, 5, 3.6], f: 'ink', w: 0 },
+      { c: [40, 69, 1.3], f: 'ink', w: 0 }, { c: [45, 72, 1.3], f: 'ink', w: 0 },
+      { c: [55, 72, 1.3], f: 'ink', w: 0 }, { c: [60, 69, 1.3], f: 'ink', w: 0 },
+    ],
+    top: [
+      { c: [50, 12, 10], f: white, w: 0 },
+      { d: 'M50 2Q37 12 50 22Q42 12 50 2Z', f: coral, w: 0 },
+      { d: 'M50 2Q63 12 50 22Q58 12 50 2Z', f: teal, w: 0 },
+      { c: [50, 12, 10], f: 'none', w: 3.5 },
+    ],
+    eyes: [[35, 50], [65, 50]], es: 1.05, mouth: [50, 82], ms: 0.55, ck: [[21, 64], [79, 64]],
+  },
+
+  // just hatched: half an eggshell still on its head, coral beak
+  chick: {
+    head: 'M50 22C74 22 88 40 88 60C88 80 72 90 50 90C28 90 12 80 12 60C12 40 26 22 50 22Z',
+    front: [{ d: 'M42 60L58 60L50 70Z', f: coral, w: 3 }],
+    top: [{ d: 'M22 38C20 12 80 12 78 38L70 31L61 40L50 31L39 40L30 31Z', f: white, w: 3.5 }],
+    eyes: [[36, 52], [64, 52]], mouth: [50, 78], ms: 0.5, ck: [[23, 64], [77, 64]],
+  },
 }
 
 // Shared status faces, drawn around (0,0) of each eye / the mouth.
@@ -284,4 +487,6 @@ export const MOUTHS = {
   smirk: [{ d: 'M-6 1Q1 4.5 7 -2.5', k: 'line' }],
 }
 
-export const ANIMAL_KEYS = ['fox', 'cat', 'bunny', 'bear', 'frog', 'owl', 'panda', 'raccoon', 'duck', 'shiba', 'axolotl', 'penguin']
+// the first 12 are the originals: agents without a saved avatar hash over those, so theirs never change
+export const ANIMAL_KEYS = ['fox', 'cat', 'bunny', 'bear', 'frog', 'owl', 'panda', 'raccoon', 'duck', 'shiba', 'axolotl', 'penguin',
+  'koala', 'lion', 'tiger', 'pig', 'mouse', 'sheep', 'hedgehog', 'monkey', 'cow', 'deer', 'seal', 'chick']

@@ -17,7 +17,7 @@ import Automations from './views/Automations'
 import Memory from './views/Memory'
 import Settings from './views/Settings'
 import Pair from './views/Pair'
-import About from './views/About'
+import About, { StarLink } from './views/About'
 import Examples from './views/Examples'
 import Boundary from './components/Boundary'
 
@@ -139,6 +139,7 @@ export default function App() {
               {k === 'inbox' && badge > 0 && <span className="dot-badge">{badge}</span>}
             </button>
           ))}
+          <StarLink className="rail-btn rail-gh" label={t('nav.star')} />
           <button className={`rail-btn rail-settings ${view === 'settings' ? 'on' : ''}`} onClick={() => go('settings')} title={t('nav.settings')}>
             <span className="rail-ico">{SETTINGS_ICON}</span>
             <span className="rail-lbl">{t('nav.settings')}</span>

@@ -14,6 +14,7 @@ import Usage from './Usage'
 import Skills from './Skills'
 import AgentIds from './AgentIds'
 import Boundary from '../components/Boundary'
+import { REPO_URL } from './About'
 
 // #/settings/<tab>: general stuff plus the ways your team connects to the rest of your life
 const TABS = [
@@ -36,7 +37,7 @@ export default function Settings({ sub }) {
       <header className="page-head">
         <div>
           <h1>{t('title')}</h1>
-          <p className="muted">{t('lead')} <a href="#/about">{t('common:nav.whatIs')} ✨</a></p>
+          <p className="muted">{t('lead')} <a href="#/about">{t('common:nav.whatIs')} ✨</a> · <a href={REPO_URL} target="_blank" rel="noopener noreferrer">⭐ {t('common:nav.star')}</a></p>
         </div>
       </header>
       <div className="hub-tabs">

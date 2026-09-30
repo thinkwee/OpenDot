@@ -19,14 +19,12 @@ from fastapi import APIRouter, Body, HTTPException
 
 from .. import usage
 from ..db import db
-from ..runtime import make_agent, run_agent, spawn
+from ..runtime import ANIMALS, make_agent, run_agent, spawn
 from ..tools import Ctx, S, fn, register_tool
 
 log = logging.getLogger("opendot.ext.hire")
 router = APIRouter(prefix="/api/agents")
 
-ANIMALS = ["fox", "cat", "bunny", "bear", "frog", "owl", "panda", "raccoon", "duck", "shiba",
-           "axolotl", "penguin"]
 
 TEMPLATES = [
     dict(key="travel", name="Trip Buddy", emoji="🧳", avatar="penguin", color="#8EC5FF",

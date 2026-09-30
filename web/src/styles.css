@@ -343,6 +343,9 @@ textarea.input { resize: vertical; }
 
 /* ---------- simplified shell ---------- */
 .rail-settings { margin-top: auto; margin-bottom: 26px; }
+.rail-gh { margin-top: auto; text-decoration: none; }
+.rail-gh .rail-lbl { display: flex; align-items: center; gap: 2px; }
+.rail-gh + .rail-settings { margin-top: 0; }
 .live-pip { position: fixed; right: 20px; bottom: 96px; z-index: 25; display: flex; align-items: center; gap: 10px; width: 290px; padding: 10px 12px; border-radius: 18px; background: var(--panel); border: 2px solid color-mix(in srgb, var(--c) 60%, var(--line)); box-shadow: var(--shadow); text-align: left; animation: pop .2s; }
 .live-pip b { display: block; font-size: 13px; }
 .live-pip small { color: var(--ink2); font-size: 12px; max-width: 170px; }

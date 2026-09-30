@@ -17,7 +17,7 @@ export function animalFor(agent) {
   const s = String(agent.id || agent.name || '')
   let h = 0
   for (let i = 0; i < s.length; i++) h += s.charCodeAt(i)
-  return ANIMAL_KEYS[h % ANIMAL_KEYS.length]
+  return ANIMAL_KEYS[h % 12]
 }
 
 const INK = 'var(--edge, #1e1b2e)'

@@ -6,107 +6,55 @@
 
 ### Your personal agent team, in the real world.
 
-Each agent takes one thing off your plate and deals with the world as itself,<br/>
-with its own email, phone and computer. It comes back when there's something to decide. **You just answer.**
-
 [![MIT](https://img.shields.io/badge/license-MIT-1e1b2e?style=for-the-badge)](LICENSE)
 [![Any model](https://img.shields.io/badge/any_AI_model-1e1b2e?style=for-the-badge)](#-get-going)
 [![EN / 中文](https://img.shields.io/badge/EN_·_中文-ff6b57?style=for-the-badge)](README.zh-CN.md)
 
 **English** · [中文](README.zh-CN.md)
 
-<img src="docs/screenshots/hero.png" alt="OpenDot on a phone" width="100%" />
-
-**💳 Your money stays yours.** Agents never pay for anything. They get everything ready and hand you the link.
-
 </div>
+
+<img src="docs/screenshots/about.png" alt="What OpenDot is: someone for every little job" width="100%" />
 
 ---
 
-## ✨ Six ideas
+## 👀 See it
 
 <table>
 <tr>
-<td width="46%" valign="top">
-
-### 1 · Proactive agents, reactive you
-They keep watch and come to you when something's ready. You answer with a tap. Quiet by default.
-
-</td>
-<td width="54%"><img src="docs/screenshots/fun.png" alt="One-tap answers" /></td>
+<td width="50%" valign="top"><img src="docs/screenshots/fun.png" alt="One-tap answers" /><br/><b>They come to you; you answer with a tap</b></td>
+<td width="50%" valign="top"><img src="docs/screenshots/computer.png" alt="Each agent's own computer" /><br/><b>Every agent has its own computer</b></td>
 </tr>
 <tr>
-<td width="54%"><img src="docs/screenshots/computer.png" alt="Each agent's own computer" /></td>
-<td width="46%" valign="top">
-
-### 2 · Every agent has its own computer
-A browser, files and a terminal you can watch live or take over. Big jobs get helpers, each with a computer of its own.
-
-</td>
+<td width="50%" valign="top"><img src="docs/screenshots/card.png" alt="An agent's card" /><br/><b>Its own email address and phone number</b></td>
+<td width="50%" valign="top"><img src="docs/screenshots/new.png" alt="Make an agent" /><br/><b>From a sentence, a template, a link or a QR code</b></td>
 </tr>
 <tr>
-<td width="46%" valign="top">
-
-### 3 · A real identity
-Each agent can have its own email address and phone number, and deals with the world as itself, not as you.
-
-<sub>Email works through one mailbox you give your agents: each agent gets an alias on it (like <code>you+pip@gmail.com</code>). Best to open a fresh mailbox just for them, so they never see your personal mail.</sub>
-
-</td>
-<td width="54%"><img src="docs/screenshots/card.png" alt="An agent's card" /></td>
-</tr>
-<tr>
-<td width="54%"><img src="docs/screenshots/new.png" alt="Make an agent" /></td>
-<td width="46%" valign="top">
-
-### 4 · A QR code or a link is an agent
-One job, one agent. Make one from a sentence, a template, a link or a QR code.
-
-</td>
-</tr>
-<tr>
-<td width="46%" valign="top">
-
-### 5 · Agent calendar
-Your calendars and your agents' plans on one timeline, with a face on every event someone is looking after.
-
-</td>
-<td width="54%"><img src="docs/screenshots/calendar.png" alt="Calendar" /></td>
-</tr>
-<tr>
-<td width="54%"><img src="docs/screenshots/todo.png" alt="Todo" /></td>
-<td width="46%" valign="top">
-
-### 6 · Agent todo
-Everything they took on, on one board: needs you, in progress, done.
-
-</td>
+<td width="50%" valign="top"><img src="docs/screenshots/calendar.png" alt="Calendar" /><br/><b>Your calendars and their plans, one timeline</b></td>
+<td width="50%" valign="top"><img src="docs/screenshots/todo.png" alt="Todo" /><br/><b>Everything they took on, on one board</b></td>
 </tr>
 </table>
 
-<p align="center">
-<img src="docs/screenshots/todo-m.png" width="32%" alt="Todo on a phone" />
-&nbsp;
-<img src="docs/screenshots/calendar-m.png" width="32%" alt="Calendar on a phone" />
-</p>
+<img src="docs/screenshots/hero.png" alt="OpenDot on a phone" width="100%" />
 
 <img src="docs/screenshots/phones-2.png" alt="Agents on a phone" width="100%" />
+
+<sub>Email works through one mailbox you give your agents: each gets an alias on it (like <code>you+pip@gmail.com</code>). Best to open a fresh mailbox just for them, so they never see your personal mail.</sub>
 
 ---
 
 ## 🛡️ You stay in charge
 
-- **Nothing goes out in your name without asking.** Emails, texts and posts wait for your OK, and get a second look first.
+- **A second look.** Before an agent sends, posts or changes anything in your name, a separate check compares it with what you asked. Once you say "don't ask me" for something, it only steps in to stop what's clearly wrong.
 - **Some things are always yours:** payments, passwords, deleting accounts, contracts.
-- **Apps go only to the agents you choose.** They can look things up in them; adding or changing anything asks you first.
-- **Your data stays on your computer**, in plain files you can read.
+- **Apps go only to the agents you choose.** They can look things up; adding or changing anything asks you first.
 - **Nothing is lost** if the computer restarts.
 
 ---
 
 ## 🦊 Faces and colours
 
-<img src="docs/screenshots/avatars.png" alt="Twelve hand-drawn agent faces" width="100%" />
+<img src="docs/screenshots/avatars.png" alt="Twenty-four hand-drawn agent faces" width="100%" />
 
 <img src="docs/screenshots/themes.png" alt="Five colour schemes" width="100%" />
 
@@ -123,7 +71,7 @@ It installs everything, asks which AI to use, and opens OpenDot in your browser.
 
 Then connect the apps you use under **Settings → Apps**: Notion, Gmail, Google Calendar or iCloud, Outlook, Todoist, Linear and more, most with one tap.
 
-Works on macOS and Linux, with any AI model: OpenAI, Claude, Gemini, DeepSeek, or one running on your own computer. English and 中文.
+macOS or Linux, any AI model: OpenAI, Claude, Gemini, DeepSeek, or one on your own computer.
 
 More: [how it works](docs/DESIGN.md).
 
@@ -139,7 +87,7 @@ OpenDot is an independent, open-source personal agent team in the real world tha
 
 <div align="center">
 
-**Early, and honest about it.** If your agents took something off your plate, a ⭐ makes them do a happy dance.
+If your agents took something off your plate, a ⭐ makes them do a happy dance.
 
 <img src="docs/screenshots/logo.png" width="48" alt="" />
 

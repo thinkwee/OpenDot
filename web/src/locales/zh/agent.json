@@ -27,7 +27,19 @@
     "duck": "鸭子",
     "shiba": "柴犬",
     "axolotl": "六角恐龙",
-    "penguin": "企鹅"
+    "penguin": "企鹅",
+    "koala": "考拉",
+    "lion": "狮子",
+    "tiger": "老虎",
+    "pig": "小猪",
+    "mouse": "老鼠",
+    "sheep": "绵羊",
+    "hedgehog": "刺猬",
+    "monkey": "猴子",
+    "cow": "奶牛",
+    "deer": "小鹿",
+    "seal": "海豹",
+    "chick": "小鸡"
   },
   "job": {
     "label": "负责",

@@ -14,7 +14,7 @@ import { setLang } from '../i18n'
 import './About.css'
 
 export const REPO = 'thinkwee/OpenDot'
-const REPO_URL = `https://github.com/${REPO}`
+export const REPO_URL = `https://github.com/${REPO}`
 
 export function Github({ size = 18 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={siGithub.path} /></svg>
@@ -25,15 +25,31 @@ const PILLAR_ICONS = [Sparkles, Monitor, KeyRound, QrCode, CalendarDays, ListChe
 
 const CREW = [['#FFB38A', 'fox'], ['#8FD6B8', 'bear'], ['#B9A6F2', 'bunny'], ['#8EC5FF', 'penguin']]
 
-function useStars() {
+// the star count, fetched once per page load (GitHub allows 60 unauthenticated calls an hour)
+let starsOnce = null
+export function useStars() {
   const [n, setN] = useState(null)
   useEffect(() => {
-    fetch(`https://api.github.com/repos/${REPO}`)
+    starsOnce ||= fetch(`https://api.github.com/repos/${REPO}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && typeof d.stargazers_count === 'number' && setN(d.stargazers_count))
-      .catch(() => {})
+      .then((d) => (d && typeof d.stargazers_count === 'number' ? d.stargazers_count : null))
+      .catch(() => null)
+    let alive = true
+    starsOnce.then((v) => alive && v != null && setN(v))
+    return () => { alive = false }
   }, [])
   return n
+}
+
+// a small GitHub link with the star count, for the side rail and Settings
+export function StarLink({ className = '', label }) {
+  const stars = useStars()
+  return (
+    <a className={className} href={REPO_URL} target="_blank" rel="noopener noreferrer" title={label}>
+      <span className="rail-ico"><Github size={20} /></span>
+      <span className="rail-lbl"><Star size={10} fill="currentColor" /> {stars ?? label}</span>
+    </a>
+  )
 }
 
 export default function About() {

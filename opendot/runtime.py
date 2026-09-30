@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import random
 import re
 import time
 
@@ -92,6 +93,24 @@ def ensure_default_agents() -> None:
     make_agent(**_front_desk())
 
 
+ANIMALS = ["fox", "cat", "bunny", "bear", "frog", "owl", "panda", "raccoon", "duck", "shiba",
+           "axolotl", "penguin", "koala", "lion", "tiger", "pig", "mouse", "sheep", "hedgehog",
+           "monkey", "cow", "deer", "seal", "chick"]  # web/src/components/animals/shapes.js
+
+
+def pick_animal(wish: str = "") -> str:
+    """The animal a new agent gets: the one asked for if nobody on the team has it yet,
+    otherwise one of the least used, so a team doesn't turn into five owls."""
+    used: dict[str, int] = {a: 0 for a in ANIMALS}
+    for r in db.q("SELECT avatar FROM agents"):
+        if r["avatar"] in used:
+            used[r["avatar"]] += 1
+    if used.get(wish) == 0:
+        return wish
+    fewest = min(used.values())
+    return random.choice([a for a, n in used.items() if n == fewest])
+
+
 def make_agent(name: str, role: str = "", emoji: str = "🌟", color: str = "",
                tagline: str = "", responsibility: str = "", context: str = "",
                boundary: str = "", origin: str = "manual", origin_url: str = "",
@@ -111,7 +130,7 @@ def make_agent(name: str, role: str = "", emoji: str = "🌟", color: str = "",
                   color=color or PALETTE[count % len(PALETTE)], role=role,
                   tagline=(tagline or "").strip()[:140], responsibility=responsibility.strip(),
                   context=context.strip(), boundary=boundary.strip(), origin=origin,
-                  origin_url=origin_url, avatar=avatar or "")
+                  origin_url=origin_url, avatar=pick_animal(avatar))
     memory.write(a["id"], "SOUL.md", memory.read(a["id"], "SOUL.md").format(name=name,
                                                                              role=role))
     t = db.insert("threads", id=new_id("th_"), title=name, kind="dm", members=[a["id"]],

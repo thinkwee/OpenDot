@@ -232,3 +232,14 @@ def test_friendly_words_survive_the_api(client, auth_headers):
               args={"to": "x@y.z", "_what": "email x@y.z"}, reason="", status="pending")
     ap = client.get("/api/bootstrap", headers=auth_headers).json()["approvals"][0]
     assert ap["args"]["_what"] == "email x@y.z"
+
+
+def test_new_agents_get_an_animal_the_team_lacks():
+    from opendot.runtime import ANIMALS, make_agent, pick_animal
+    make_agent(name="Hoot", avatar="owl")
+    for r in db.q("SELECT id FROM agents"):
+        db.update("agents", r["id"], avatar="owl")
+    assert pick_animal("owl") != "owl"  # already on the team
+    assert pick_animal("tiger") == "tiger"  # nobody has it yet
+    faces = [make_agent(name=f"Z{i}", avatar="owl")[0]["avatar"] for i in range(len(ANIMALS) - 1)]
+    assert sorted(faces) == sorted(a for a in ANIMALS if a != "owl")  # every animal before repeats

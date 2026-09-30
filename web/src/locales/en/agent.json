@@ -27,7 +27,19 @@
     "duck": "Duck",
     "shiba": "Shiba",
     "axolotl": "Axolotl",
-    "penguin": "Penguin"
+    "penguin": "Penguin",
+    "koala": "Koala",
+    "lion": "Lion",
+    "tiger": "Tiger",
+    "pig": "Pig",
+    "mouse": "Mouse",
+    "sheep": "Sheep",
+    "hedgehog": "Hedgehog",
+    "monkey": "Monkey",
+    "cow": "Cow",
+    "deer": "Deer",
+    "seal": "Seal",
+    "chick": "Chick"
   },
   "job": {
     "label": "Takes care of",
