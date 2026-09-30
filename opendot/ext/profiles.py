@@ -15,6 +15,7 @@ import logging
 
 from fastapi import APIRouter, Body, HTTPException
 
+from .. import usage
 from ..config import settings
 from ..db import db
 from ..gatekeeper import inject_secrets
@@ -156,7 +157,8 @@ async def _test(body: dict = Body(...)):
         raise HTTPException(404, "no such profile")
     cli = _build({**prof, "max_tokens": 32})
     try:
-        r = await cli.chat([{"role": "user", "content": "Reply with just: OK"}])
+        with usage.tagged(kind="test"):
+            r = await cli.chat([{"role": "user", "content": "Reply with just: OK"}])
         return {"ok": True, "reply": r.content[:200]}
     except Exception as e:
         return {"ok": False, "error": friendly_error(e)}

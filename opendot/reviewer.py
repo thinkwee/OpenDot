@@ -16,7 +16,7 @@ import logging
 import os
 import re
 
-from . import gatekeeper, memory
+from . import gatekeeper, memory, usage
 from .db import db
 
 log = logging.getLogger("opendot.reviewer")
@@ -119,8 +119,9 @@ async def review(agent: dict, thread_id: str, source: str, tool: str,
                 "LANG", "Chinese" if lang() == "zh" else "English")},
             {"role": "user", "content": _evidence(agent, thread_id, source, tool, args)}]
     try:
-        reply = await asyncio.wait_for(_client(agent["id"]).chat(msgs, max_tokens=300),
-                                       TIMEOUT)
+        with usage.tagged(agent_id=agent["id"], thread_id=thread_id, kind="second look"):
+            reply = await asyncio.wait_for(_client(agent["id"]).chat(msgs, max_tokens=300),
+                                           TIMEOUT)
         return _parse(reply.content)
     except Exception as e:  # never block the product because the reviewer failed
         log.warning("second look skipped for %s: %s", tool, e)

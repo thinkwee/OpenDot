@@ -46,6 +46,20 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   (and the iPhone's calendars) with the times routines fire and watches check, and
   `ext/calendar.py` reminds you shortly before each event.
 
+- **Usage** (`usage.py`, `ext/usage_api.py`, Settings → Usage): every model reply's
+  tokens (in / out / cached / thinking) are saved with the agent and the kind of work
+  it was for (chat, routine, watch, check-in, second look…), set once where a run
+  starts. The cost is LiteLLM's estimate from its price list; a model it has no price
+  for is counted without one.
+
+- **Context** (`context.py`): what the model reads each step is kept lean, for cost,
+  speed and answer quality. Within a run, past a token budget (half the model's window,
+  capped at 60k) older tool results are cleared in one go, keeping the last three; a run
+  still too big is compacted into a note (task, findings with exact values, decisions,
+  what's left). Across turns, a chat is its recent messages within a budget plus a
+  rolling summary of the rest, updated after each run. Stable parts come first and the
+  clock last, so the prompt cache holds; Claude gets explicit cache markers.
+
 ## Models
 
 `opendot/llm.py` talks to every model through [LiteLLM](https://docs.litellm.ai/docs/providers),
@@ -122,6 +136,14 @@ Protocol) — `opendot/connectors.py`, `opendot/mcp_oauth.py`, `opendot/ext/apps
 
 Each app runs in its own task: one that fails or needs a sign-in doesn't hold up the
 others, and you can reconnect it on its own.
+
+**Tools load when they're needed.** The model reads every tool definition it's given on
+every step, and one app alone (Notion) describes its tools in ~50k tokens. So only apps
+with short tool lists come ready; the rest are listed in the prompt by name with their
+tools, and `open_app` adds the tools the task needs to the run (a big app first says
+what each tool does, so the agent loads only those). The app tools this chat used in
+the last few days come ready too. Tool definitions from apps are also made lean:
+validation-only keywords go and long descriptions deep inside are shortened.
 
 ## Safety
 

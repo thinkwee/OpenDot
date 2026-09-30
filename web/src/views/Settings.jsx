@@ -10,6 +10,7 @@ import Channels from './Channels'
 import Devices from './Devices'
 import Connectors from './Connectors'
 import Apps from './Apps'
+import Usage from './Usage'
 import Skills from './Skills'
 import AgentIds from './AgentIds'
 import Boundary from '../components/Boundary'
@@ -18,6 +19,7 @@ import Boundary from '../components/Boundary'
 const TABS = [
   ['general', '⚙️'],
   ['apps', '🧩'],
+  ['usage', '📊'],
   ['identity', '🪪'],
   ['channels', '💬'],
   ['devices', '💻'],
@@ -48,6 +50,7 @@ export default function Settings({ sub }) {
         {tab === 'channels' && <Channels />}
         {tab === 'devices' && <Devices />}
         {tab === 'apps' && <Apps />}
+        {tab === 'usage' && <Usage />}
         {tab === 'advanced' && <Connectors />}
         {tab === 'skills' && <Skills />}
       </Boundary>

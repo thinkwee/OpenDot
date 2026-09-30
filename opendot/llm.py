@@ -40,7 +40,8 @@ class LLMReply:
 class LLM:
     def __init__(self, base_url: str | None = None, api_key: str | None = None,
                 model: str | None = None, reasoning_effort: str | None = None,
-                max_tokens: int | None = None, concurrency: int | None = None) -> None:
+                max_tokens: int | None = None, concurrency: int | None = None,
+                record: bool = True) -> None:
         self.base_url = (settings.LLM_BASE_URL if base_url is None else base_url) or None
         self.api_key = (settings.LLM_API_KEY if api_key is None else api_key) or None
         self.model = model or settings.LLM_MODEL
@@ -48,6 +49,14 @@ class LLM:
                                  else reasoning_effort)
         self.max_tokens = max_tokens or settings.LLM_MAX_TOKENS
         self.sem = asyncio.Semaphore(concurrency or settings.LLM_CONCURRENCY)
+        self.record = record  # count tokens on the Usage page (not for the setup test)
+
+    @property
+    def _explicit_cache(self) -> bool:
+        """Providers that need cache markers; OpenAI, DeepSeek, Gemini… cache on their own."""
+        r = self.route.lower()
+        return not self.base_url and "claude" in r and \
+            r.startswith(("anthropic/", "bedrock/", "vertex_ai/", "openrouter/anthropic/"))
 
     @property
     def route(self) -> str:
@@ -74,6 +83,11 @@ class LLM:
                 kwargs["allowed_openai_params"] = ["reasoning_effort"]
         if tools:
             kwargs["tools"] = tools
+        if self._explicit_cache:
+            # Claude caches only where told: after the system prompt (tools come before it,
+            # so they're covered) and at the newest message, so each step reuses the last
+            kwargs["cache_control_injection_points"] = [
+                {"location": "message", "role": "system"}, {"location": "message", "index": -1}]
         if stream:
             kwargs["stream"] = True
             kwargs["stream_options"] = {"include_usage": True}
@@ -103,6 +117,7 @@ class LLM:
             for tc in (msg.tool_calls or [])
         ]
         usage = _usage(getattr(r, "usage", None))
+        self._count(getattr(r, "usage", None))
         return LLMReply(content=(msg.content or "").strip(), tool_calls=calls, usage=usage)
 
     async def chat_stream(self, messages: list[dict], tools: list[dict] | None = None,
@@ -118,9 +133,10 @@ class LLM:
             parts: list[str] = []
             calls: dict[int, dict] = {}
             usage: dict = {}
+            raw = None
             async for chunk in stream:
                 if getattr(chunk, "usage", None):
-                    usage = _usage(chunk.usage)
+                    usage, raw = _usage(chunk.usage), chunk.usage
                 if not chunk.choices:
                     continue
                 delta = chunk.choices[0].delta
@@ -140,8 +156,15 @@ class LLM:
                             slot["arguments"] += tc.function.arguments
                             yield ("tool_delta", (slot["name"], len(slot["arguments"])))
             ordered = [calls[i] for i in sorted(calls)]
+            self._count(raw)
             yield ("done", LLMReply(content="".join(parts).strip(), tool_calls=ordered,
                                     usage=usage))
+
+
+    def _count(self, u) -> None:
+        if self.record and u:
+            from . import usage
+            usage.record(self.model, self.route, u)
 
 
 def _usage(u) -> dict:

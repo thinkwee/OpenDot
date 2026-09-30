@@ -29,6 +29,7 @@ import logging
 import httpx
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from .. import usage
 from ..computer import computer_for
 from ..computer.term import session_for
 from ..config import settings
@@ -221,7 +222,8 @@ async def _browse_task(ctx: Ctx, task: str, max_steps: int = 14) -> dict:
                 {"role": "user", "content": task},
             ]
             for _ in range(max_steps):
-                reply = await llm.chat(messages, tools=schemas)
+                with usage.tagged(kind="computer"):  # for the agent that asked
+                    reply = await llm.chat(messages, tools=schemas)
                 if not reply.tool_calls:
                     return {"result": reply.content or "(browse_task finished with no reply)"}
                 messages.append({"role": "assistant", "content": reply.content or "",

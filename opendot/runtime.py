@@ -13,7 +13,7 @@ import logging
 import re
 import time
 
-from . import durable, memory
+from . import context, durable, memory, usage
 from .bus import bus
 from .config import settings
 from .connectors import mcp_hub
@@ -173,7 +173,7 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
     j = memory.recent_journal(aid)
     if j:
         parts.append("# My recent journal\n" + j)
-    parts.append(
+    situation = (
         "# Situation\n"
         f"- Now: {now:%A %Y-%m-%d %H:%M} ({settings.TIMEZONE}).\n"
         f"- Channel: {'group chat “' + thread['title'] + '”' if thread['kind'] == 'group' else 'direct chat'}"
@@ -217,6 +217,8 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
     parts.append("\n".join(rules))
     from . import ext
     parts.extend(ext.prompt_sections(agent))
+    # what changes every minute goes last: everything before it stays in the prompt cache
+    parts.append(situation)
     return "\n\n".join(p.strip() for p in parts if p.strip())
 
 
@@ -244,15 +246,33 @@ def _job_section(agent: dict) -> str:
     return "# Your job\n" + "\n".join(lines)
 
 
-def history(thread: dict, agent: dict, limit: int = 30) -> list[dict]:
+def _tools_used_here(thread_id: str, days: float = 3) -> set[str]:
+    """App tools that ran in this chat recently."""
+    rows = db.q("SELECT DISTINCT tool FROM steps WHERE thread_id=? AND tool LIKE 'mcp\\_\\_%' "
+                "ESCAPE '\\' AND created > ?", thread_id, time.time() - days * 86400)
+    return {r["tool"] for r in rows}
+
+
+def history(thread: dict, agent: dict, limit: int = 400) -> list[dict]:
+    """The chat as this agent sees it: a summary of the older part (``context``), then the
+    recent messages word for word, within a token budget."""
     rows = db.q("SELECT * FROM messages WHERE thread_id=? ORDER BY created DESC LIMIT ?",
                 thread["id"], limit)[::-1]
+    summary = db.kv_get(context.summary_key(thread["id"], agent["id"])) or {"upto": 0, "text": ""}
+    older, rows = context.split_history(rows, summary["upto"])
     names = {a["id"]: a["name"] for a in db.q("SELECT id, name FROM agents")}
+    earlier = []
+    if summary["text"]:
+        earlier.append("[Earlier in this chat — a summary]\n" + summary["text"])
+    if older:  # not summarised yet (it happens after a run): the gist of each
+        earlier.append("[Earlier messages, shortened]\n" + "\n".join(
+            f"- {'Human' if m['role'] == 'user' else names.get(m['agent_id'], 'Agent')}: "
+            f"{re.sub(r'\s+', ' ', m['content'] or '')[:240]}" for m in older[-20:]))
     from .ext.uploads import context_block
     with_files = [m["id"] for m in rows if m["role"] == "user" and
                   any(a.get("upload") for a in (m["meta"] or {}).get("attachments") or [])]
     recent_files = set(with_files[-2:])  # older uploads: card only, to keep context lean
-    out: list[dict] = []
+    out: list[dict] = [{"role": "user", "content": "\n\n".join(earlier)}] if earlier else []
     for m in rows:
         if m["role"] == "user":
             content = m["content"] or ""
@@ -352,6 +372,16 @@ async def _stream_or_fallback(client, ctx: Ctx, messages: list[dict], tools: lis
 # ---------------- core loop ----------------
 async def agent_loop(ctx: Ctx, messages: list[dict], tools: list[dict],
                      max_steps: int | None = None) -> str:
+    # the model calls in this run count for this agent (a helper's for its own id) and
+    # for what started it; a helper inherits the kind of work from its lead
+    src = ctx.extra.get("source")
+    with usage.tagged(agent_id=ctx.agent["id"], thread_id=ctx.thread_id,
+                      kind=usage.kind_of(src) if src else None):
+        return await _agent_loop(ctx, messages, tools, max_steps)
+
+
+async def _agent_loop(ctx: Ctx, messages: list[dict], tools: list[dict],
+                      max_steps: int | None = None) -> str:
     aid = ctx.agent["id"]
     client = llm_for_agent(aid)
     said: list[str] = []  # text written alongside reply-only tools (offer_choices) is the answer
@@ -359,6 +389,7 @@ async def agent_loop(ctx: Ctx, messages: list[dict], tools: list[dict],
         if ctx.run_id in _cancel:
             return "(stopped)"
         set_status(aid, "thinking", _tr("thinking…", "在想…"))
+        await context.fit(messages, tools, client)
         reply = await _stream_or_fallback(client, ctx, messages, tools)
         if not reply.tool_calls:
             final = (reply.content or "").strip()
@@ -517,8 +548,15 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             msgs.append({"role": "user", "content": prompt})
         if len(msgs) == 1 or msgs[-1]["role"] != "user":
             msgs.append({"role": "user", "content": "(continue)"})
-        extra = mcp_hub.tool_defs(agent_id)
-        tools = tool_list(ctx, thread["kind"] == "group", extra)
+        # apps with big tool lists load when opened (open_app); the app tools this chat
+        # used lately come ready, so a conversation about Notion doesn't reopen it each turn
+        opened = mcp_hub.light_apps(agent_id)
+        used = {d["function"]["name"]: d for d in mcp_hub.tool_defs(agent_id)
+                if d["function"]["name"] in _tools_used_here(thread_id)}
+        app_defs = mcp_hub.tool_defs(agent_id, apps=opened)
+        app_defs += [d for n, d in used.items() if n not in {x["function"]["name"] for x in app_defs}]
+        tools = tool_list(ctx, thread["kind"] == "group", app_defs)
+        ctx.extra.update(tools=tools, opened=opened)
         from .ext import workfiles
         try:
             before = await asyncio.to_thread(workfiles.snapshot, agent_id)
@@ -586,6 +624,9 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
         except Exception:
             log.exception("todo close failed")
         bus.emit("run", state="end", agent_id=agent_id, thread_id=thread_id, run_id=run_id)
+        # fold what scrolled out of the word-for-word window into this chat's summary,
+        # after the reply is out so nobody waits for it
+        spawn(context.update_summary(thread_id, agent))
     for target_id, note in ctx.extra.get("handoffs", [])[:3]:
         if hops < 6 and target_id != agent_id:
             ask = f"[{agent['name']} → you]: {note}"

@@ -26,8 +26,8 @@ import asyncio
 import contextlib
 import fnmatch
 import json
-import re
 import logging
+import re
 import time
 import xml.etree.ElementTree as ET
 
@@ -221,9 +221,10 @@ class MCPHub:
                 read, write = await stack.enter_async_context(
                     streamable_http_client(url, http_client=client))
         else:
+            import os
+
             from mcp import StdioServerParameters
             from mcp.client.stdio import stdio_client
-            import os
             cwd = spec.get("cwd") or str(settings.DATA_DIR)
             args = [os.path.expanduser(a) for a in spec.get("args", [])]
             params = StdioServerParameters(command=spec["command"], args=args,
@@ -266,23 +267,37 @@ class MCPHub:
                     "parameters": _schema(t)}}}
 
     # ---- used by the agent loop
-    def tool_defs(self, agent_id: str | None = None) -> list[dict]:
+    def tool_defs(self, agent_id: str | None = None, apps=None) -> list[dict]:
+        """Tool definitions for the model: every connected app this agent may use, or
+        only ``apps`` (names)."""
         return [t["schema"] for s in self.servers.values() if s.status == "connected"
                 and (agent_id is None or can_use(s.spec, agent_id))
+                and (apps is None or s.name in apps)
                 for t in s.tools.values()]
+
+    def light_apps(self, agent_id: str) -> set[str]:
+        """Apps whose tools are small enough to hand the model up front. The rest load
+        when an agent opens them (``open_app``): one app like Notion describes its tools
+        in ~50k tokens, which the model would otherwise read on every single step."""
+        return {s.name for s in self.servers.values() if s.status == "connected"
+                and can_use(s.spec, agent_id)
+                and sum(len(json.dumps(t["schema"])) for t in s.tools.values()) <= LIGHT_APP}
 
     def tool_info(self, full: str) -> dict | None:
         return self.tools.get(full)
 
     def apps_for(self, agent_id: str) -> list[dict]:
-        """The apps this agent may use, connected or not (for its system prompt)."""
+        """The apps this agent may use, connected or not (for its system prompt), with
+        their tool names, and whether their tools are handed over up front."""
+        light = self.light_apps(agent_id)
         out = []
         for name, spec in load_config()["mcp"].items():
             if spec.get("disabled") or not can_use(spec, agent_id):
                 continue
             srv = self.servers.get(name)
-            out.append({"name": name, "label": spec.get("label") or name,
-                        "status": srv.status if srv else "off"})
+            out.append({"name": name, "label": spec.get("label") or name, "app": spec.get("app"),
+                        "status": srv.status if srv else "off", "ready": name in light,
+                        "tools": [t["tool"] for t in srv.tools.values()] if srv else []})
         return out
 
     async def call(self, full: str, args: dict, agent_id: str | None = None) -> dict:
@@ -336,6 +351,8 @@ class MCPHub:
         await self.stop_all()
 
 
+LIGHT_APP = 6000  # characters of tool definitions an app may have and still load up front
+
 _SIGNED_OUT = re.compile(r"needs you to sign in again|missing required authentication|invalid authentication credentials|"
                          r"UNAUTHENTICATED|invalid_grant|token (has )?(expired|been revoked)", re.I)
 
@@ -382,9 +399,38 @@ def _explain(e: BaseException) -> str:
 
 
 def _schema(tool) -> dict:
-    """``input_schema`` in mcp>=2, ``inputSchema`` in mcp 1.x."""
+    """``input_schema`` in mcp>=2, ``inputSchema`` in mcp 1.x; made lean (``_lean``)."""
     s = getattr(tool, "input_schema", None) or getattr(tool, "inputSchema", None)
-    return s or {"type": "object", "properties": {}}
+    return _lean(s) if s else {"type": "object", "properties": {}}
+
+
+# only for validating, which the app does itself anyway
+_VALIDATION = {"$schema", "$id", "$comment", "pattern", "additionalProperties", "examples",
+               "minLength", "maxLength", "minItems", "maxItems", "title", "readOnly", "writeOnly"}
+
+
+def _lean(node, depth: int = 0):
+    """A tool's parameters, minus what the model doesn't need to call it well: validation
+    keywords, and long descriptions deep inside (the first two levels keep theirs). Every
+    parameter, type, enum and required list stays, so calls come out the same."""
+    if isinstance(node, list):
+        return [_lean(x, depth) for x in node]
+    if not isinstance(node, dict):
+        return node
+    out = {}
+    for k, v in node.items():
+        if k in _VALIDATION and depth > 0:
+            continue
+        if k == "$schema":
+            continue
+        if k == "description" and isinstance(v, str):
+            cap = 600 if depth <= 2 else 160
+            out[k] = v if len(v) <= cap else v[:cap].rsplit(" ", 1)[0] + "…"
+        elif k in ("properties", "$defs", "definitions") and isinstance(v, dict):
+            out[k] = {name: _lean(sub, depth + 1) for name, sub in v.items()}
+        else:
+            out[k] = _lean(v, depth + (1 if k in ("items", "anyOf", "oneOf", "allOf") else 0))
+    return out
 
 
 mcp_hub = MCPHub()

@@ -44,6 +44,10 @@ class Settings:
     LANGUAGE = _env("DOT_LANGUAGE", "auto")
 
     MAX_STEPS = int(_env("DOT_MAX_STEPS", "24"))
+    # context budget (see context.py): clear old tool results past this many tokens (or
+    # half the model's window, if smaller); the window assumed for models LiteLLM doesn't know
+    CONTEXT_TRIGGER = int(_env("DOT_CONTEXT_TRIGGER", "60000"))
+    CONTEXT_WINDOW = int(_env("DOT_CONTEXT_WINDOW", "128000"))
     SHELL_TIMEOUT = int(_env("DOT_SHELL_TIMEOUT", "120"))
     HEARTBEAT_MINUTES = int(_env("DOT_HEARTBEAT_MINUTES", "60"))
     CHROMIUM_PATH = _env("DOT_CHROMIUM_PATH", "")

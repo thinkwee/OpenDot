@@ -1,0 +1,70 @@
+{
+  "range": {
+    "today": "今天",
+    "7d": "7 天",
+    "30d": "30 天",
+    "all": "全部"
+  },
+  "since": "从 {{date}} 开始统计",
+  "input": "输入",
+  "output": "输出",
+  "calls": "模型调用",
+  "cost": "预估花费",
+  "tile": {
+    "total": "用掉的 token",
+    "calls_one": "{{n}} 次模型调用",
+    "calls_other": "{{n}} 次模型调用",
+    "vs": {
+      "today": "比昨天",
+      "7d": "比前一周",
+      "30d": "比之前 30 天"
+    },
+    "cached": "{{pct}} 来自缓存",
+    "inputHint": "模型读进去的：聊天、笔记、工具结果",
+    "reasoning": "其中思考 {{n}}",
+    "outputHint": "模型写出来的",
+    "cost": "预估花费",
+    "costHint": "按 LiteLLM 价目表估算",
+    "unpriced_one": "{{n}} 次调用的模型没有公开价格",
+    "unpriced_other": "{{n}} 次调用的模型没有公开价格",
+    "perCall": "平均每次读 {{n}}"
+  },
+  "chart": {
+    "title": "每段时间用了多少",
+    "showTable": "表格",
+    "showChart": "图表",
+    "hour": "时间",
+    "day": "日期",
+    "week": "那一周起"
+  },
+  "by": {
+    "agent": "按助理",
+    "kind": "按做的事",
+    "model": "按模型",
+    "chat": "最费 token 的聊天",
+    "gone": "已移除的助理",
+    "nobody": "没有具体助理（设置、招聘）",
+    "noPrice": "没有公开价格"
+  },
+  "kind": {
+    "chat": "聊天和转交",
+    "routine": "例行任务",
+    "watch": "盯梢",
+    "check-in": "例行查看",
+    "goal": "目标",
+    "message": "邮件、短信和电话",
+    "second look": "二次确认",
+    "computer": "操作电脑",
+    "hiring": "招聘助理",
+    "test": "测试模型",
+    "other": "其他",
+    "compaction": "压缩上下文"
+  },
+  "empty": {
+    "title": "还没有记录",
+    "body": "助理每用一次模型，用掉的 token 都会记在这里。",
+    "range": "这段时间没有记录",
+    "rangeBody": "换个更长的时间范围看看。"
+  },
+  "note": "token 数是模型服务商统计的。花费按 LiteLLM 价目表估算；它不认识的模型（你自己的模型地址、本地模型）只记 token 不算钱。助手的用量算在带它的助理头上。"
+}

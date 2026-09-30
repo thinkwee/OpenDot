@@ -60,6 +60,12 @@ CREATE TABLE IF NOT EXISTS effects (
   attempt INTEGER, result TEXT, created REAL, finished REAL
 );
 CREATE INDEX IF NOT EXISTS ix_effects_key ON effects(job_id, tool, args_hash);
+-- one row per model reply: tokens in / out, and LiteLLM's cost estimate (see usage.py)
+CREATE TABLE IF NOT EXISTS usage (
+  id TEXT PRIMARY KEY, agent_id TEXT, thread_id TEXT, kind TEXT, model TEXT,
+  input INTEGER, output INTEGER, cached INTEGER, reasoning INTEGER, cost REAL, created REAL
+);
+CREATE INDEX IF NOT EXISTS ix_usage_created ON usage(created);
 """
 
 JSON_COLS = {"members", "meta", "args", "payload"}

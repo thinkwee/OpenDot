@@ -436,7 +436,7 @@ READ_ONLY = {
     "web_search", "web_fetch", "read_file", "list_files", "list_emails",
     "read_email", "iphone_status", "iphone_health", "iphone_calendar", "iphone_reminders",
     "iphone_location", "list_automations", "list_goals", "read_skill", "read_skill_file",
-    "find_skills", "read_upload", "device_list", "notify", "offer_choices",
+    "find_skills", "read_upload", "device_list", "notify", "offer_choices", "open_app",
 }
 BROWSER_READ = {"goto", "read", "scroll", "back", "screenshot"}
 LOOK_ONLY = ("just looking around on a check-in, so only reading is allowed. Propose it "

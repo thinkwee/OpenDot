@@ -4,6 +4,7 @@
   "tabs": {
     "general": "General",
     "apps": "Apps",
+    "usage": "Usage",
     "identity": "Agent identities",
     "channels": "Chat apps",
     "devices": "Your computers",

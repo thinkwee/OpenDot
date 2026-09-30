@@ -17,6 +17,7 @@ import re
 import httpx
 from fastapi import APIRouter, Body, HTTPException
 
+from .. import usage
 from ..db import db
 from ..runtime import make_agent, run_agent, spawn
 from ..tools import Ctx, S, fn, register_tool
@@ -163,9 +164,10 @@ async def design(text: str) -> dict:
                  "context, boundary and greeting in Chinese; a place may keep its own name.)")
     spec: dict = {}
     try:
-        r = await llm_mod.llm.chat([
-            {"role": "system", "content": SPEC_PROMPT % ", ".join(ANIMALS)},
-            {"role": "user", "content": text[:12000]}], max_tokens=1200)
+        with usage.tagged(kind="hiring"):
+            r = await llm_mod.llm.chat([
+                {"role": "system", "content": SPEC_PROMPT % ", ".join(ANIMALS)},
+                {"role": "user", "content": text[:12000]}], max_tokens=1200)
         spec = _parse_json(r.content)
     except Exception as e:
         log.warning("agent design failed: %s", e)

@@ -746,3 +746,52 @@ def test_google_builtin_apps(monkeypatch):
     save_config(cfg)
     gatekeeper.vault_set("GOOGLE_CLIENT_ID", None)
     gatekeeper.vault_set("GOOGLE_CLIENT_SECRET", None)
+
+
+def test_big_apps_load_when_opened(open_app, monkeypatch):
+    """An app with a long tool list isn't handed to the model up front: the prompt lists
+    it with its tool names, and `open_app` adds its tools to this run."""
+    import opendot.connectors as conn
+    from opendot.ext import apps as apps_mod
+    from opendot.tools import Ctx
+
+    url, _ = open_app
+    monkeypatch.setattr(conn, "LIGHT_APP", 0)  # treat every app as big
+
+    async def go():
+        hub = MCPHub()
+        monkeypatch.setattr(apps_mod, "mcp_hub", hub)
+        cfg = load_config()
+        cfg["mcp"]["notes"] = {"url": f"{url}/mcp", "agents": "all", "label": "Notes"}
+        save_config(cfg)
+        srv = hub.launch("notes", cfg["mcp"]["notes"])
+        await _wait(srv, "connected", "error")
+        assert hub.light_apps("ag_1") == set()
+        prompt = apps_mod.PROMPT({"id": "ag_1"})
+        assert '`open_app` with "notes"' in prompt and "list_notes" in prompt
+        tools: list = []
+        ctx = Ctx(agent={"id": "ag_1"}, thread_id="t", run_id="r")
+        ctx.extra.update(tools=tools, opened=set())
+        r = await apps_mod._open_app(ctx, "Notes")
+        assert r["ok"] and {t["function"]["name"] for t in tools} == {"mcp__notes__list_notes",
+                                                                       "mcp__notes__add_note"}
+        await apps_mod._open_app(ctx, "notes")
+        assert len(tools) == 2  # opening again adds nothing
+        # a big app: first say what each tool does, then load just the ones asked for
+        monkeypatch.setattr(apps_mod, "BIG_OPEN", 0)
+        few: list = []
+        ctx2 = Ctx(agent={"id": "ag_1"}, thread_id="t", run_id="r2")
+        ctx2.extra.update(tools=few, opened=set())
+        menu = await apps_mod._open_app(ctx2, "notes")
+        assert not menu["ok"] and set(menu["tools"]) == {"list_notes", "add_note"} and not few
+        r = await apps_mod._open_app(ctx2, "notes", tools=["list_notes"])
+        assert r["ok"] and [t["function"]["name"] for t in few] == ["mcp__notes__list_notes"]
+        assert not (await apps_mod._open_app(ctx, "trello"))["ok"]
+        monkeypatch.setattr(conn, "LIGHT_APP", 10**6)
+        assert hub.light_apps("ag_1") == {"notes"}
+        assert "(ready)" in apps_mod.PROMPT({"id": "ag_1"})
+        await hub.stop_all()
+        cfg["mcp"].pop("notes")
+        save_config(cfg)
+
+    asyncio.run(go())

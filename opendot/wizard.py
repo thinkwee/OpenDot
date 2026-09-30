@@ -108,7 +108,7 @@ def pick_model(p: dict, key: str, base: str) -> tuple[str, str]:
 
 async def _try(model: str, key: str, base: str) -> str:
     from .llm import LLM
-    cli = LLM(base_url=base, api_key=key, model=model, reasoning_effort="")
+    cli = LLM(base_url=base, api_key=key, model=model, reasoning_effort="", record=False)
     r = await asyncio.wait_for(
         cli.chat([{"role": "user", "content": "Say hi in 3 words."}], max_tokens=400), 90)
     return r.content or "(it answered)"

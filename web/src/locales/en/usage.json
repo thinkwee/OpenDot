@@ -1,0 +1,70 @@
+{
+  "range": {
+    "today": "Today",
+    "7d": "7 days",
+    "30d": "30 days",
+    "all": "All"
+  },
+  "since": "Counting since {{date}}",
+  "input": "Input",
+  "output": "Output",
+  "calls": "Model calls",
+  "cost": "Est. cost",
+  "tile": {
+    "total": "Tokens used",
+    "calls_one": "{{n}} model call",
+    "calls_other": "{{n}} model calls",
+    "vs": {
+      "today": "vs yesterday",
+      "7d": "vs the week before",
+      "30d": "vs the 30 days before"
+    },
+    "cached": "{{pct}} from the cache",
+    "inputHint": "What the model read: your chat, notes, tool results",
+    "reasoning": "incl. {{n}} thinking",
+    "outputHint": "What the model wrote back",
+    "cost": "Estimated cost",
+    "costHint": "From LiteLLM's price list",
+    "unpriced_one": "{{n}} call on a model with no listed price",
+    "unpriced_other": "{{n}} calls on models with no listed price",
+    "perCall": "{{n}} a call on average"
+  },
+  "chart": {
+    "title": "Tokens over time",
+    "showTable": "Table",
+    "showChart": "Chart",
+    "hour": "Hour",
+    "day": "Day",
+    "week": "Week from"
+  },
+  "by": {
+    "agent": "By agent",
+    "kind": "By kind of work",
+    "model": "By model",
+    "chat": "Busiest chats",
+    "gone": "An agent you let go",
+    "nobody": "No agent (setup, hiring)",
+    "noPrice": "no listed price"
+  },
+  "kind": {
+    "chat": "Chats and hand-offs",
+    "routine": "Routines",
+    "watch": "Watches",
+    "check-in": "Check-ins",
+    "goal": "Goals",
+    "message": "Emails, texts and calls",
+    "second look": "Second look",
+    "computer": "Using the computer",
+    "hiring": "Hiring",
+    "test": "Model tests",
+    "other": "Other",
+    "compaction": "Keeping context short"
+  },
+  "empty": {
+    "title": "Nothing counted yet",
+    "body": "Every time an agent uses the model, its tokens show up here.",
+    "range": "Nothing in this period",
+    "rangeBody": "Try a longer range."
+  },
+  "note": "Tokens are what your model provider counted. The cost is an estimate from LiteLLM's price list; models it doesn't know (your own endpoint, a local model) are counted without one. Helpers count for the agent that brought them in."
+}
