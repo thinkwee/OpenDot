@@ -111,6 +111,19 @@ export default function ChatView({ threadId, desktop, computerOpen, onToggleComp
 
   const byRun = {}
   for (const s of tsteps) (byRun[s.run_id] ||= []).push(s)
+  // one timeline, in the order things happened: messages (yours included, even mid-run)
+  // and the agents' steps between them; only what's happening right now sits at the end
+  const timeline = []
+  const events = [...(msgs || []).map((m) => ({ at: m.created, m })), ...tsteps.map((st) => ({ at: st.created, st }))]
+    .sort((x, y) => x.at - y.at)
+  for (const e of events) {
+    const last = timeline[timeline.length - 1]
+    if (e.m) timeline.push({ m: e.m })
+    else if (last?.run === e.st.run_id) last.steps.push(e.st)
+    else timeline.push({ run: e.st.run_id, steps: [e.st], key: e.st.id })
+  }
+  const lastSegment = {}
+  timeline.forEach((x, i) => { if (x.run) lastSegment[x.run] = i })
   const lead = members[0]
   const busy = live.length > 0
 
@@ -172,24 +185,23 @@ export default function ChatView({ threadId, desktop, computerOpen, onToggleComp
             </div>
           </div>
         )}
-        {(msgs || []).map((m, i) => {
-          const a = agents.find((x) => x.id === m.agent_id)
-          const runSteps = m.meta?.run_id ? byRun[m.meta.run_id] : null
-          const answer = m.meta?.choices?.length ? msgs.slice(i + 1).find((x) => x.role === 'user') : null
-          return (
-            <div key={m.id}>
-              {runSteps && <RunCard steps={runSteps} agent={a} />}
-              <Bubble m={m} agent={a} group={thread.kind === 'group'} lead={lead} threadId={threadId} answer={answer} members={members} />
-            </div>
-          )
+        {timeline.map((x, i) => {
+          if (x.run) {
+            const a = agents.find((g) => g.id === (x.steps[0].agent_id || '').replace(HELPER, ''))
+            const owner = live.find((g) => running[g.id]?.run_id === x.run)
+            const now = owner && lastSegment[x.run] === i // only the latest part of a live run is "working"
+            const ws = now ? Object.values(workers).filter((w) => w.parent_id === owner.id && (w.run_id ? w.run_id === x.run : w.thread_id === threadId)) : []
+            return <RunCard key={x.key} steps={x.steps} all={byRun[x.run]} agent={a} live={now} workers={ws} />
+          }
+          const m = x.m
+          const a = agents.find((g) => g.id === m.agent_id)
+          const answer = m.meta?.choices?.length ? msgs.slice(msgs.indexOf(m) + 1).find((y) => y.role === 'user') : null
+          return <Bubble key={m.id} m={m} agent={a} group={thread.kind === 'group'} lead={lead} threadId={threadId} answer={answer} members={members} />
         })}
         {live.map((a) => {
           const r = running[a.id]
-          const rs = byRun[r.run_id] || []
-          const ws = Object.values(workers).filter((w) => w.parent_id === a.id && (w.run_id ? w.run_id === r.run_id : w.thread_id === threadId))
           return (
             <div key={a.id} className="live">
-              {rs.length > 0 && <RunCard steps={rs} agent={a} live workers={ws} />}
               <div className="msg agent" style={{ '--c': a.color }}>
                 <Mascot color={a.color} animal={animalFor(a)} emoji={a.emoji} status={a.status} size={34} bubble={false} />
                 {streams[r.run_id] ? (
@@ -312,7 +324,7 @@ function helperTitles(steps) {
   return { titles: [], done: true }
 }
 
-function RunCard({ steps, agent, live, workers = [] }) {
+function RunCard({ steps, all = steps, agent, live, workers = [] }) {
   const [open, setOpen] = useState(!!live)
   const { t } = useTranslation('chats')
   useEffect(() => {
@@ -325,7 +337,8 @@ function RunCard({ steps, agent, live, workers = [] }) {
     if (m) (helpers[m[1]] ||= []).push(s)
   }
   const idx = Object.keys(helpers).map(Number)
-  const { titles, done: allDone } = helperTitles(own)
+  // helper names come from the delegate step, which may sit in an earlier part of the run
+  const { titles, done: allDone } = helperTitles(all.filter((s) => !HELPER.test(s.agent_id || '')))
   for (let i = 0; i < titles.length; i++) if (!(i in helpers) && live && !allDone) idx.push(i)
   const team = [...new Set(idx)].sort((a, b) => a - b).map((i) => {
     const w = workers.find((x) => x.worker_id?.endsWith(`-w${i}`))
