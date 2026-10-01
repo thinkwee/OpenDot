@@ -89,10 +89,37 @@ BLOCKED_HEAD = re.compile(r"captcha|just a moment|access denied|attention requir
                           r"request blocked|bot or not|/help/bots", re.I)  # only in the address or title
 
 
+# a cookie banner's "no" button, in the languages people meet most
+REJECT_JS = r"""() => {
+  const no = /^((reject|decline|refuse)( all)?( (additional|optional|non-essential|analytics))?( cookies)?|deny( all)?|refuse( all)?|disagree|(use )?(only )?(strictly )?(necessary|essential)( cookies)?( only)?|continue without accepting|alle ablehnen|ablehnen|nur notwendige( cookies)?|tout refuser|refuser|continuer sans accepter|rechazar( todo| todas)?|rifiuta( tutto)?|weigeren|alles weigeren|rejeitar( tudo)?|odrzuć( wszystko)?|全部拒绝|拒绝|拒絕|全部拒絕|仅必要|僅必要|すべて拒否|拒否する|拒否|모두 거부|거부)$/i;
+  const about = /cookie|consent|privacy|datenschutz|隐私|隱私|クッキー|쿠키/i;
+  for (const el of document.querySelectorAll('button,a,[role=button],input[type=button],input[type=submit]')) {
+    const text = (el.innerText || el.value || el.getAttribute('aria-label') || '').trim().replace(/\s+/g, ' ');
+    const r = el.getBoundingClientRect();
+    if (!no.test(text) || r.width < 2 || r.height < 2) continue;
+    for (let box = el.parentElement, i = 0; box && i < 8; box = box.parentElement, i++) {
+      if (about.test((box.innerText || '').slice(0, 3000))) { el.click(); return text }
+    }
+  }
+  return null
+}"""
+
+
 async def past_consent(page) -> None:
-    """Google's cookie wall (every new browser meets it before Flights, Maps, Hotels…):
-    answer "Reject all", which works in any language and shares the least."""
+    """Cookie banners: answered with the "no" button on the way in, the way a browser
+    extension would, so neither the agent nor the human watching has to. Google's
+    full-page wall (before Flights, Maps, Hotels…) is a form of its own."""
     if "consent.google." not in page.url and "consent.youtube." not in page.url:
+        for _ in range(2):  # banners are often added a moment after the page loads
+            for frame in page.frames:
+                try:
+                    if said := await frame.evaluate(REJECT_JS):
+                        log.info("cookie banner on %s: pressed %r", page.url[:80], said)
+                        await page.wait_for_timeout(500)
+                        return
+                except Exception:  # a frame that went away or won't run scripts
+                    continue
+            await page.wait_for_timeout(700)
         return
     try:
         btn = page.locator('form:has(input[name="set_eom"][value="true"]):not(:has('
@@ -425,7 +452,8 @@ class Computer:
                 await page.wait_for_timeout(min(max(seconds or 2, 0.5), 15) * 1000)
             elif action not in ("read", "screenshot"):
                 return {"error": f"unknown action {action}"}
-            await page.wait_for_timeout(800)
+            if action != "goto":  # after a goto, looking for a cookie banner was the wait
+                await page.wait_for_timeout(800)
         except Exception as e:
             await self._snap(tab)
             return {"error": str(e)[:500], "url": page.url,
@@ -608,6 +636,7 @@ class Computer:
         try:
             await tab.page.goto(f"https://www.bing.com/search?q={q}",
                                 wait_until="domcontentloaded", timeout=20_000)
+            await past_consent(tab.page)
             await self._snap(tab)
             rows = await tab.page.evaluate("""
                 () => Array.from(document.querySelectorAll('li.b_algo')).map(li => ({
@@ -623,6 +652,7 @@ class Computer:
         try:
             await tab.page.goto(f"https://duckduckgo.com/html/?q={q}",
                                 wait_until="domcontentloaded", timeout=20_000)
+            await past_consent(tab.page)
             await self._snap(tab)
             rows = await tab.page.evaluate("""
                 () => Array.from(document.querySelectorAll('.result')).map(r => ({

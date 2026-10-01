@@ -110,3 +110,23 @@ async def test_google_cookie_wall_is_answered_with_reject_all():
         assert await page.title() == "Flights"
     finally:
         await c.close()
+
+
+async def test_cookie_banners_are_declined_but_other_no_buttons_arent_pressed():
+    from opendot.computer.core import past_consent
+    c = computer_for("ag_w7_browser_banner")
+    try:
+        page = (await c._tab()).page
+        await page.set_content(
+            "<p>Results</p><script>setTimeout(() => document.body.insertAdjacentHTML('beforeend',"
+            "`<div><p>We use cookies to improve your experience.</p><button onclick=\"document.title"
+            "='declined'\">Reject all</button><button onclick=\"document.title='accepted'\">"
+            "Accept all</button></div>`), 300)</script>")
+        await past_consent(page)
+        assert await page.title() == "declined"  # appeared late, answered with "no"
+        await page.set_content("<title>form</title><div><p>Your application to the club</p>"
+                               "<button onclick=\"document.title='rejected'\">Reject</button></div>")
+        await past_consent(page)
+        assert await page.title() == "form"  # not about cookies: left alone
+    finally:
+        await c.close()
