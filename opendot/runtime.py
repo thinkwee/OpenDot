@@ -58,14 +58,17 @@ _cancel: set[str] = set()
 _loops: dict[str, asyncio.Task] = {}  # run_id -> its agent loop, so Stop can cut in
 # runs in flight, so a page opened (or refreshed) mid-run can pick up where the
 # live stream is: run_id -> {agent_id, thread_id, run_id, text, thought, workers,
-# inbox: what the human said since the run began, read at its next step}
+# said: what the human said since the run began; the lead and each of its helpers
+# read it at their next step, each keeping its own place in it}
 _live: dict[str, dict] = {}
-BTW = ("[The human sent this while you were working. Take it into account now: it may add "
-       "to, change or cancel what you're doing.]\n")
+BTW = "[New message from the human, sent while you were working:]\n"
+BTW_HELPER = "[The human said this to your lead while you were working on your part:]\n"
 
 
 def live_runs() -> list[dict]:
-    return [{**r, "workers": list(r["workers"].values())} for r in _live.values()]
+    """Runs in flight, for the app (what's said mid-run and its wake-up signal stay here)."""
+    return [{**{k: v for k, v in r.items() if k not in ("said", "news")},
+             "workers": list(r["workers"].values())} for r in _live.values()]
 _tasks: set[asyncio.Task] = set()
 
 
@@ -444,17 +447,31 @@ async def _agent_loop(ctx: Ctx, messages: list[dict], tools: list[dict],
     for _ in range(max_steps or settings.MAX_STEPS):
         if ctx.run_id in _cancel:
             return "(stopped)"
-        heard = _live.get(ctx.run_id, {}).get("inbox") if ctx.depth == 0 else None
-        if heard:  # said mid-run: the next step sees it, like a message typed into a live session
-            messages.append({"role": "user", "content": BTW + "\n\n".join(heard)})
-            heard.clear()
+        told = _live.get(ctx.run_id, {}).get("said") or []
+        if len(told) > ctx.extra.get("heard", 0):
+            # said mid-run: the next step sees it (helpers too), like a message typed
+            # into a live session
+            new, ctx.extra["heard"] = told[ctx.extra.get("heard", 0):], len(told)
+            messages.append({"role": "user", "content": (BTW if ctx.depth == 0 else BTW_HELPER)
+                             + "\n\n".join(new)})
         set_status(aid, "thinking", _tr("thinking…", "在想…"))
         await context.fit(messages, tools, client)
         reply = await _stream_or_fallback(client, ctx, messages, tools)
         if not reply.tool_calls:
             final = (reply.content or "").strip()
             head = "\n\n".join(t for t in said if t and t not in final)
-            return f"{head}\n\n{final}".strip() if head else final
+            final = f"{head}\n\n{final}".strip() if head else final
+            helpers = ctx.extra.get("helpers")
+            if ctx.depth == 0 and helpers and not helpers.done():
+                # a reply while helpers still work goes out now; the run waits for them
+                if final:
+                    await EXEC["say"](ctx, final)
+                messages.append({"role": "assistant", "content": final or "(waiting)"})
+                messages.append({"role": "user", "content": "[delegate] " + json.dumps(
+                    await wait_for_helpers(ctx), ensure_ascii=False, default=str)[:16000]})
+                said.clear()
+                continue
+            return final
         if all(c["name"] in REPLY_TOOLS for c in reply.tool_calls):
             said.append((reply.content or "").strip())
         else:
@@ -612,7 +629,7 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             msgs.append({"role": "user", "content": prompt})
         if len(msgs) == 1 or msgs[-1]["role"] != "user":
             msgs.append({"role": "user", "content": "(continue)"})
-        _live[run_id]["inbox"] = []  # from here on, new messages join this run
+        _live[run_id].update(said=[], news=asyncio.Event())  # new messages join this run
         # apps with big tool lists load when opened (open_app); the app tools this chat
         # used lately come ready, so a conversation about Notion doesn't reopen it each turn
         opened = mcp_hub.light_apps(agent_id)
@@ -646,9 +663,11 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
         finally:
             set_status(agent_id, "idle")
             _loops.pop(run_id, None)
+            if (h := ctx.extra.get("helpers")) and not h.done():
+                h.cancel()  # stopped (or failed) with helpers still out
             stopped = run_id in _cancel
             _cancel.discard(run_id)
-            unread = (_live.pop(run_id, None) or {}).get("inbox")
+            unread = ((_live.pop(run_id, None) or {}).get("said") or [])[ctx.extra.get("heard", 0):]
         if unread and not stopped:
             # said just as it finished: answer it as a turn of its own (it's saved already)
             spawn(run_agent(agent_id, thread_id, "chat"))
@@ -767,7 +786,8 @@ async def on_user_message(thread_id: str, text: str, attachments: list | None = 
     db.update("threads", thread_id, updated=time.time())
     bus.emit("message", message=msg)
     for run in busy.values():
-        run["inbox"].append(text)
+        run["said"].append(text)
+        run["news"].set()
     try:
         from .ext import todo
         todo.answered(thread_id)
@@ -782,7 +802,7 @@ async def on_user_message(thread_id: str, text: str, attachments: list | None = 
 def _working_here(thread_id: str, targets: list[str]) -> dict[str, dict]:
     """Of these agents, the ones mid-run in this chat that can take a message now."""
     return {r["agent_id"]: r for r in _live.values()
-            if r["thread_id"] == thread_id and r["agent_id"] in targets and "inbox" in r
+            if r["thread_id"] == thread_id and r["agent_id"] in targets and "said" in r
             and r["run_id"] not in _cancel}
 
 
@@ -867,6 +887,29 @@ def stop_thread(thread_id: str) -> None:
         bus.emit("step", step={**st, "status": "stopped"})
 
 
+async def wait_for_helpers(ctx: Ctx) -> dict:
+    """Until the helpers are done, or the human writes in (whichever comes first)."""
+    task = ctx.extra.get("helpers")
+    if not task:
+        return {"error": "no helpers are working; give delegate some tasks"}
+    live = _live.get(ctx.run_id) or {}
+    news = live.get("news")
+    if news is not None:
+        news.clear()
+    if not task.done() and len(live.get("said") or []) <= ctx.extra.get("heard", 0):
+        waits = {task} | ({asyncio.ensure_future(news.wait())} if news is not None else set())
+        _, pending = await asyncio.wait(waits, return_when=asyncio.FIRST_COMPLETED)
+        for p in pending - {task}:
+            p.cancel()
+    if task.done():
+        ctx.extra.pop("helpers", None)
+        return {"results": task.result()}
+    return {"helpers_still_working": True,
+            "done_so_far": ctx.extra.get("helper_results", []),
+            "note": "The human wrote in; it's in your next step. Your helpers are still at it: "
+                    "call delegate with no tasks to wait for them."}
+
+
 async def run_workers(parent: Ctx, tasks: list[dict]) -> list[dict]:
     """Wide-research style fan-out: N short-lived helpers in parallel."""
     agent = parent.agent
@@ -875,7 +918,8 @@ async def run_workers(parent: Ctx, tasks: list[dict]) -> list[dict]:
         wid = f"{agent['id']}-w{i}"
         worker = {**agent, "id": wid, "name": f"{agent['name']}·{t['title'][:24]}"}
         ctx = Ctx(agent=worker, thread_id=parent.thread_id, run_id=parent.run_id, depth=1)
-        ctx.extra.update({k: parent.extra[k] for k in ("job_id", "attempt") if k in parent.extra})
+        ctx.extra.update({k: parent.extra[k] for k in ("job_id", "attempt", "heard")
+                          if k in parent.extra})  # what the lead had heard is in its brief
         ev = {"parent_id": agent["id"], "worker_id": wid, "title": t["title"],
               "state": "start", "thread_id": parent.thread_id, "run_id": parent.run_id}
         if parent.run_id in _live:
@@ -896,6 +940,7 @@ async def run_workers(parent: Ctx, tasks: list[dict]) -> list[dict]:
         if ctx.extra.get("attachments"):
             # bubble a helper's deliverables up so the parent's final message carries them
             parent.extra.setdefault("attachments", []).extend(ctx.extra["attachments"])
+        parent.extra.setdefault("helper_results", []).append({"title": t["title"], "result": out})
         if parent.run_id in _live:
             _live[parent.run_id]["workers"].pop(wid, None)
         bus.emit("worker", parent_id=agent["id"], worker_id=wid, title=t["title"],

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import re
+import time
 from dataclasses import dataclass, field
 from typing import Any, Awaitable, Callable
 
@@ -63,6 +65,8 @@ TOOLS: dict[str, dict] = {
                    {"fact": S, "about_user": {"type": "boolean"}}, ["fact"]),
     "forget": fn("forget", "Delete remembered lines matching text (when the human asks you to "
                  "forget something).", {"text": S}, ["text"]),
+    "say": fn("say", "Post a message in this chat right now and keep working; your reply "
+              "at the end still comes as usual.", {"text": S}, ["text"]),
     "notify": fn("notify", "Put a card in the human's Inbox (proactive update, finished "
                  "background work, reminder). Keep it short.",
                  {"title": S, "body": S}, ["title"]),
@@ -99,10 +103,11 @@ TOOLS: dict[str, dict] = {
                   {"agent": S, "message": S}, ["agent", "message"]),
     "delegate": fn("delegate", "Spin up temporary helper agents that work IN PARALLEL on "
                    "independent sub-tasks (e.g. research 5 companies at once), each with its "
-                   "own computer. Returns all their results. Use for wide, parallelisable work.",
+                   "own computer. Returns their results when they're done, or earlier if the "
+                   "human writes in meanwhile (the helpers keep going). Call it with no tasks "
+                   "to wait for helpers already at work.",
                    {"tasks": {"type": "array", "items": {"type": "object", "properties": {
-                       "title": S, "instructions": S}, "required": ["title", "instructions"]}}},
-                   ["tasks"]),
+                       "title": S, "instructions": S}, "required": ["title", "instructions"]}}}),
 }
 
 WORKER_TOOLS = ["shell", "python", "read_file", "write_file", "list_files", "web_search",
@@ -134,6 +139,15 @@ async def _publish(ctx: Ctx, slug: str, html: str, title: str = "") -> dict:
     url = f"/pages/{ctx.agent['id']}/{slug}"
     bus.emit("page", agent_id=ctx.agent["id"], url=url, title=title or slug)
     return {"url": url, "note": "Tell the human they can open it from the Pages tab."}
+
+
+async def _say(ctx: Ctx, text: str) -> dict:
+    msg = db.insert("messages", id=new_id("m_"), thread_id=ctx.thread_id, role="agent",
+                    agent_id=ctx.agent["id"], content=text.strip(),
+                    meta={"run_id": ctx.run_id, "during_run": True})
+    db.update("threads", ctx.thread_id, updated=time.time())
+    bus.emit("message", message=msg)
+    return {"ok": True}
 
 
 async def _notify(ctx: Ctx, title: str, body: str = "") -> dict:
@@ -251,9 +265,16 @@ async def _handoff(ctx: Ctx, agent: str, message: str) -> dict:
     return {"ok": True, "note": f"{target['name']} will pick it up after your reply."}
 
 
-async def _delegate(ctx: Ctx, tasks: list[dict]) -> dict:
-    from .runtime import run_workers
-    return {"results": await run_workers(ctx, tasks[:8])}
+async def _delegate(ctx: Ctx, tasks: list[dict] | None = None) -> dict:
+    from .runtime import run_workers, wait_for_helpers
+    busy = ctx.extra.get("helpers")
+    if tasks:
+        if busy and not busy.done():
+            return {"error": "your helpers are still at work: call delegate with no tasks to "
+                             "wait for them first"}
+        ctx.extra["helper_results"] = []
+        ctx.extra["helpers"] = asyncio.ensure_future(run_workers(ctx, tasks[:8]))
+    return await wait_for_helpers(ctx)
 
 
 EXEC: dict[str, Callable[..., Awaitable[Any]]] = {
@@ -273,6 +294,7 @@ EXEC: dict[str, Callable[..., Awaitable[Any]]] = {
     "remember": lambda ctx, fact, about_user=False: _sync(
         lambda: {"saved_to": memory.remember(ctx.agent["id"], fact, about_user)}),
     "forget": lambda ctx, text: _sync(lambda: {"removed": memory.forget(ctx.agent["id"], text)}),
+    "say": _say,
     "notify": _notify,
     "publish_page": _publish,
     "schedule": _schedule,

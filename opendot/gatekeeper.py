@@ -25,7 +25,7 @@ from .durable import args_hash
 DEFAULT_POLICY = {
     "shell": "allow", "python": "allow", "read_file": "allow", "write_file": "allow",
     "list_files": "allow", "web_search": "allow", "web_fetch": "allow", "browser": "allow",
-    "remember": "allow", "forget": "allow", "update_profile": "allow", "notify": "allow",
+    "remember": "allow", "forget": "allow", "say": "allow", "update_profile": "allow", "notify": "allow",
     "publish_page": "allow", "schedule": "allow", "list_automations": "allow",
     "cancel_automation": "allow", "offer_choices": "allow", "handoff": "allow", "delegate": "allow",
     "send_email": "ask",
