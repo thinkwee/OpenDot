@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, bootstrap, useStore, store } from './store'
 import { syncLang } from './i18n'
-import Mascot, { animalFor } from './components/Mascot'
+import Mascot from './components/Mascot'
 import Deco from './components/Deco'
 import { FileViewerHost } from './components/FileViewer'
 import { CalendarDays, ListChecks, MessageCircle, Inbox as InboxIcon, Settings as SettingsIcon } from 'lucide-react'
@@ -163,7 +163,6 @@ export default function App() {
           {threadId && showComputer && (
             <ComputerPanel threadId={threadId} onClose={() => setShowComputer(false)} sheet={!desktop} />
           )}
-          {threadId && !showComputer && <LivePip threadId={threadId} onOpen={() => setShowComputer(true)} />}
           {desktop && !threadId && <div className="empty-main"><Deco seed={1} /><Mascot animal="fox" color="#FFB38A" size={96} /><p>{t('app:pickSomeone')}</p><button className="btn ghost sm" onClick={() => go('examples')}>💡 {t('nav.examples')}</button></div>}
         </>
       ) : (
@@ -188,24 +187,3 @@ export default function App() {
   )
 }
 
-// while an agent in this chat is working, a small "watch live" card floats in the corner
-function LivePip({ threadId, onOpen }) {
-  const { threads, agents, running } = useStore()
-  const { t } = useTranslation('app')
-  const thread = threads.find((t) => t.id === threadId)
-  const busy = (thread?.members || [])
-    .map((id) => agents.find((a) => a.id === id))
-    .filter((a) => a && running[a.id]?.thread_id === threadId)
-  if (!busy.length) return null
-  const a = busy[0]
-  return (
-    <button className="live-pip" onClick={onOpen} style={{ '--c': a.color }}>
-      <Mascot color={a.color} animal={animalFor(a)} status={a.status} size={34} bubble={false} />
-      <span className="grow">
-        <b>{t('isWorking', { name: a.name })}</b>
-        <small className="ellipsis">{a.status_text || t('common:status.thinking')}</small>
-      </span>
-      <span className="live-pip-cta">🖥️ {t('watch')}</span>
-    </button>
-  )
-}

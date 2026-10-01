@@ -213,6 +213,7 @@ export default function ChatView({ threadId, desktop, computerOpen, onToggleComp
                     {thoughts[r.run_id] && <div className="thought">{thoughts[r.run_id].slice(0, 200)}</div>}
                     <span className="dots"><i /><i /><i /></span>
                     <small className="muted">{a.status_text}</small>
+                    {!computerOpen && <button className="link-btn watch" onClick={onToggleComputer}>🖥️ {t('chat.watch')}</button>}
                   </div>
                 )}
               </div>

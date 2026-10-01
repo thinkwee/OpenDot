@@ -247,10 +247,6 @@ h2, h3 { font-weight: 600; }
 @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
 .toast { background: var(--ink); color: var(--bg); border: 2px solid var(--edge); box-shadow: 4px 4px 0 var(--m-yellow); animation: toast-in .4s var(--ease-spring) both; }
 @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 16px) scale(.9) } to { opacity: 1; transform: translate(-50%, 0) } }
-.live-pip { background: var(--panel); border: 2.5px solid var(--edge); box-shadow: 4px 4px 0 var(--c, var(--edge)), 4px 4px 0 2.5px var(--edge); animation: pip-in .45s var(--ease-spring) both; transition: transform .25s var(--ease-spring); }
-.live-pip:hover { transform: translate(-2px, -2px); }
-.live-pip-cta { color: var(--m-coral); font-family: var(--display); }
-@keyframes pip-in { from { opacity: 0; transform: translateY(20px) scale(.9) } to { opacity: 1; transform: none } }
 
 /* ---------- computer ---------- */
 .computer { background: var(--panel); border-left: 2.5px solid var(--edge); animation: slide-in .35s var(--ease-out) both; }

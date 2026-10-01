@@ -172,6 +172,8 @@ textarea.input { resize: vertical; }
 .who { font-weight: 900; font-size: 12px; margin: 0 0 3px 6px; display: flex; gap: 6px; align-items: center; }
 .src-tag { color: var(--ink2); font-weight: 700; background: var(--panel2); border-radius: 8px; padding: 0 6px; }
 .bubble.typing { display: flex; flex-direction: column; gap: 4px; min-width: 90px; }
+.bubble.typing .watch { align-self: flex-start; font-size: 12px; font-weight: 800; color: var(--m-coral, var(--accent)); padding: 2px 0; }
+.bubble.typing .watch:hover { text-decoration: underline; }
 .thought { font-size: 13px; color: var(--ink2); font-style: italic; }
 .dots { display: flex; gap: 4px; padding: 4px 0; }
 .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); animation: dot 1s infinite; }
@@ -346,11 +348,6 @@ textarea.input { resize: vertical; }
 .rail-gh { margin-top: auto; text-decoration: none; }
 .rail-gh .rail-lbl { display: flex; align-items: center; gap: 2px; }
 .rail-gh + .rail-settings { margin-top: 0; }
-.live-pip { position: fixed; right: 20px; bottom: 96px; z-index: 25; display: flex; align-items: center; gap: 10px; width: 290px; padding: 10px 12px; border-radius: 18px; background: var(--panel); border: 2px solid color-mix(in srgb, var(--c) 60%, var(--line)); box-shadow: var(--shadow); text-align: left; animation: pop .2s; }
-.live-pip b { display: block; font-size: 13px; }
-.live-pip small { color: var(--ink2); font-size: 12px; max-width: 170px; }
-.live-pip-cta { font-size: 12px; font-weight: 800; color: var(--accent); flex: none; }
-.mobile .live-pip { right: 12px; left: 12px; width: auto; bottom: 88px; }
 
 /* ---------- @ mention picker ---------- */
 .composer { position: relative; }

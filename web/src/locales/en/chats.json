@@ -59,6 +59,7 @@
     ]
   },
   "chat": {
+    "watch": "Watch its computer",
     "notFound": "Chat not found",
     "drop": "Drop files for your agents",
     "dropSub": "Any type — PDFs, docs, sheets, images, code, zips…",
