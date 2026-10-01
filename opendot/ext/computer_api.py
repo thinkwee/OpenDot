@@ -143,7 +143,9 @@ register_tool(
     "web_search",
     fn("web_search", "Search the web. Tries SearXNG / Tavily / Brave / multiple ddgs backends "
        "with retry, then as a last resort opens a results page in your visible browser tab so "
-       "the human can watch — this almost never fails outright, unlike a single provider.",
+       "the human can watch — this almost never fails outright, unlike a single provider. "
+       "For flights, hotels, routes, places, prices, weather or exchange rates, "
+       "read_skill('find-it-online') first: it has the sources that work.",
        {"query": S, "max_results": I}, ["query"]),
     lambda ctx, query, max_results=6: computer_for(ctx.agent["id"]).web_search(query,
                                                                                max_results),
@@ -172,6 +174,7 @@ register_tool(
        "change when the page does; read again if one is gone. Only goto addresses you got "
        "from search results or a page's links, never guessed ones. If a result says "
        "`blocked`, that site won't let you in from here: follow its advice, don't retry. "
+       "read_skill('find-it-online') lists the sites and addresses that work. "
        "Delegated helpers get their own tab in the same browser.",
        {"action": {"type": "string", "enum": ["goto", "read", "click", "type", "select",
                                               "press", "scroll", "back", "wait",

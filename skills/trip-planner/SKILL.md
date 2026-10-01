@@ -11,6 +11,9 @@ in March".
 
 ## Steps
 
+0. `read_skill('find-it-online')` (and pass it on to helpers): where to look up
+   flights, stays and getting around so the first try works.
+
 1. **Clarify budget-affecting unknowns only if truly needed** (dates, number of people,
    rough budget) — but if the human already gave enough, don't interrogate them; make
    sensible assumptions and say what you assumed.

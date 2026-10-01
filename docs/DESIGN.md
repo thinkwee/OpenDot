@@ -44,7 +44,10 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   marked `blocked`, so the agent changes course (other sources, or asks you to take over)
   instead of retrying. Sites trust home connections far more than data-centre ones: on a
   server, `DOT_PROXY` can route the browser through another connection.
-  Google's cookie wall is answered with "Reject all" on the way in.
+  Google's cookie wall is answered with "Reject all" on the way in, and the bundled
+  `find-it-online` skill tells agents where each everyday lookup works first time
+  (Google Flights and Hotels, Maps, Rome2Rio, Shopping; keyless APIs for weather,
+  exchange rates, holidays and news).
 - **Proactive, but quiet.** Watches (`ext/watch.py`) re-check something on a schedule and
   act the moment it happens; routines (`scheduler.py`) run on cron or on events (webhooks,
   RSS, email, SMS). At most `DOT_DAILY_NUDGES` unprompted messages a day, none between

@@ -10,6 +10,8 @@ Triggered by "watch the price of X" / "tell me if Y drops below Z".
 
 ## First run
 
+(Don't have the product page yet? `read_skill('find-it-online')` says where to look.)
+
 1. Get the product page open — try `web_fetch` first; if the price isn't in
    the static HTML (common on JS-heavy shops), use `browser` (`goto`, then
    `read`) instead.
