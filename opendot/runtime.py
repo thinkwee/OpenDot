@@ -686,7 +686,8 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             except Exception:
                 log.exception("work-file tracking failed")
         # a run you stopped just stops: no "(stopped)" bubble
-        silent = text.strip().upper().startswith("NO_REPLY") or text == "(stopped)"
+        quiet = text.strip().upper()  # "nothing new.\n\nNO_REPLY" is silence too
+        silent = quiet.startswith("NO_REPLY") or quiet.endswith("NO_REPLY") or text == "(stopped)"
         if silent and attachments:
             # a deliverable-only turn still needs a bubble to hang the attachments off
             silent = False

@@ -52,6 +52,15 @@ async def test_no_reply_is_silent(fake_llm):
     assert db.one("SELECT * FROM messages WHERE thread_id=? AND role='agent'", th["id"]) is None
 
 
+async def test_no_reply_after_a_note_is_silent(fake_llm):
+    aid = _agent("Quiet")
+    th = db.insert("threads", id=new_id("th_"), title="Quiet", kind="dm", members=[aid])
+    fake_llm.push(content="8.9079, still above 8.7.\n\nNO_REPLY")
+
+    assert await runtime.run_agent(aid, th["id"], source="watch:fx") is None
+    assert db.one("SELECT * FROM messages WHERE thread_id=? AND role='agent'", th["id"]) is None
+
+
 async def test_handoff_spawns_follow_up_run(fake_llm):
     a1 = _agent("Lead")
     a2 = _agent("Helper")
