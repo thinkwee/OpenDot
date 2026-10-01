@@ -163,14 +163,22 @@ register_tool(
 
 register_tool(
     "browser",
-    fn("browser", "Drive your real, persistent Chromium browser — the human watches it live in "
-       "the Computer panel. Prefer this (or web_fetch) over shell/curl whenever you're reading "
-       "or interacting with a web page: it shows your work. Actions: goto(url), read, "
-       "click(text|selector), type(selector,text), press(key), scroll(text='up'|'down'), back, "
-       "screenshot. Delegated helpers get their own tab in the same browser, not a new one.",
-       {"action": {"type": "string", "enum": ["goto", "read", "click", "type",
-                                              "press", "scroll", "back", "screenshot"]},
-        "url": S, "selector": S, "text": S, "key": S}, ["action"]),
+    fn("browser", "Drive your real, persistent Chromium browser; the human watches it live in "
+       "the Computer panel. Prefer this (or web_fetch) over shell/curl for web pages. Every "
+       "look returns the page text and `elements`: what can be clicked or typed into, "
+       "numbered like [12] (or [2.5] inside a frame). Act by number: click(ref), "
+       "type(ref, text, key='Enter' to submit), select(ref, text). Also goto(url), read, "
+       "press(key), scroll(text='up'|'down'), back, wait(seconds), screenshot. Numbers "
+       "change when the page does; read again if one is gone. Only goto addresses you got "
+       "from search results or a page's links, never guessed ones. If a result says "
+       "`blocked`, that site won't let you in from here: follow its advice, don't retry. "
+       "Delegated helpers get their own tab in the same browser.",
+       {"action": {"type": "string", "enum": ["goto", "read", "click", "type", "select",
+                                              "press", "scroll", "back", "wait",
+                                              "screenshot"]},
+        "url": S, "ref": S, "text": S, "key": S, "seconds": {"type": "number"},
+        "selector": {"type": "string", "description": "CSS selector, only if there's no number"}},
+       ["action"]),
     lambda ctx, **kw: computer_for(ctx.agent["id"]).browser(**kw),
     policy="allow", worker=True,
 )

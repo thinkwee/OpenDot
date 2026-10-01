@@ -51,6 +51,7 @@ class Settings:
     SHELL_TIMEOUT = int(_env("DOT_SHELL_TIMEOUT", "120"))
     HEARTBEAT_MINUTES = int(_env("DOT_HEARTBEAT_MINUTES", "60"))
     CHROMIUM_PATH = _env("DOT_CHROMIUM_PATH", "")
+    PROXY = _env("DOT_PROXY", "")  # e.g. a residential proxy when running in a data centre
 
     @property
     def access_token(self) -> str:

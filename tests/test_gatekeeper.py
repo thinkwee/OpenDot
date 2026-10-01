@@ -106,3 +106,13 @@ def test_vault_inject_and_redact_round_trip():
 def test_vault_missing_name_injects_empty():
     out = gatekeeper.inject_secrets({"x": "{{vault:DOES_NOT_EXIST}}"})
     assert out["x"] == ""
+
+
+def test_browser_click_by_number_is_judged_by_its_words():
+    aid = _agent()
+    pay = {"action": "click", "ref": "12", "element": 'button "Place order"'}
+    assert gatekeeper.assess(aid, "browser", pay)[0] == "deny"
+    sub = {"action": "click", "ref": "7", "element": 'button "Submit"'}
+    assert gatekeeper.assess(aid, "browser", sub)[0] == "ask"
+    nxt = {"action": "click", "ref": "3", "element": 'link "Next page"'}
+    assert gatekeeper.assess(aid, "browser", nxt)[0] == "allow"

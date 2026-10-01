@@ -363,16 +363,21 @@ def _match_yours(text: str) -> str | None:
     return None
 
 
+def browser_label(a: dict) -> str:
+    """What a browser click or typing is aimed at: the element's words, text or selector."""
+    return f"{a.get('element', '')} {a.get('text', '')} {a.get('selector', '')}".strip()
+
+
 def yours_to_do(tool: str, args: dict) -> str | None:
     """Which never-for-you category an action falls in (password, 2fa, account, money,
     legal, id), or None. Reading never counts, only doing."""
     a = args or {}
     if tool == "browser":
         act = a.get("action")
-        if act == "click":
-            return _match_yours(f"{a.get('text', '')} {a.get('selector', '')}")
+        if act in ("click", "select"):
+            return _match_yours(browser_label(a))
         if act == "type":  # the field, not what's typed (a search box may say "password")
-            return _match_yours(str(a.get("selector", "")))
+            return _match_yours(f"{a.get('element', '')} {a.get('selector', '')}")
         return None
     if tool == "browse_task":
         task = str(a.get("task", ""))
@@ -501,7 +506,7 @@ def assess(agent_id: str, tool: str, args: dict, thread_id: str | None = None,
         if guard and decision in ("allow", "ask") and not reason:
             decision, reason = guard
     if tool == "browser" and args.get("action") in ("click", "press"):
-        label = f"{args.get('text', '')} {args.get('selector', '')}"
+        label = browser_label(args)
         if BROWSER_ASK.search(label):
             decision, reason = "ask", "looks like a purchase / irreversible submit"
     if tool.startswith("mcp__") and decision == "ask":
@@ -550,7 +555,7 @@ def say(tool: str, args: dict) -> str:
     if tool in ("shell", "python"):
         return tr("run something on its computer", "在它的电脑上运行点东西")
     if tool == "browser":
-        what = (a.get("text") or a.get("selector") or "")[:40]
+        what = (a.get("element") or a.get("text") or a.get("selector") or "")[:40]
         return tr(f"press “{what}” on a website", f"在网页上点「{what}」") if what else \
             tr("do something on a website", "在网页上操作一下")
     if tool == "install_skill":

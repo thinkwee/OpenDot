@@ -456,6 +456,10 @@ async def run_tool(ctx: Ctx, name: str, args: dict) -> dict:
             todo.open_task(ctx)  # real work on something asked → it's on the Todo page
         except Exception:
             log.exception("todo open failed")
+    if name == "browser" and args.get("ref"):
+        # Gatekeeper judges a click by what the button says, not its number
+        from .computer import computer_for
+        args = {**args, "element": computer_for(aid).element_label(args["ref"])}
     step = db.insert("steps", id=new_id("st_"), thread_id=ctx.thread_id, run_id=ctx.run_id,
                      agent_id=aid, tool=name, args=args, status="running")
     bus.emit("step", step=step)

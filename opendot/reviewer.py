@@ -50,7 +50,7 @@ def outward(tool: str, args: dict) -> bool:
         cmd = a.get("command") or a.get("code") or ""
         return any(re.search(p, cmd) for p, why in gatekeeper.SHELL_ASK if why in SHELL_OUT)
     if tool == "browser":
-        label = f"{a.get('text', '')} {a.get('selector', '')}"
+        label = gatekeeper.browser_label(a)
         return a.get("action") in ("click", "press") and bool(gatekeeper.BROWSER_ASK.search(label))
     return gatekeeper.DEFAULT_POLICY.get(tool) == "ask" and tool not in INWARD
 

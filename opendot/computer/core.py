@@ -46,6 +46,95 @@ def _clip(s: str, n: int = MAX_OUT) -> str:
     return s if len(s) <= n else s[: n // 2] + f"\n…[{len(s) - n} chars cut]…\n" + s[-n // 2:]
 
 
+# The page as a numbered list of what can be clicked or typed into (the way browser-use
+# and Playwright MCP show it to a model): "click 12" works where a guessed CSS selector
+# doesn't. Numbers are written onto the elements, so they hold until the next look.
+ELEMENTS_JS = r"""(max) => {
+  const sel = 'a[href],button,input:not([type=hidden]),select,textarea,summary,[role=button],' +
+    '[role=link],[role=checkbox],[role=radio],[role=tab],[role=menuitem],[role=option],' +
+    '[role=combobox],[role=switch],[contenteditable=""],[contenteditable=true],[onclick]';
+  document.querySelectorAll('[data-dot-ref]').forEach(e => e.removeAttribute('data-dot-ref'));
+  const out = [];
+  let n = 0;
+  for (const el of document.querySelectorAll(sel)) {
+    if (out.length >= max) break;
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+    if (r.width < 2 || r.height < 2 || cs.visibility === 'hidden' || el.disabled ||
+        el.closest('[aria-hidden=true]')) continue;
+    const tag = el.tagName.toLowerCase(), type = (el.type || '').toLowerCase();
+    const role = el.getAttribute('role') || ({a: 'link', select: 'select', button: 'button',
+      textarea: 'textbox'})[tag] || (tag === 'input' ? (['checkbox', 'radio', 'submit',
+      'button'].includes(type) ? type : 'textbox') : tag);
+    const name = (el.getAttribute('aria-label') || el.innerText || el.value || el.placeholder ||
+      el.title || el.name || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    if (!name && role === 'link') continue;
+    el.setAttribute('data-dot-ref', ++n);
+    let line = `[${n}] ${role} "${name}"`;
+    if (role === 'textbox' && el.value) line += ` = "${String(el.value).slice(0, 40)}"`;
+    if (tag === 'select') line += ' options: ' + [...el.options].slice(0, 15).map(o => o.text.trim()).join(' | ');
+    if (el.checked) line += ' (checked)';
+    if (tag === 'a') line += ' -> ' + el.href.slice(0, 120);
+    if (r.bottom < 0 || r.top > innerHeight) line += ' (off-screen)';
+    out.push(line);
+  }
+  return out;
+}"""
+
+# what sites show a browser they've decided is a bot
+BLOCKED = re.compile(
+    r"performing security verification|verify(ing)? you are (a )?human|are you a (ro)?bot|"
+    r"tell if you'?re a human|thinks you are a .?bot|unusual traffic from your|press (and|&) hold|"
+    r"pardon our interruption|experiencing high demand", re.I)
+BLOCKED_HEAD = re.compile(r"captcha|just a moment|access denied|attention required|"
+                          r"request blocked|bot or not|/help/bots", re.I)  # only in the address or title
+
+
+async def past_consent(page) -> None:
+    """Google's cookie wall (every new browser meets it before Flights, Maps, Hotels…):
+    answer "Reject all", which works in any language and shares the least."""
+    if "consent.google." not in page.url and "consent.youtube." not in page.url:
+        return
+    try:
+        btn = page.locator('form:has(input[name="set_eom"][value="true"]):not(:has('
+                           'input[name="set_sc"])) button').first
+        async with page.expect_navigation(timeout=15_000):
+            await btn.click(timeout=5_000)
+    except Exception as e:  # leave it to the agent (it can still click it itself)
+        log.info("couldn't answer the cookie wall: %s", e)
+
+
+def blocked_note(url: str, title: str, text: str) -> str | None:
+    if BLOCKED_HEAD.search(f"{url} {title}") or BLOCKED.search(text[:1500]):
+        return ("This site is blocking automated browsers from here, and retrying won't help. "
+                "Don't try its sister sites or guess other URLs on it. Use what web_search "
+                "already found, try a different kind of source, or ask the human to open it "
+                "themselves (they can take over your browser in the Computer panel).")
+    return None
+
+
+def _user_agent(exe: str | None) -> str | None:
+    """The user agent of the Chrome this is, without the "Headless" giveaway."""
+    try:
+        import subprocess
+        v = subprocess.run([exe, "--version"], capture_output=True, text=True,
+                           timeout=10).stdout
+        major = re.search(r"(\d+)\.\d+", v).group(1)
+    except Exception:
+        return None
+    return (f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+            f"Chrome/{major}.0.0.0 Safari/537.36")
+
+
+def _proxy(url: str) -> dict:
+    """DOT_PROXY=http://user:pass@host:port → Playwright's proxy settings."""
+    u = urllib.parse.urlsplit(url)
+    p = {"server": f"{u.scheme}://{u.hostname}:{u.port}" if u.port else f"{u.scheme}://{u.hostname}"}
+    if u.username:
+        p.update(username=urllib.parse.unquote(u.username),
+                 password=urllib.parse.unquote(u.password or ""))
+    return p
+
+
 def shared_dir() -> Path:
     p = settings.DATA_DIR / "shared"
     p.mkdir(parents=True, exist_ok=True)
@@ -81,6 +170,8 @@ class Tab:
         self.cdp = None
         self.viewers: set[asyncio.Queue] = set()
         self._last_forward = 0.0
+        self.refs: dict[str, object] = {}  # element number -> the frame it's in
+        self.labels: dict[str, str] = {}  # element number -> what it says (for Gatekeeper)
         self._stop_handle: asyncio.TimerHandle | None = None
 
     def title_safe(self) -> str:
@@ -260,11 +351,16 @@ class Computer:
                                backend, e)
         exe = settings.CHROMIUM_PATH or _find_chromium()
         profile = settings.DATA_DIR / "agents" / self.agent_id / "browser"
+        extra = {"proxy": _proxy(settings.PROXY)} if settings.PROXY else {}
+        # look like the Chrome it is: no "HeadlessChrome" in the user agent, no
+        # navigator.webdriver, no automation flag (the first things sites check)
         self._browser = await self._pw.chromium.launch_persistent_context(
             str(profile), headless=True, executable_path=exe or None,
             viewport={"width": 1280, "height": 800}, locale="en-GB",
+            user_agent=_user_agent(exe), ignore_default_args=["--enable-automation"],
             args=[f"--remote-debugging-port={self.cdp_port}",
-                  "--remote-debugging-address=127.0.0.1"])
+                  "--remote-debugging-address=127.0.0.1",
+                  "--disable-blink-features=AutomationControlled"], **extra)
         return self._browser
 
     async def _sandbox_cdp_url(self, backend: str) -> str | None:
@@ -294,47 +390,96 @@ class Computer:
         return [{"owner_id": oid, "url": t.title_safe()} for oid, t in root.tabs.items()
                 if not t.page.is_closed()]
 
-    async def browser(self, action: str, url: str = "", selector: str = "", text: str = "",
-                      key: str = "") -> dict:
+    async def browser(self, action: str, url: str = "", ref: str = "", selector: str = "",
+                      text: str = "", key: str = "", seconds: float = 0, **_) -> dict:
         tab = await self._tab()
         page = tab.page
         self.last_used = time.time()
-        self._set_activity(f"browser: {action} {url or selector or text}"[:80])
+        self._set_activity(f"browser: {action} {url or ref or selector or text}"[:80])
         try:
             if action == "goto":
                 if not re.match(r"^https?://", url):
                     url = "https://" + url
                 await page.goto(url, wait_until="domcontentloaded", timeout=45_000)
-            elif action == "click":
-                if selector:
-                    await page.click(selector, timeout=10_000)
+                await past_consent(page)
+            elif action in ("click", "type", "select"):
+                el = self._element(tab, ref, selector, text if action == "click" else "")
+                if action == "click":
+                    await el.click(timeout=10_000)
+                elif action == "type":
+                    await el.fill(text, timeout=10_000)
+                    if key:
+                        await el.press(key)
                 else:
-                    await page.get_by_text(text, exact=False).first.click(timeout=10_000)
-            elif action == "type":
-                await page.fill(selector, text, timeout=10_000)
+                    try:
+                        await el.select_option(label=text, timeout=10_000)
+                    except Exception:
+                        await el.select_option(value=text, timeout=10_000)
             elif action == "press":
                 await page.keyboard.press(key or "Enter")
             elif action == "scroll":
                 await page.mouse.wheel(0, 700 if text != "up" else -700)
             elif action == "back":
                 await page.go_back()
+            elif action == "wait":
+                await page.wait_for_timeout(min(max(seconds or 2, 0.5), 15) * 1000)
             elif action not in ("read", "screenshot"):
                 return {"error": f"unknown action {action}"}
             await page.wait_for_timeout(800)
         except Exception as e:
             await self._snap(tab)
-            return {"error": str(e)[:500], "url": page.url}
+            return {"error": str(e)[:500], "url": page.url,
+                    "hint": "look again (read) for fresh element numbers"}
         await self._snap(tab)
         out: dict = {"url": page.url, "title": await page.title()}
-        if action in ("goto", "read", "click", "back", "press"):
+        if action != "screenshot":
             body = await page.evaluate("() => document.body ? document.body.innerText : ''")
-            out["text"] = _clip(body, 8000)
-            links = await page.evaluate(
-                "() => Array.from(document.querySelectorAll('a[href]')).slice(0,40)"
-                ".map(a => (a.innerText||'').trim().slice(0,60) + ' -> ' + a.href)"
-            )
-            out["links"] = [link for link in links if not link.startswith(" ->")][:30]
+            out["text"] = _clip(body, 6000)
+            out["elements"] = await self._elements(tab)
+            note = blocked_note(page.url, out["title"], body)
+            if note:
+                out["blocked"] = note
         return out
+
+    def element_label(self, ref: str) -> str:
+        """What element [ref] said at the last look, e.g. 'button "Place order"'."""
+        t = self._root().tabs.get(self.agent_id)
+        return t.labels.get(str(ref).strip("[] "), "") if t else ""
+
+    def _element(self, tab: Tab, ref: str, selector: str, text: str):
+        """What to act on: an element number from the last look, else a selector or text."""
+        ref = str(ref or "").strip().lstrip("[").rstrip("]")
+        if ref:
+            frame = tab.refs.get(ref)
+            if frame is None:
+                raise ValueError(f"no element [{ref}] on this page any more")
+            return frame.locator(f'[data-dot-ref="{ref.split(".")[-1]}"]').first
+        if selector:
+            return tab.page.locator(selector).first
+        if text:
+            return tab.page.get_by_text(text, exact=False).first
+        raise ValueError("say which element: ref (its number), selector or text")
+
+    async def _elements(self, tab: Tab, limit: int = 150) -> list[str]:
+        """Number what can be clicked or typed into, in the page and its frames (consent
+        pop-ups often live in one): "[12]" in the page, "[2.5]" in its second frame."""
+        tab.refs.clear()
+        tab.labels.clear()
+        lines: list[str] = []
+        for i, frame in enumerate(tab.page.frames):
+            if len(lines) >= limit:
+                break
+            try:
+                got = await frame.evaluate(ELEMENTS_JS, limit - len(lines))
+            except Exception:  # a frame that went away or won't run scripts
+                continue
+            for line in got:
+                n = line[1:line.index("]")]
+                key = n if i == 0 else f"{i}.{n}"
+                tab.refs[key] = frame
+                tab.labels[key] = line[line.index("]") + 2:].split(" -> ")[0]
+                lines.append(line if i == 0 else f"[{key}]" + line[line.index("]") + 1:])
+        return lines
 
     async def _snap(self, tab: Tab) -> None:
         try:
@@ -417,10 +562,14 @@ class Computer:
                 tab = await self._tab()
                 self._set_activity(f"reading: {url[:70]}")
                 await tab.page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+                await past_consent(tab.page)
                 await tab.page.wait_for_timeout(400)
                 html = await tab.page.content()
                 await self._snap(tab)
                 text = _extract_readable(html, tab.page.url)
+                note = blocked_note(tab.page.url, await tab.page.title(), text or "")
+                if note:
+                    return {"url": tab.page.url, "blocked": note}
                 if text:
                     return {"url": tab.page.url, "status": 200, "content": _clip(text, 20_000)}
             except Exception as e:
@@ -436,7 +585,7 @@ class Computer:
             text = _extract_readable(r.text, str(r.url)) or r.text
         elif "pdf" in ctype:
             text = _extract_pdf(r.content)
-        elif "text" in ctype or "json" in ctype:
+        elif "text" in ctype or "json" in ctype or "xml" in ctype:
             text = r.text
         else:
             text = f"[binary content-type={ctype}, {len(r.content)} bytes — not extracted]"

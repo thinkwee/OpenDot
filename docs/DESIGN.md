@@ -37,6 +37,14 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   question it was waiting on just closes (not a "no"). A message sent while an agent
   is working joins that run at its next step, so you can add to or redirect it; one
   that lands as it finishes gets a turn of its own.
+- **Browsing** (`computer/core.py`): each look at a page returns its text plus a numbered
+  list of what can be clicked or typed into (frames included), and the agent acts by
+  number, not by guessed selectors. Gatekeeper judges a click by the element's words.
+  The browser doesn't announce itself as automated, and pages that block bots come back
+  marked `blocked`, so the agent changes course (other sources, or asks you to take over)
+  instead of retrying. Sites trust home connections far more than data-centre ones: on a
+  server, `DOT_PROXY` can route the browser through another connection.
+  Google's cookie wall is answered with "Reject all" on the way in.
 - **Proactive, but quiet.** Watches (`ext/watch.py`) re-check something on a schedule and
   act the moment it happens; routines (`scheduler.py`) run on cron or on events (webhooks,
   RSS, email, SMS). At most `DOT_DAILY_NUDGES` unprompted messages a day, none between
@@ -225,6 +233,8 @@ one-time QR code (valid 10 minutes) that signs a browser or phone in.
 | `DOT_PUBLIC_URL` | | your public address, if you have one |
 | `DOT_DAILY_NUDGES` · `DOT_QUIET_FROM` · `DOT_QUIET_TO` | `4` · `22` · `8` | how pushy agents may be |
 | `DOT_SEARXNG_URL` | | your own SearXNG for web search (default: DuckDuckGo) |
+| `TAVILY_API_KEY` · `BRAVE_API_KEY` | | a search API (both have free tiers): better results than the default |
+| `DOT_PROXY` | | `http://user:pass@host:port` for the agents' browser, e.g. a residential proxy on a server |
 
 ## Extending it
 
