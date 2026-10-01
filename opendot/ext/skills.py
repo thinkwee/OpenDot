@@ -133,15 +133,14 @@ def set_enabled(agent_id: str, name: str, on: bool) -> None:
 # ---------------- prompt ----------------
 def PROMPT(agent: dict) -> str | None:
     skills = discover()
-    if not skills:
-        return None
     lines = [f"- **{name}**: {s['description']}" for name, s in sorted(skills.items())
              if is_enabled(agent["id"], name)]
-    if not lines:
-        return None
-    return ("# Skills\nYou have these reusable playbooks available. Call `read_skill(name)` "
-            "to load one's full instructions BEFORE using it — the one-liner below is not "
-            "enough to follow it correctly.\n" + "\n".join(lines))
+    return ("# Skills\nPlaybooks for things that come up often. Call `read_skill(name)` to load "
+            "one's instructions BEFORE using it; the one-liner isn't enough to follow it.\n"
+            + "\n".join(lines) + ("\n" if lines else "")
+            + "Missing some know-how (a file format, an app's API, a site)? `find_skills` "
+            "searches community skills; propose the best with `install_skill` (the human "
+            "approves).")
 
 
 # ---------------- tools ----------------

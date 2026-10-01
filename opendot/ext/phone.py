@@ -134,14 +134,18 @@ async def _make_call(ctx, to: str, message: str) -> dict:
     return {"ok": True, "sid": res.get("sid", "")}
 
 
+def _has_phone() -> bool:
+    return bool(db.one("SELECT 1 FROM kv WHERE k LIKE 'identity:phone:%' LIMIT 1"))
+
+
 register_tool("send_sms",
     fn("send_sms", "Send a text message as yourself. A human approves it first.",
        {"to": S, "body": S}, ["to", "body"]),
-    _send_sms, policy="ask")
+    _send_sms, policy="ask", shown_when=_has_phone)
 register_tool("make_call",
     fn("make_call", "Call a number and read out a short message (text-to-speech). A human "
        "approves it first.", {"to": S, "message": S}, ["to", "message"]),
-    _make_call, policy="ask")
+    _make_call, policy="ask", shown_when=_has_phone)
 
 
 # ---------------- inbound webhooks ----------------

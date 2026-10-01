@@ -72,8 +72,11 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   capped at 60k) older tool results are cleared in one go, keeping the last three; a run
   still too big is compacted into a note (task, findings with exact values, decisions,
   what's left). Across turns, a chat is its recent messages within a budget plus a
-  rolling summary of the rest, updated after each run. Stable parts come first and the
-  clock last, so the prompt cache holds; Claude gets explicit cache markers.
+  rolling summary of the rest, updated after each run. The system prompt puts what never
+  changes first (who the agent is, its job, rules, apps, skills) and what does last
+  (what it knows about you, its last few journal lines, the clock), so the prompt cache
+  holds; Claude gets explicit cache markers. Tools for things you haven't set up (a
+  phone number, a mailbox, a paired computer) aren't offered at all.
 
 ## Models
 

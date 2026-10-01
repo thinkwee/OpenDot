@@ -228,7 +228,3 @@ register_tool("install_skill", fn(
     "Needs the human's approval; the skill is safety-scanned first.",
     {"install": {"type": "string"}}, ["install"]),
     _install_skill, policy="ask")
-
-PROMPT = ("# Finding new skills\nIf a task needs know-how you don't have (a file format, an "
-          "app's API, a workflow), `find_skills` searches thousands of community skills; "
-          "propose the best one with `install_skill` (the human approves).")

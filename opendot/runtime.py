@@ -184,26 +184,24 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
     aid = agent["id"]
     now = memory.now_local()
     others = db.q("SELECT name, role, responsibility FROM agents WHERE id != ?", aid)
+    # Stable parts first, what changes last: the model's prompt cache keeps everything
+    # up to the first difference, so the rules, apps and skills are paid for once.
     parts = [
         f"You are {agent['name']} ({agent['role']}). This is your own identity — you are "
         f"never any other agent, and never say another agent's name when speaking about "
         f"yourself. Other agents' messages in this chat are prefixed like “[Name]: …”.",
         memory.read(aid, "SOUL.md"),
         _job_section(agent),
-        "# About the human\n" + memory.read(aid, "USER.md"),
-        memory.read(aid, "MEMORY.md"),
     ]
-    j = memory.recent_journal(aid)
-    if j:
-        parts.append("# My recent journal\n" + j)
+    about, kept = _notes(aid, "USER.md"), _notes(aid, "MEMORY.md")
+    lately = _lately(aid)
     situation = (
         "# Situation\n"
         f"- Now: {now:%A %Y-%m-%d %H:%M} ({settings.TIMEZONE}).\n"
         f"- Channel: {'group chat “' + thread['title'] + '”' if thread['kind'] == 'group' else 'direct chat'}"
         f" · trigger: {source}.\n"
-        + ("- The human's other agents: " + "; ".join(
-            f"{t['name']} ({(t['responsibility'] or t['role'])[:70]})" for t in others[:20])
-           + ".\n" if others else "")
+        + ("- Your teammates: " + "; ".join(f"{t['name']} ({(t['role'] or '')[:50]})"
+                                           for t in others[:20]) + ".\n" if others else "")
         + "- Your computer home has a `shared/` folder every agent can read and write.\n"
     )
     rules = [
@@ -215,8 +213,6 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
         "- Talk like a friend texting: short, warm, plain words, in the human's language. "
         "Never sound like a dev tool (no “approve/confirm execution/tool call/run”).",
         "- For wide/parallel work (many items to research or produce) use `delegate`.",
-        "- Hand results over as files (make_document / make_spreadsheet / make_slides / "
-        "attach); an interactive mini-app is a web-page file via `publish_page`.",
         "- 'Every day / every Monday' → `schedule`. 'Tell me when / as soon as / if a slot "
         "opens / keep an eye on' → `watch` (it re-checks until it happens, then you act).",
         "- If you learn a lasting preference or fact about the human, `remember` it.",
@@ -240,9 +236,46 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
     parts.append("\n".join(rules))
     from . import ext
     parts.extend(ext.prompt_sections(agent))
-    # what changes every minute goes last: everything before it stays in the prompt cache
+    # what changes: what you know about the human (rarely), what you did lately (each
+    # run), and the clock (each minute)
+    if about:
+        parts.append("# About the human\n" + about)
+    if kept:
+        parts.append("# What you've kept\n" + kept)
+    if lately:
+        parts.append("# What you did lately (your journal)\n" + lately)
     parts.append(situation)
     return "\n\n".join(p.strip() for p in parts if p.strip())
+
+
+def _notes(agent_id: str, name: str) -> str:
+    """A memory file without its title and template lines ("" if nothing's written yet)."""
+    template = {line.strip() for line in (memory.TEMPLATES / name).read_text().splitlines()}
+    return "\n".join(line for line in memory.read(agent_id, name).splitlines()
+                     if line.strip() and line.strip() not in template).strip()
+
+
+def _lately(agent_id: str, entries: int = 10) -> str:
+    """The last few journal lines, newest last, under their dates."""
+    out, n = [], 0
+    for line in reversed(memory.recent_journal(agent_id).splitlines()):
+        if line.startswith("### "):
+            if out and not out[-1].startswith("### "):
+                out.append(line)
+        elif line.startswith("- ") and n < entries:
+            out.append(line[:200])
+            n += 1
+    return "\n".join(reversed(out))
+
+
+def _flat(s: str | None) -> str:
+    return " ".join((s or "").split())
+
+
+def _last_ask(thread_id: str) -> str:
+    r = db.one("SELECT content FROM messages WHERE thread_id=? AND role='user' "
+               "ORDER BY created DESC LIMIT 1", thread_id)
+    return r["content"] if r else ""
 
 
 def _source_label(source: str) -> str:
@@ -658,7 +691,10 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
                                  body=text[:4000],
                                  status="unread", thread_id=thread_id)
                 bus.emit("inbox", item=item)
-            memory.journal(agent_id, f"[{source}] {(prompt or 'chat')[:80]} → {text[:120]}")
+            asked = prompt if source == "handoff" else _last_ask(thread_id) \
+                if source == "chat" else ""
+            memory.journal(agent_id, f"[{_source_label(source)}] "
+                           + (f"{_flat(asked)[:60]} → " if asked else "") + _flat(text)[:140])
         if failed:
             durable.job_end(job["id"], "failed")
         try:

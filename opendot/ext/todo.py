@@ -157,7 +157,7 @@ register_tool("todo", fn(
 
 
 def PROMPT(agent: dict) -> str | None:
-    return ("## Todo\nFor any job that takes 3 or more steps, start by calling `todo` with a "
+    return ("# Todo\nFor any job that takes 3 or more steps, start by calling `todo` with a "
             "short title and a checklist (in the human's language), and keep it current: "
             "mark an item `doing` when you start it and `done` when it's finished. The "
             "human watches their Todo page instead of reading your steps. Skip it for quick "

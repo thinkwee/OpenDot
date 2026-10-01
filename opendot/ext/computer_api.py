@@ -271,7 +271,6 @@ register_tool(
 )
 
 
-PROMPT = ("Your browser is visible to the human in the Computer panel — prefer `browser` and "
-         "`web_fetch` (which now reads pages through that same visible browser) over "
-         "shell/curl for anything web-related, so they can watch you work. For multi-step "
-         "interactive tasks (forms, logins, checkout-like flows) use `browse_task`.")
+PROMPT = ("# Your computer\nYou have your own Linux computer: a shell, files, and a browser "
+          "the human can watch in the Computer panel. For web pages use `browser` or "
+          "`web_fetch`, not curl, so they can see what you're doing.")

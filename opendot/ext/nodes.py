@@ -252,44 +252,49 @@ async def _device_files(ctx: Ctx, device: str, action: str, path: str, content: 
     return await _call(device, method, params, timeout=30)
 
 
+def _has_computer() -> bool:
+    """A paired Mac/PC (phones have their own iphone_* tools)."""
+    return any(not _is_phone(r) for r in db.q("SELECT os FROM devices WHERE approved=1"))
+
+
 register_tool(
     "device_list", fn("device_list", "List the human's paired devices (their own Mac/PC) and "
-                      "whether each is online right now.", {}), _device_list, policy="allow")
+                      "whether each is online right now.", {}), _device_list, policy="allow", shown_when=_has_computer)
 register_tool(
     "device_shell", fn("device_shell", "Run a shell command on the human's OWN computer (not "
                        "your sandbox) — e.g. to use an app only installed there. Ask first.",
                        {"device": S, "command": S, "timeout": I}, ["device", "command"]),
-    _device_shell, policy="ask")
+    _device_shell, policy="ask", shown_when=_has_computer)
 register_tool(
     "device_applescript", fn("device_applescript", "Run an AppleScript on the human's Mac "
                              "(control apps, dialogs, System Events). macOS devices only.",
                              {"device": S, "script": S}, ["device", "script"]),
-    _device_applescript, policy="ask")
+    _device_applescript, policy="ask", shown_when=_has_computer)
 register_tool(
     "device_open", fn("device_open", "Open an app, URL, or file on the human's device.",
                       {"device": S, "target": S}, ["device", "target"]),
-    _device_open, policy="ask")
+    _device_open, policy="ask", shown_when=_has_computer)
 register_tool(
     "device_screenshot", fn("device_screenshot", "Take a screenshot of the human's device "
                             "screen. Shown to them live — use sparingly, it's their screen.",
                             {"device": S}, ["device"]),
-    _device_screenshot, policy="ask")
+    _device_screenshot, policy="ask", shown_when=_has_computer)
 register_tool(
     "device_clipboard", fn("device_clipboard", "Read or write the human's device clipboard.",
                            {"device": S, "action": {"type": "string", "enum": ["get", "set"]},
                             "text": S}, ["device", "action"]),
-    _device_clipboard, policy="ask")
+    _device_clipboard, policy="ask", shown_when=_has_computer)
 register_tool(
     "device_notify", fn("device_notify", "Pop a native notification on the human's device.",
                         {"device": S, "title": S, "body": S}, ["device", "title"]),
-    _device_notify, policy="allow")
+    _device_notify, policy="allow", shown_when=_has_computer)
 register_tool(
     "device_files", fn("device_files", "Read, list, or write files in the folders the human "
                        "approved on their device (default: Desktop, Documents, Downloads).",
                        {"device": S, "action": {"type": "string",
                                                 "enum": ["read", "list", "write"]},
                         "path": S, "content": S, "append": B}, ["device", "action", "path"]),
-    _device_files, policy="ask")
+    _device_files, policy="ask", shown_when=_has_computer)
 
 
 def _is_phone(r: dict) -> bool:
