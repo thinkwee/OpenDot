@@ -6,6 +6,20 @@ const t = (k, o) => i18n.t(k, { ns: 'common', ...o })
 const loc = () => (i18n.language === 'zh' ? 'zh-CN' : [])
 
 marked.setOptions({ breaks: true, gfm: true })
+// **bold** that ends on punctuation right before a letter (“**「重点」**之后”) isn't bold
+// by the CommonMark rules, which assume a space after it, as in English; Chinese has none
+marked.use({
+  extensions: [{
+    name: 'cjkStrong',
+    level: 'inline',
+    start: (src) => src.indexOf('**'),
+    tokenizer(src) {
+      const m = /^\*\*(?!\s)([^\n]*?\S)\*\*/.exec(src)
+      if (m) return { type: 'cjkStrong', raw: m[0], tokens: this.lexer.inlineTokens(m[1]) }
+    },
+    renderer(token) { return `<strong>${this.parser.parseInline(token.tokens)}</strong>` },
+  }],
+})
 
 export function md(text) {
   // make agent-published page paths clickable (they need the token when no cookie is set)
