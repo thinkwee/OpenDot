@@ -707,6 +707,9 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
         # fold what scrolled out of the word-for-word window into this chat's summary,
         # after the reply is out so nobody waits for it
         spawn(context.update_summary(thread_id, agent))
+        if not failed and text != "(stopped)":
+            from . import learned
+            spawn(learned.after_run(run_id, agent, thread_id))
     for target_id, note in ctx.extra.get("handoffs", [])[:3]:
         if hops < 6 and target_id != agent_id:
             ask = f"[{agent['name']} → you]: {note}"

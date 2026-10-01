@@ -11,7 +11,7 @@ import { ago, md } from '../util'
 // [icon, label key in inbox.json]
 const KIND = {
   report: ['📋', 'kind.report'], note: ['📝', 'kind.note'], email: ['✉️', 'kind.email'], sms: ['💬', 'kind.sms'],
-  approval: ['🛡️', 'kind.approval'],
+  approval: ['🛡️', 'kind.approval'], learned: ['🌱', 'kind.learned'],
 }
 const sourceLabel = (title = '', t) => (title.split(' · ')[1] || '')
   .replace('automation:', '⏰ ').replace('heartbeat', t('src.heartbeat')).replace(/^event:/, '⚡ ')

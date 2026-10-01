@@ -365,6 +365,7 @@ def PROMPT(agent: dict) -> str | None:
     apps = mcp_hub.apps_for(agent["id"])
     if not apps:
         return "You have no connected apps yet. " + SUGGEST
+    from .. import learned
     lines = []
     for a in apps:
         if a["status"] != "connected":
@@ -375,6 +376,8 @@ def PROMPT(agent: dict) -> str | None:
         tools = ", ".join(a["tools"][:60])
         lines.append(f"- {a['label']}{what} " + ("(ready)" if a["ready"] else
                      f"(call `open_app` with \"{a['name']}\" and the tools you need; it has: {tools})"))
+        if tips := learned.lines(f"app:{a['name']}", indent="  "):
+            lines.append("  Learned here:\n" + tips)
     return ("# Apps\nApps you can use (their tools start with `mcp__`):\n" + "\n".join(lines) +
             "\nAn app marked with `open_app` gives you its tools once you open it (if they're "
             "already in your tool list, just use them). Open only the tools the task needs. What comes "

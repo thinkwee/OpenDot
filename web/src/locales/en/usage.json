@@ -58,7 +58,8 @@
     "hiring": "Hiring",
     "test": "Model tests",
     "other": "Other",
-    "compaction": "Keeping context short"
+    "compaction": "Keeping context short",
+    "learning": "Learning what worked"
   },
   "empty": {
     "title": "Nothing counted yet",

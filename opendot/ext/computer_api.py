@@ -271,6 +271,10 @@ register_tool(
 )
 
 
-PROMPT = ("# Your computer\nYou have your own Linux computer: a shell, files, and a browser "
-          "the human can watch in the Computer panel. For web pages use `browser` or "
-          "`web_fetch`, not curl, so they can see what you're doing.")
+def PROMPT(agent: dict) -> str:
+    from .. import learned
+    tips = learned.lines("shell:") + "\n" + learned.lines("python")
+    return ("# Your computer\nYou have your own Linux computer: a shell, files, and a browser "
+            "the human can watch in the Computer panel. For web pages use `browser` or "
+            "`web_fetch`, not curl, so they can see what you're doing."
+            + (f"\nLearned here:\n{tips.strip()}" if tips.strip() else ""))

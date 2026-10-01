@@ -1,5 +1,5 @@
 {
-  "kind": { "report": "汇报", "note": "便条", "email": "邮件", "sms": "短信", "approval": "要你点头" },
+  "kind": { "report": "汇报", "note": "便条", "email": "邮件", "sms": "短信", "approval": "要你点头", "learned": "学到了" },
   "src": { "heartbeat": "💓 定时看看" },
   "title": "收件箱",
   "subtitle": "你不在的时候助理们都干了啥，还有哪些事等你点头。",

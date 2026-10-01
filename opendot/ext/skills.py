@@ -134,7 +134,7 @@ def set_enabled(agent_id: str, name: str, on: bool) -> None:
 def PROMPT(agent: dict) -> str | None:
     skills = discover()
     lines = [f"- **{name}**: {s['description']}" for name, s in sorted(skills.items())
-             if is_enabled(agent["id"], name)]
+             if is_enabled(agent["id"], name) and s["meta"].get("listed", True)]
     return ("# Skills\nPlaybooks for things that come up often. Call `read_skill(name)` to load "
             "one's instructions BEFORE using it; the one-liner isn't enough to follow it.\n"
             + "\n".join(lines) + ("\n" if lines else "")
@@ -153,8 +153,12 @@ def _find(name: str) -> dict:
 
 async def _read_skill(ctx, name: str) -> dict:
     s = _find(name)
+    text = (s["path"] / "SKILL.md").read_text()
+    if name == "find-it-online":  # what this team learned since rides along with it
+        from .. import learned
+        text += learned.section()
     return {"name": s["name"], "description": s["description"], "meta": s["meta"],
-            "instructions": (s["path"] / "SKILL.md").read_text(), "files": s["files"]}
+            "instructions": text, "files": s["files"]}
 
 
 async def _read_skill_file(ctx, name: str, path: str) -> dict:

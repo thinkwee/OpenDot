@@ -48,6 +48,19 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   `find-it-online` skill tells agents where each everyday lookup works first time
   (Google Flights and Hotels, Maps, Rome2Rio, Shopping; keyless APIs for weather,
   exchange rates, holidays and news).
+- **Learning the hard way** (`learned.py`): only where success is plain to see (a page
+  that loaded or a site that blocked us, an app call that went through or errored, a
+  command's exit code). After a run where one of those failed and then something of the
+  same kind worked, one short look back may keep one line ("for flights go straight to
+  …", "Notion wants the parent as …", "pip needs --user here"). The model proposes, code
+  merges (small deltas, never a rewrite): one line per thing (`web:site`, `app:name`,
+  `shell:program`; a command calling a URL counts as that site), only naming sites the
+  run went to, written from the agent's own steps rather than page text. Every later run
+  counts for or against each line; one that fails more than it works, or isn't seen
+  working for 120 days, goes; 40 lines at most. Lessons show where the capability is
+  described: sites with `find-it-online`, apps under that app, commands under "Your
+  computer". It's a plain skill file (`learned`, in Skills), and each change leaves a
+  line in the Inbox.
 - **Proactive, but quiet.** Watches (`ext/watch.py`) re-check something on a schedule and
   act the moment it happens; routines (`scheduler.py`) run on cron or on events (webhooks,
   RSS, email, SMS). At most `DOT_DAILY_NUDGES` unprompted messages a day, none between

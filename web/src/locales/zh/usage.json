@@ -58,7 +58,8 @@
     "hiring": "招聘助理",
     "test": "测试模型",
     "other": "其他",
-    "compaction": "压缩上下文"
+    "compaction": "压缩上下文",
+    "learning": "总结经验"
   },
   "empty": {
     "title": "还没有记录",
