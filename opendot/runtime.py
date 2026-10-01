@@ -55,9 +55,13 @@ REPLY_TOOLS = {"offer_choices", "suggest_routine", "suggest_app"}
 
 _locks: dict[str, asyncio.Lock] = {}
 _cancel: set[str] = set()
+_loops: dict[str, asyncio.Task] = {}  # run_id -> its agent loop, so Stop can cut in
 # runs in flight, so a page opened (or refreshed) mid-run can pick up where the
-# live stream is: run_id -> {agent_id, thread_id, run_id, text, thought, workers}
+# live stream is: run_id -> {agent_id, thread_id, run_id, text, thought, workers,
+# inbox: what the human said since the run began, read at its next step}
 _live: dict[str, dict] = {}
+BTW = ("[The human sent this while you were working. Take it into account now: it may add "
+       "to, change or cancel what you're doing.]\n")
 
 
 def live_runs() -> list[dict]:
@@ -407,6 +411,10 @@ async def _agent_loop(ctx: Ctx, messages: list[dict], tools: list[dict],
     for _ in range(max_steps or settings.MAX_STEPS):
         if ctx.run_id in _cancel:
             return "(stopped)"
+        heard = _live.get(ctx.run_id, {}).get("inbox") if ctx.depth == 0 else None
+        if heard:  # said mid-run: the next step sees it, like a message typed into a live session
+            messages.append({"role": "user", "content": BTW + "\n\n".join(heard)})
+            heard.clear()
         set_status(aid, "thinking", _tr("thinking…", "在想…"))
         await context.fit(messages, tools, client)
         reply = await _stream_or_fallback(client, ctx, messages, tools)
@@ -567,6 +575,7 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             msgs.append({"role": "user", "content": prompt})
         if len(msgs) == 1 or msgs[-1]["role"] != "user":
             msgs.append({"role": "user", "content": "(continue)"})
+        _live[run_id]["inbox"] = []  # from here on, new messages join this run
         # apps with big tool lists load when opened (open_app); the app tools this chat
         # used lately come ready, so a conversation about Notion doesn't reopen it each turn
         opened = mcp_hub.light_apps(agent_id)
@@ -584,7 +593,14 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             before = None
         failed = False
         try:
-            text = await agent_loop(ctx, msgs, tools)
+            _loops[run_id] = asyncio.ensure_future(agent_loop(ctx, msgs, tools))
+            try:
+                text = await _loops[run_id]
+            except asyncio.CancelledError:
+                cur = asyncio.current_task()
+                if run_id not in _cancel or (cur and cur.cancelling()):
+                    raise  # shutting down, not you pressing Stop
+                text = "(stopped)"
         except Exception as e:
             log.exception("run failed")
             failed = True
@@ -592,8 +608,13 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             text = tr(f"😵 I hit an error: {e}", f"😵 出了点错：{e}")
         finally:
             set_status(agent_id, "idle")
+            _loops.pop(run_id, None)
+            stopped = run_id in _cancel
             _cancel.discard(run_id)
-            _live.pop(run_id, None)
+            unread = (_live.pop(run_id, None) or {}).get("inbox")
+        if unread and not stopped:
+            # said just as it finished: answer it as a turn of its own (it's saved already)
+            spawn(run_agent(agent_id, thread_id, "chat"))
         msg = None
         attachments = ctx.extra.get("attachments", [])
         if before is not None:
@@ -691,8 +712,10 @@ async def on_user_message(thread_id: str, text: str, attachments: list | None = 
     text, extra_atts = await uploads.maybe_long_text(text, thread_id, source)
     attachments = [*(attachments or []), *extra_atts]
     targets, coordinator_note = _targets(thread, text)
+    busy = {} if attachments else _working_here(thread_id, targets)
     # the message and the replies it needs are saved together: a restart can't lose either
-    jobs = [durable.job_row(aid, thread_id, "chat", coordinator_note) for aid in targets]
+    jobs = [durable.job_row(aid, thread_id, "chat", coordinator_note) for aid in targets
+            if aid not in busy]
     msg, *_ = db.insert_many(
         ("messages", dict(id=new_id("m_"), thread_id=thread_id, role="user", agent_id=None,
                           content=text, meta={"attachments": attachments or [],
@@ -700,6 +723,8 @@ async def on_user_message(thread_id: str, text: str, attachments: list | None = 
         *(("jobs", j) for j in jobs))
     db.update("threads", thread_id, updated=time.time())
     bus.emit("message", message=msg)
+    for run in busy.values():
+        run["inbox"].append(text)
     try:
         from .ext import todo
         todo.answered(thread_id)
@@ -709,6 +734,13 @@ async def on_user_message(thread_id: str, text: str, attachments: list | None = 
     spawn(_dispatch(thread_id, [(j["agent_id"], j["id"]) for j in jobs], coordinator_note,
                     up_ids, thread["members"]))
     return msg
+
+
+def _working_here(thread_id: str, targets: list[str]) -> dict[str, dict]:
+    """Of these agents, the ones mid-run in this chat that can take a message now."""
+    return {r["agent_id"]: r for r in _live.values()
+            if r["thread_id"] == thread_id and r["agent_id"] in targets and "inbox" in r
+            and r["run_id"] not in _cancel}
 
 
 def _targets(thread: dict, text: str) -> tuple[list[str], str | None]:
@@ -771,9 +803,25 @@ def resume_jobs(jobs: list[dict] | None = None) -> list[asyncio.Task]:
 
 
 def stop_thread(thread_id: str) -> None:
-    for r in db.q("SELECT DISTINCT run_id FROM steps WHERE thread_id=? AND status IN "
-                  "('running','waiting')", thread_id):
-        _cancel.add(r["run_id"])
+    """Stop: every run in this chat stops now, mid-reply or mid-tool, helpers too."""
+    runs = {r["run_id"] for r in db.q("SELECT DISTINCT run_id FROM steps WHERE thread_id=? "
+                                      "AND status IN ('running','waiting')", thread_id)}
+    runs |= {rid for rid, r in _live.items() if r["thread_id"] == thread_id}
+    from .gatekeeper import _close_notice
+    for ap in db.q("SELECT id FROM approvals WHERE thread_id=? AND status='pending'", thread_id):
+        # not a "no" (nothing to learn from): the question just isn't open any more
+        db.update("approvals", ap["id"], status="expired", decided=time.time())
+        _close_notice(ap["id"])
+        bus.emit("approval", approval=db.one("SELECT * FROM approvals WHERE id=?", ap["id"]))
+    for rid in runs:
+        _cancel.add(rid)
+        task = _loops.get(rid)
+        if task and not task.done():
+            task.cancel()
+    for st in db.q("SELECT * FROM steps WHERE thread_id=? AND status IN ('running','waiting')",
+                   thread_id):
+        db.update("steps", st["id"], status="stopped")
+        bus.emit("step", step={**st, "status": "stopped"})
 
 
 async def run_workers(parent: Ctx, tasks: list[dict]) -> list[dict]:

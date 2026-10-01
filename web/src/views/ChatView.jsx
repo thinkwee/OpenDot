@@ -406,7 +406,7 @@ function Step({ s }) {
         <span className="step-ico">{icon}</span>
         <span className="step-verb">{verb}</span>
         <code className="ellipsis">{obj}</code>
-        <span className={`st st-${s.status}`}>{s.status === 'running' ? '…' : s.status === 'waiting' ? '⏸' : s.status === 'error' ? '!' : '✓'}</span>
+        <span className={`st st-${s.status}`}>{s.status === 'running' ? '…' : s.status === 'waiting' ? '⏸' : s.status === 'error' ? '!' : s.status === 'stopped' ? '■' : '✓'}</span>
       </button>
       {open && s.result && <pre className="step-out">{prettyResult(s.result)}</pre>}
     </li>
@@ -593,7 +593,7 @@ function Composer({ threadId, members, group, busy, uploads, pickFiles }) {
           ref={ta}
           rows={1}
           value={text}
-          placeholder={group ? tr('composer.placeholderGroup') : tr('composer.placeholderDm')}
+          placeholder={busy ? tr('composer.placeholderBusy') : group ? tr('composer.placeholderGroup') : tr('composer.placeholderDm')}
           onChange={onChange}
           onKeyDown={onKeyDown}
           onBlur={() => setTimeout(() => setPick(null), 150)}

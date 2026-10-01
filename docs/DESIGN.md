@@ -33,6 +33,10 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   does one thing at a time; different agents run in parallel. `delegate` fans wide work
   out to short-lived helpers (`<agent>-w1`, `-w2`…), each with its own computer.
   In a group chat, `handoff` passes the baton to another agent.
+  **Stop** cuts a run off at once, mid-reply or mid-tool, helpers included; an open
+  question it was waiting on just closes (not a "no"). A message sent while an agent
+  is working joins that run at its next step, so you can add to or redirect it; one
+  that lands as it finishes gets a turn of its own.
 - **Proactive, but quiet.** Watches (`ext/watch.py`) re-check something on a schedule and
   act the moment it happens; routines (`scheduler.py`) run on cron or on events (webhooks,
   RSS, email, SMS). At most `DOT_DAILY_NUDGES` unprompted messages a day, none between

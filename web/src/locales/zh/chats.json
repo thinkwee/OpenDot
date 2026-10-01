@@ -103,6 +103,7 @@
     "attach": "添加文件",
     "placeholderGroup": "跟大家说点什么…输入 @ 找人",
     "placeholderDm": "要帮你做点什么？",
+    "placeholderBusy": "正在做…想补充或改主意，直接说",
     "stop": "停下",
     "send": "发送",
     "reading": "读取中…",

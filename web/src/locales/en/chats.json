@@ -106,6 +106,7 @@
     "attach": "Attach files",
     "placeholderGroup": "Message everyone… type @ to call someone",
     "placeholderDm": "Tell me what you need…",
+    "placeholderBusy": "Working on it… add something or change your mind anytime",
     "stop": "Stop",
     "send": "Send",
     "reading": "reading…",
