@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone'
 import { api, getToken, loadThread, store, useStore, toast } from '../store'
 import Mascot, { animalFor, helperAnimal } from '../components/Mascot'
 import Deco from '../components/Deco'
-import DeliverableCard, { fmtSize } from '../components/Deliverable'
+import DeliverableCard, { fmtSize, withToken } from '../components/Deliverable'
 import { FileIcon, agentFile, openFile } from '../components/FileViewer'
 import { QuestionCard, RoutineCard } from '../components/ChoiceCard'
 import { AgentStack } from './ChatList'
@@ -20,7 +20,9 @@ import './soul.css'
 
 // paths an agent mentions (`shared/notes.md`, `~/report.xlsx`) become clickable file chips
 const PATH_RX = /^(~\/|\.\/|\/)?([\w\-.()一-鿿 ]+\/)*[\w\-.()一-鿿]+\.[A-Za-z0-9]{1,8}$/
-function linkFiles(html) {
+function linkFiles(html, agentId) {
+  // ![..](charts/q3.png): a picture on the agent's own computer shows in place
+  if (agentId) html = html.replace(/<img src="(?![a-z]+:|\/)([^"]+)"/gi, (m, p) => `<img src="${withToken(agentFile(agentId, p.replace(/&amp;/g, '&')).raw)}"`)
   return html.replace(/<code>([^<]{3,200})<\/code>/g, (m, inner) => {
     const t = inner.trim()
     if (!PATH_RX.test(t) || /^\d+(\.\d+)+$/.test(t) || /^[\w-]+\.(com|org|net|io|ai|dev|cn|uk)$/i.test(t)) return m
@@ -287,6 +289,9 @@ function Bubble({ m, agent, group, lead, threadId, answer, members }) {
     )
   }
   const auto = m.meta?.source && !['chat', 'hello'].includes(m.meta.source)
+  const atts = m.meta?.attachments || []
+  const isPic = (d) => d.kind === 'image' || /^image\//.test(d.mime || '')
+  const pics = atts.filter(isPic), files = atts.filter((d) => !isPic(d))
   return (
     <div className="msg agent" style={{ '--c': agent?.color }}>
       <Mascot color={agent?.color} animal={agent && animalFor(agent)} emoji={agent?.emoji} size={34} bubble={false} />
@@ -297,10 +302,13 @@ function Bubble({ m, agent, group, lead, threadId, answer, members }) {
             {auto && <span className="src-tag">{m.meta.source.replace('automation:', '⏰ ').replace('heartbeat', t('chat.src.heartbeat')).replace('handoff', t('chat.src.handoff')).replace('watch:', '👀 ')}</span>}
           </small>
         )}
-        <div className="bubble" onClick={(e) => onFileClick(e, agent?.id)} onKeyDown={(e) => e.key === 'Enter' && onFileClick(e, agent?.id)}
-          dangerouslySetInnerHTML={{ __html: linkFiles(md(m.content)) }} />
-        {(m.meta?.attachments || []).length > 0 && (
-          <div className="agent-files">{m.meta.attachments.map((d) => <DeliverableCard key={d.id} d={d} />)}</div>
+        <div className="bubble" onClick={(e) => onFileClick(e, agent?.id)} onKeyDown={(e) => e.key === 'Enter' && onFileClick(e, agent?.id)}>
+          <div dangerouslySetInnerHTML={{ __html: linkFiles(md(m.content), agent?.id) }} />
+          {/* pictures sit in the message itself; other files are cards under it */}
+          {pics.map((d) => <img key={d.id || d.path} className="bubble-pic" src={withToken(d.url || d.preview_url)} alt={d.title} />)}
+        </div>
+        {files.length > 0 && (
+          <div className="agent-files">{files.map((d) => <DeliverableCard key={d.id} d={d} />)}</div>
         )}
         {m.meta?.choices?.length > 0 && <Reply choices={m.meta.choices} agent={agent} members={members} threadId={threadId} answer={answer} />}
       </div>

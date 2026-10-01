@@ -12,6 +12,7 @@
   "copy": "Copy",
   "copied": "Copied",
   "language": "Language",
+  "chartData": "Data",
   "time": {
     "now": "just now",
     "min": "{{n}}m",

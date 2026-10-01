@@ -61,6 +61,21 @@ async def test_no_reply_after_a_note_is_silent(fake_llm):
     assert db.one("SELECT * FROM messages WHERE thread_id=? AND role='agent'", th["id"]) is None
 
 
+async def test_make_chart_draws_inside_the_reply(fake_llm):
+    aid = _agent("Charty")
+    th = db.insert("threads", id=new_id("th_"), title="Chart", kind="dm", members=[aid])
+    fake_llm.push(tool_calls=[{"id": "1", "name": "make_chart", "arguments": json.dumps(
+        {"title": "GBP→CNY", "type": "line",
+         "data": {"labels": ["9/17", "9/18"], "series": [{"name": "GBP/CNY", "values": [8.97, 8.95]}], "y": {"min": 8.7}}})}])
+    fake_llm.push(content="Drifting down a little.")
+
+    msg = await runtime.run_agent(aid, th["id"], source="chat")
+    assert msg["content"].startswith("Drifting down a little.\n\n```chart\n")
+    assert '"labels": ["9/17", "9/18"]' in msg["content"]
+    assert '"y": {"min": 8.7}' in msg["content"]
+    assert not (msg["meta"] or {}).get("attachments")
+
+
 async def test_handoff_spawns_follow_up_run(fake_llm):
     a1 = _agent("Lead")
     a2 = _agent("Helper")

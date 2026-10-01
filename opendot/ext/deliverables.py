@@ -24,6 +24,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import hmac
+import json
 import logging
 import mimetypes
 import re
@@ -57,8 +58,13 @@ db.ensure_schema(
 )
 
 PROMPT = ("# Deliverables\nEverything you hand over is a file card: reports→make_document, "
-          "data→make_spreadsheet, decks→make_slides, charts→make_chart, other files→attach, "
-          "interactive mini-apps/dashboards→publish_page (a web-page file).")
+          "data→make_spreadsheet, decks→make_slides, other files→attach, "
+          "interactive mini-apps/dashboards→publish_page (a web-page file).\n"
+          "Charts and pictures go inside your message: make_chart draws one right in your "
+          "reply (no file), and so does a ```chart block you write yourself, holding the same "
+          "JSON. A picture: ![caption](path on your computer, or an https link). Tables are "
+          "Markdown tables. Most replies need none of these; use one when it says more than the "
+          "sentence it replaces, and keep it to one or two.")
 
 PALETTE = ["FFB38A", "8FD6B8", "B9A6F2", "8EC5FF", "FFD37A", "FF9EC4"]
 S = {"type": "string"}
@@ -394,57 +400,29 @@ async def _make_slides(ctx: Ctx, title: str, slides: list[dict]) -> dict:
 
 
 # ---------------- charts ----------------
-def _build_chart(title: str, type_: str, data: dict, out: Path) -> None:
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    colors = [f"#{c}" for c in PALETTE]
-    labels = data.get("labels", [])
-    series = data.get("series") or [{"name": title, "values": data.get("values", [])}]
-    fig, ax = plt.subplots(figsize=(7, 4.2), dpi=150)
-    fig.patch.set_facecolor("#FFFDFB")
-    ax.set_facecolor("#FFFDFB")
-    t = (type_ or "bar").lower()
-    if t == "pie":
-        ax.pie(series[0].get("values", []), labels=labels, colors=colors, autopct="%1.0f%%",
-              textprops={"color": "#2B2233"})
-    elif t == "line":
-        for i, s in enumerate(series):
-            ax.plot(labels, s.get("values", []), marker="o", color=colors[i % len(colors)],
-                    label=s.get("name"))
-        if len(series) > 1:
-            ax.legend()
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-    else:
-        x = np.arange(len(labels))
-        w = 0.8 / max(1, len(series))
-        for i, s in enumerate(series):
-            ax.bar(x + i * w, s.get("values", []), width=w, color=colors[i % len(colors)],
-                  label=s.get("name"))
-        ax.set_xticks(x + w * (len(series) - 1) / 2)
-        ax.set_xticklabels(labels)
-        if len(series) > 1:
-            ax.legend()
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-    ax.set_title(title, color="#2B2233", fontweight="bold")
-    fig.tight_layout()
-    fig.savefig(out, facecolor=fig.get_facecolor())
-    plt.close(fig)
-
-
-async def _make_chart(ctx: Ctx, title: str, type: str, data: dict) -> dict:
-    did = new_id("dl_")
-    p = _dir(did) / f"{_slug(title)}.png"
-    try:
-        _build_chart(title, type, data or {}, p)
-    except Exception as e:
-        log.exception("chart render failed")
-        return {"error": f"could not render chart: {e}"}
-    return _finish(ctx, did, title, "image", p, "make_chart")
+async def _make_chart(ctx: Ctx, title: str = "", type: str = "bar", data: dict | str | None = None,
+                      **_) -> dict:
+    """The chart is drawn inside the reply (a ```chart block the chat renders), not a file."""
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except ValueError:
+            return {"error": "data must be {labels:[...], series:[{name, values:[...]}]}"}
+    data = data or {}
+    labels = [str(x) for x in data.get("labels") or []]
+    series = data.get("series") or ([{"name": title, "values": data["values"]}]
+                                    if data.get("values") else [])
+    if not labels or not series:
+        return {"error": "data needs labels and at least one series of values"}
+    spec = {"type": type if type in ("bar", "line", "pie") else "bar", "title": title,
+            "labels": labels, "series": [{"name": str(x.get("name", "")),
+                                          "values": list(x.get("values") or [])} for x in series]}
+    if isinstance(data.get("y"), dict):
+        spec["y"] = {k: v for k, v in data["y"].items() if k in ("min", "max")}
+    ctx.extra.setdefault("charts", []).append(
+        "```chart\n" + json.dumps(spec, ensure_ascii=False) + "\n```")
+    return {"ok": True, "note": "It will show inside your reply, under your text. Don't repeat "
+                                "the numbers; say what they mean."}
 
 
 # ---------------- publish_page (kept, now also a deliverable) ----------------
@@ -767,8 +745,10 @@ register_tool("make_slides", fn(
         "image_path": S}}}}, ["title", "slides"]), _make_slides, policy="allow")
 
 register_tool("make_chart", fn(
-    "make_chart", "Render a chart (bar/line/pie) from data and attach it as a PNG image. "
-    "data={labels:[...], series:[{name, values:[...]}]}.",
+    "make_chart", "Draw a chart (bar/line/pie) inside your reply. "
+    "data={labels:[...], series:[{name, values:[...]}], y?:{min, max}}. The axis fits the "
+    "data by itself (bars start at 0); set y only to make it reach a value that matters, "
+    "like a threshold.",
     {"title": S, "type": {"type": "string", "enum": ["bar", "line", "pie"]},
      "data": {"type": "object", "properties": {}}}, ["title", "type", "data"]), _make_chart,
     policy="allow")

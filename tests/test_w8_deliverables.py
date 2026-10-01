@@ -42,8 +42,7 @@ def _run(coro):
 
 # ---------------- tool registration ----------------
 def test_tools_registered():
-    for name in ("attach", "make_document", "make_spreadsheet", "make_slides", "make_chart",
-                "publish_page"):
+    for name in ("attach", "make_document", "make_spreadsheet", "make_slides", "publish_page"):
         assert name in TOOLS
         assert name in EXEC
         assert DEFAULT_POLICY.get(name) == "allow"
@@ -128,17 +127,6 @@ def test_make_slides_pptx():
     assert r["kind"] == "slides"
     row = db.one("SELECT * FROM deliverables WHERE id=?", r["id"])
     assert row["path"].endswith(".pptx")
-
-
-# ---------------- make_chart ----------------
-def test_make_chart_png():
-    ag = _agent()
-    ctx = _ctx(ag)
-    data = {"labels": ["A", "B"], "series": [{"name": "s", "values": [1, 2]}]}
-    r = _run(EXEC["make_chart"](ctx, title="Chart", type="bar", data=data))
-    assert r["kind"] == "image"
-    row = db.one("SELECT * FROM deliverables WHERE id=?", r["id"])
-    assert row["path"].endswith(".png")
 
 
 # ---------------- attach ----------------
@@ -280,8 +268,8 @@ def test_preview_docx_via_mammoth(client, auth_headers):
 def test_preview_image_is_inline(client, auth_headers):
     ag = _agent()
     ctx = _ctx(ag)
-    data = {"labels": ["A"], "series": [{"name": "s", "values": [1]}]}
-    r = _run(EXEC["make_chart"](ctx, title="Img Prev", type="bar", data=data))
+    computer_for(ag["id"]).resolve("dot.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    r = _run(EXEC["attach"](ctx, path="dot.png", title="Img Prev"))
     resp = client.get(f"/api/deliverables/{r['id']}/preview", headers=auth_headers)
     assert resp.status_code == 200
     assert resp.headers["content-type"].startswith("image/")

@@ -1,6 +1,7 @@
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import i18n from './i18n'
+import { chart } from './chart'
 
 const t = (k, o) => i18n.t(k, { ns: 'common', ...o })
 const loc = () => (i18n.language === 'zh' ? 'zh-CN' : [])
@@ -19,6 +20,8 @@ marked.use({
     },
     renderer(token) { return `<strong>${this.parser.parseInline(token.tokens)}</strong>` },
   }],
+  // ```chart blocks draw as a chart; until the block is complete (still streaming) it stays code
+  renderer: { code({ text, lang }) { return (lang === 'chart' && chart(text, t('chartData'))) || false } },
 })
 
 export function md(text) {

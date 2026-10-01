@@ -688,6 +688,10 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
         # a run you stopped just stops: no "(stopped)" bubble
         quiet = text.strip().upper()  # "nothing new.\n\nNO_REPLY" is silence too
         silent = quiet.startswith("NO_REPLY") or quiet.endswith("NO_REPLY") or text == "(stopped)"
+        charts = [c for c in ctx.extra.get("charts", []) if c not in text]
+        if charts and text != "(stopped)":  # make_chart draws inside the reply
+            text = "\n\n".join(([] if silent else [text.rstrip()]) + charts)
+            silent = False
         if silent and attachments:
             # a deliverable-only turn still needs a bubble to hang the attachments off
             silent = False

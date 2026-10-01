@@ -169,6 +169,31 @@ textarea.input { resize: vertical; }
 .bubble th, .bubble td { border: 1px solid var(--line); padding: 5px 8px; text-align: left; }
 .bubble h1, .bubble h2, .bubble h3 { font-size: 16px; margin: 8px 0 4px; }
 .bubble img { max-width: 100%; border-radius: 10px; }
+.bubble-pic { display: block; margin-top: 8px; }
+.dot-chart { margin: 6px 0; min-width: min(420px, 100%); }
+.dot-chart figcaption { font-weight: 800; font-size: 13px; margin-bottom: 2px; }
+.dot-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.dc-grid { stroke: var(--line); stroke-width: 1; } .dc-grid.zero { stroke: var(--ink3); }
+.dc-tick { fill: var(--ink2); font-size: 12px; }
+.dc-bar, .dc-slice { stroke: var(--panel); stroke-width: 2px; }
+.dc-line { fill: none; stroke-width: 2px; stroke-linejoin: round; stroke-linecap: round; }
+.dc-dot { stroke: var(--panel); stroke-width: 2px; } .dc-dot.hide { opacity: 0; }
+.dot-chart { position: relative; touch-action: pan-y; }
+.dc-cross { stroke: var(--ink3); stroke-dasharray: 3 3; opacity: 0; pointer-events: none; }
+.dot-chart.hovering .dc-cross { opacity: 1; }
+.dot-chart.hovering .dc-bar:not(.on), .dot-chart.hovering .dc-slice:not(.on) { opacity: .45; }
+.dc-dot.on { r: 6px; opacity: 1; }
+.dc-tip { position: absolute; transform: translate(-50%, calc(-100% - 8px)); pointer-events: none; z-index: 5; background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-sm); border-radius: 10px; padding: 6px 10px; font-size: 12px; white-space: nowrap; color: var(--ink); }
+.dc-tip-h { color: var(--ink2); font-weight: 700; margin-bottom: 2px; }
+.dc-tip div { display: flex; align-items: center; gap: 6px; }
+.dot-chart { --s0: #2a78d6; --s1: #eb6834; --s2: #1baf7a; --s3: #eda100; --s4: #e87ba4; --s5: #008300; }
+.dot-chart .s0 { --sc: var(--s0); } .dot-chart .s1 { --sc: var(--s1); } .dot-chart .s2 { --sc: var(--s2); } .dot-chart .s3 { --sc: var(--s3); } .dot-chart .s4 { --sc: var(--s4); } .dot-chart .s5 { --sc: var(--s5); }
+.dc-bar, .dc-slice, .dc-dot, .dc-sw { fill: var(--sc); background: var(--sc); } .dc-line { stroke: var(--sc); }
+.dc-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--ink2); margin-top: 4px; }
+.dc-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.dc-sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.dc-data { font-size: 12px; margin-top: 4px; } .dc-data summary { cursor: pointer; color: var(--ink2); }
+.dc-data table { margin-top: 4px; }
 .who { font-weight: 900; font-size: 12px; margin: 0 0 3px 6px; display: flex; gap: 6px; align-items: center; }
 .src-tag { color: var(--ink2); font-weight: 700; background: var(--panel2); border-radius: 8px; padding: 0 6px; }
 .bubble.typing { display: flex; flex-direction: column; gap: 4px; min-width: 90px; }
@@ -369,3 +394,5 @@ textarea.input { resize: vertical; }
   line-height: 1.55;
   color: var(--ink2);
 }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .dot-chart { --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; } }
+:root[data-theme='dark'] .dot-chart { --s0: #3987e5; --s1: #d95926; --s2: #199e70; --s3: #c98500; --s4: #d55181; --s5: #008300; }
