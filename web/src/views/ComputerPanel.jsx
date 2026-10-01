@@ -26,6 +26,7 @@ export default function ComputerPanel({ threadId, onClose, sheet, standalone }) 
   const members = (thread?.members || []).map((id) => agents.find((a) => a.id === id)).filter(Boolean)
   const [agentId, setAgentId] = useState(members[0]?.id)
   const [tab, setTab] = useState('screen')
+  const follow = useRef(true) // follow the agent's view until you pick a tab yourself
   const [max, setMax] = useState(false)
   const [owner, setOwner] = useState(members[0]?.id)
   const c = computer[agentId] || {}
@@ -53,7 +54,11 @@ export default function ComputerPanel({ threadId, onClose, sheet, standalone }) 
     if (liveAgent && liveAgent.id !== agentId) setAgentId(liveAgent.id)
   }, [liveAgent?.id])
   useEffect(() => {
-    if (c.view && liveAgent) setTab(c.view)
+    if (liveAgent) follow.current = true // a new run: follow it again
+  }, [liveAgent?.id, running[liveAgent?.id]?.run_id])
+  useEffect(() => {
+    const view = { browser: 'screen', terminal: 'terminal' }[c.view]
+    if (view && liveAgent && follow.current) setTab(view)
   }, [c.lastEvent])
   useEffect(() => {
     if (!members.find((m) => m.id === agentId)) setAgentId(members[0]?.id)
@@ -110,7 +115,7 @@ export default function ComputerPanel({ threadId, onClose, sheet, standalone }) 
       )}
       <div className="tabs">
         {TABS.map(([k, icon]) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{icon} {t(`tabs.${k}`)}</button>
+          <button key={k} className={tab === k ? 'on' : ''} onClick={() => { follow.current = false; setTab(k) }}>{icon} {t(`tabs.${k}`)}</button>
         ))}
       </div>
       <div className="comp-body">
