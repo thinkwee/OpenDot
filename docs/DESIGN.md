@@ -63,7 +63,8 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   line in the Inbox.
 - **Proactive, but quiet.** Watches (`ext/watch.py`) re-check something on a schedule and
   act the moment it happens; routines (`scheduler.py`) run on cron or on events (webhooks,
-  RSS, email, SMS). At most `DOT_DAILY_NUDGES` unprompted messages a day, none between
+  RSS, email, SMS). What they say lands in that agent's chat; the Inbox holds only what
+  needs your OK and what an agent chose to `notify` you about. At most `DOT_DAILY_NUDGES` unprompted messages a day, none between
   `DOT_QUIET_FROM` and `DOT_QUIET_TO`.
 - **Memory you can read** (`memory.py`): `SOUL.md` (who the agent is), `USER.md` (what
   it knows about you), `MEMORY.md` (what it learned) and a daily journal, all plain files

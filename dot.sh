@@ -163,8 +163,10 @@ cloudflared_bin() {
 }
 
 tunnel_url() {
-  [[ -f $TPIDFILE ]] && kill -0 "$(cat $TPIDFILE)" 2>/dev/null || return 1
   local pub; pub=$(envv DOT_PUBLIC_URL)
+  # an address with no token of ours: your own tunnel or proxy already serves it
+  if [[ -n "$pub" && -z "$(envv DOT_TUNNEL_TOKEN)" ]]; then echo "$pub"; return; fi
+  [[ -f $TPIDFILE ]] && kill -0 "$(cat $TPIDFILE)" 2>/dev/null || return 1
   if [[ -n "$pub" ]]; then echo "$pub"; return; fi
   grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' "$TLOG" 2>/dev/null | tail -1
 }
