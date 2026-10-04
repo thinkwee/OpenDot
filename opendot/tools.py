@@ -67,8 +67,9 @@ TOOLS: dict[str, dict] = {
                  "forget something).", {"text": S}, ["text"]),
     "say": fn("say", "Post a message in this chat right now and keep working; your reply "
               "at the end still comes as usual.", {"text": S}, ["text"]),
-    "notify": fn("notify", "Put a card in the human's Inbox (proactive update, finished "
-                 "background work, reminder). Keep it short.",
+    "notify": fn("notify", "Put a card in the human's Inbox. Your reply already lands in "
+                 "your chat, so use this only for something they shouldn't miss (a price "
+                 "hit, a deadline, a problem) — not routine updates. Keep it short.",
                  {"title": S, "body": S}, ["title"]),
     "publish_page": fn("publish_page", "Create an interactive web page file (mini-app, "
                        "dashboard, tracker) the human can open on their phone. It is "
@@ -154,7 +155,6 @@ async def _notify(ctx: Ctx, title: str, body: str = "") -> dict:
     item = db.insert("inbox", id=new_id("in_"), agent_id=ctx.agent["id"], kind="note",
                      title=title, body=body, status="unread", thread_id=ctx.thread_id)
     bus.emit("inbox", item=item)
-    ctx.extra["notified"] = True  # this run's report would say the same thing again
     return {"ok": True, "note": "They've been told. End your turn with just NO_REPLY."}
 
 

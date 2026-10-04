@@ -59,7 +59,8 @@ async def test_heartbeat_run_blocks_writes_and_proposes(fake_llm):
     step = db.one("SELECT * FROM steps WHERE thread_id=? AND tool='shell'", th["id"])
     assert step["status"] == "error" and "only reading" in step["result"]
     assert msg["meta"]["choices"] == ["Go ahead", "Not now"]
-    assert db.one("SELECT * FROM inbox WHERE agent_id=? AND kind='report'", aid)
+    # the reply is in the chat; the Inbox only gets what the agent chose to `notify`
+    assert not db.one("SELECT * FROM inbox WHERE agent_id=? AND kind='report'", aid)
 
 
 def test_heartbeat_default_on_for_front_desk_only():

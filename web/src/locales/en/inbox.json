@@ -2,7 +2,7 @@
   "kind": { "report": "Report", "note": "Note", "email": "Email", "sms": "Text", "approval": "Approval", "learned": "Learned" },
   "src": { "heartbeat": "💓 heartbeat" },
   "title": "Inbox",
-  "subtitle": "What your agents did while you were away, and what needs your OK.",
+  "subtitle": "What needs your OK, and what your agents flagged for you.",
   "markAll": "Mark all read",
   "clearRead": "Clear read",
   "clearReadTitle": "Remove everything you've already read",

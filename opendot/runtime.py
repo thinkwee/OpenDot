@@ -707,14 +707,6 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
                             agent_id=agent_id, content=text, meta=meta)
             db.update("threads", thread_id, updated=time.time())
             bus.emit("message", message=msg)
-            # background work (routines, heartbeats, events) reports to the Inbox; a
-            # teammate's handoff reply is part of a live conversation, so it doesn't
-            if source not in ("chat", "handoff") and not ctx.extra.get("notified"):
-                item = db.insert("inbox", id=new_id("in_"), agent_id=agent_id, kind="report",
-                                 title=f"{agent['name']} · {_source_label(source)}",
-                                 body=text[:4000],
-                                 status="unread", thread_id=thread_id)
-                bus.emit("inbox", item=item)
             asked = prompt if source == "handoff" else _last_ask(thread_id) \
                 if source == "chat" else ""
             memory.journal(agent_id, f"[{_source_label(source)}] "

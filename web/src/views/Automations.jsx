@@ -228,14 +228,13 @@ function WeekCalendar({ agents }) {
 
 function History({ agents, mine }) {
   const { t } = useTranslation('routines')
-  const [data, setData] = useState({ messages: [], reports: [] })
+  const [data, setData] = useState({ messages: [] })
   useEffect(() => {
     api('/api/routines/history?limit=40').then(setData).catch(() => {})
   }, [])
-  const items = [
-    ...data.messages.map((m) => ({ id: m.id, at: m.created, agent_id: m.agent_id, text: m.content, tag: m.meta?.source })),
-    ...data.reports.map((r) => ({ id: r.id, at: r.created, agent_id: r.agent_id, text: r.body || r.title, tag: r.title })),
-  ].filter(mine).sort((a, b) => b.at - a.at).slice(0, 30)
+  const items = data.messages
+    .map((m) => ({ id: m.id, at: m.created, agent_id: m.agent_id, text: m.content, tag: m.meta?.source }))
+    .filter(mine).sort((a, b) => b.at - a.at).slice(0, 30)
   return (
     <section className="section">
       <h3>{t('history.title')}</h3>

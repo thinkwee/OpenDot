@@ -233,7 +233,7 @@ The server listens on `127.0.0.1` only. To use it from a phone:
 | **Tailscale** (recommended) | install Tailscale on the computer and the phone, `./dot.sh link` | permanent, private HTTPS: only your own devices can open it |
 | **Same Wi-Fi** | `./dot.sh lan` | `http://192.168.x.x:7878`, only at home; no HTTPS |
 | **Cloudflare quick link** | `./dot.sh link` without Tailscale | public HTTPS, no account, but it changes when the computer restarts |
-| **Your own domain** | set `DOT_TUNNEL_TOKEN` (a Cloudflare named tunnel) and `DOT_PUBLIC_URL` | permanent public HTTPS |
+| **Your own domain** | set `DOT_TUNNEL_TOKEN` (a Cloudflare named tunnel) and `DOT_PUBLIC_URL`; if a tunnel or proxy you already run points there, `DOT_PUBLIC_URL` alone | permanent public HTTPS |
 
 Whatever the route, every request needs the pairing token: `./dot.sh pair` shows a
 one-time QR code (valid 10 minutes) that signs a browser or phone in.

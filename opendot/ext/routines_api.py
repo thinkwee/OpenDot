@@ -36,13 +36,13 @@ async def upcoming(days: int = 7, limit_per: int = 20):
 
 @router.get("/history")
 async def history(limit: int = 60):
-    """What routines/goals actually produced: agent messages posted from an
-    automation, plus the inbox reports every non-chat run leaves behind."""
-    msgs = db.q("SELECT * FROM messages WHERE role='agent' AND meta LIKE "
-               "'%\"source\": \"automation:%' ORDER BY created DESC LIMIT ?", limit)
-    reports = db.q("SELECT * FROM inbox WHERE kind='report' ORDER BY created DESC LIMIT ?",
-                   limit)
-    return {"messages": msgs, "reports": reports}
+    """What background work actually produced: the agent messages posted from a routine,
+    a watch, a check-in or a goal (they live in the agent's chat, not the Inbox)."""
+    msgs = db.q("SELECT * FROM messages WHERE role='agent' AND (meta LIKE "
+                "'%\"source\": \"automation:%' OR meta LIKE '%\"source\": \"watch:%' OR meta "
+                "LIKE '%\"source\": \"heartbeat\"%' OR meta LIKE '%\"source\": \"goal\"%') "
+                "ORDER BY created DESC LIMIT ?", limit)
+    return {"messages": msgs}
 
 
 PRESETS = {
