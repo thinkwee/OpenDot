@@ -1,8 +1,17 @@
 {
-  "kind": { "report": "汇报", "note": "便条", "email": "邮件", "sms": "短信", "approval": "要你点头", "learned": "学到了" },
-  "src": { "heartbeat": "💓 定时看看" },
+  "kind": {
+    "report": "汇报",
+    "note": "便条",
+    "email": "邮件",
+    "sms": "短信",
+    "approval": "要你点头",
+    "learned": "学到了"
+  },
+  "src": {
+    "heartbeat": "💓 定时看看"
+  },
   "title": "收件箱",
-  "subtitle": "等你点头的事，和助理们特意提醒你的事。",
+  "subtitle": "要你处理的事，都在这里：等你点头的、等你回答的、助理特意告诉你的。",
   "markAll": "全部标为已读",
   "clearRead": "清掉已读",
   "clearReadTitle": "把看过的都清掉",
@@ -10,12 +19,16 @@
   "cleared": "🧹 清掉了 {{count}} 条",
   "nothingToClear": "没什么要清的",
   "needsOk": "等你点头",
-  "updates": "动态",
+  "updates": "助理找你",
   "all": "全部",
   "unread": "未读",
   "emptyUnread": "没有未读，都看完啦。",
-  "empty": "这里静悄悄的。给助理打开定时查看，或者设个例行事项吧。",
+  "empty": "没有新消息。",
   "noDetails": "_（没有更多内容）_",
   "openThread": "打开「{{title}}」",
-  "openChat": "打开聊天"
+  "openChat": "打开聊天",
+  "needsAnswer": "等你回答",
+  "answer": "去回答",
+  "allClear": "都处理完了 🎉",
+  "allClearSub": "有要你点头、回答或知道的事，会出现在这里。"
 }

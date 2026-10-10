@@ -82,6 +82,7 @@
   "routines": {
     "title": "Routines",
     "empty": "None yet. Try “every Monday at 9…” in chat.",
+    "once": "once · {{when}}",
     "next": " · next {{when}}",
     "when": "when {{filter}}",
     "pause": "Pause",
@@ -99,5 +100,10 @@
     "body": "{{name}} only sees the apps switched on here.",
     "none": "No apps connected yet.",
     "more": "Connect apps →"
+  },
+  "plan": {
+    "title": "Watching, reminders and routines",
+    "summary": "Watching {{watching}} · {{routines}} reminders and routines · see them in Plan",
+    "none": "None yet · see Plan"
   }
 }

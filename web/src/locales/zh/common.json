@@ -26,7 +26,8 @@
     "star": "点个星",
     "calendar": "日历",
     "todo": "待办",
-    "examples": "抄个点子"
+    "examples": "抄个点子",
+    "plan": "日程"
   },
   "status": {
     "idle": "空闲",
@@ -66,5 +67,13 @@
   "errors": {
     "generic": "哎，没成功：{{msg}}",
     "sendFailed": "没发出去：{{msg}}"
+  },
+  "cron": {
+    "daily": "每天 {{time}}",
+    "weekdays": "工作日 {{time}}",
+    "weekly": "每{{days}} {{time}}",
+    "sep": "、",
+    "monthly": "每月 {{d}} 日 {{time}}",
+    "yearly": "每年 {{date}} {{time}}"
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { CheckCheck, MessageCircle, Trash2, X } from 'lucide-react'
+import { CheckCheck, ChevronRight, MessageCircle, Trash2, X } from 'lucide-react'
 import { api, store, toast, useStore } from '../store'
 import Mascot, { animalFor } from '../components/Mascot'
 import { ApprovalCard } from './ChatView'
@@ -16,9 +16,12 @@ const KIND = {
 const sourceLabel = (title = '', t) => (title.split(' · ')[1] || '')
   .replace('automation:', '⏰ ').replace('heartbeat', t('src.heartbeat')).replace(/^event:/, '⚡ ')
 
+// Everything that needs you, and nothing else: what needs your OK, the jobs that stopped
+// to ask you something, and what an agent chose to tell you.
 export default function Inbox() {
-  const { agents, approvals, inboxUnread, threads } = useStore()
+  const { agents, approvals, inboxUnread, threads, waiting } = useStore()
   const [items, setItems] = useState(null)
+  const [asks, setAsks] = useState([])
   const [filter, setFilter] = useState('all')
   const [open, setOpen] = useState(null)
   const { t } = useTranslation('inbox')
@@ -26,6 +29,9 @@ export default function Inbox() {
   useEffect(() => {
     load()
   }, [inboxUnread, approvals.length])
+  useEffect(() => {
+    api('/api/todo').then((r) => setAsks(r.tasks.filter((x) => x.kind === 'task' && x.status === 'waiting'))).catch(() => {})
+  }, [waiting.length])
 
   const markRead = async (it) => {
     if (it.status !== 'unread') return
@@ -55,7 +61,10 @@ export default function Inbox() {
     setOpen(null)
   }
 
-  const notes = (items || []).filter((i) => i.kind !== 'approval')
+  // what an agent learned lives in Skills: it's a note to itself, not something for you
+  const notes = (items || []).filter((i) => i.kind !== 'approval' && i.kind !== 'learned')
+  const myAsks = asks.filter((x) => agents.some((a) => a.id === x.agent_id))
+  const clear = items && !approvals.length && !myAsks.length && !notes.some((i) => i.status === 'unread')
   const unread = notes.filter((i) => i.status === 'unread').length
   const shown = filter === 'unread' ? notes.filter((i) => i.status === 'unread') : notes
 
@@ -71,6 +80,13 @@ export default function Inbox() {
           <button className="btn ghost sm" onClick={clearRead} disabled={!notes.some((i) => i.status !== 'unread')} title={t('clearReadTitle')}><Trash2 size={15} /> {t('clearRead')}</button>
         </div>
       </header>
+      {clear && (
+        <div className="empty-card inbox-clear">
+          <Mascot animal="fox" color="#FFB38A" status="sleeping" size={64} />
+          <b>{t('allClear')}</b>
+          <p className="muted">{t('allClearSub')}</p>
+        </div>
+      )}
       {approvals.length > 0 && (
         <section className="section">
           <h3>{t('needsOk')}</h3>
@@ -79,7 +95,29 @@ export default function Inbox() {
           ))}
         </section>
       )}
-      <section className="section">
+      {myAsks.length > 0 && (
+        <section className="section">
+          <h3>{t('needsAnswer')}</h3>
+          {myAsks.map((x) => {
+            const a = agents.find((g) => g.id === x.agent_id)
+            return (
+              <button key={x.id} className="inbox-item unread inbox-ask" onClick={() => x.thread_id && go('chats', x.thread_id)}>
+                <Mascot color={a.color} animal={animalFor(a)} emoji={a.emoji} size={36} bubble={false} status="waiting" />
+                <div className="grow">
+                  <div className="row between gap8">
+                    <b className="ellipsis">{x.title}</b>
+                    <small className="muted" style={{ flex: 'none' }}>{ago(x.updated)}</small>
+                  </div>
+                  <small className="inbox-kind">{a.name}</small>
+                  {x.result && <div className="inbox-body clamp">{x.result}</div>}
+                </div>
+                <span className="inbox-go">{t('answer')} <ChevronRight size={15} /></span>
+              </button>
+            )
+          })}
+        </section>
+      )}
+      {notes.length > 0 && <section className="section">
         <div className="row between mb8">
           <h3 style={{ margin: 0 }}>{t('updates')}</h3>
           <div className="seg inbox-seg">
@@ -87,12 +125,7 @@ export default function Inbox() {
             <button className={filter === 'unread' ? 'on' : ''} onClick={() => setFilter('unread')}>{t('unread')} {unread || ''}</button>
           </div>
         </div>
-        {items && shown.length === 0 && (
-          <div className="empty-card">
-            <Mascot animal="fox" color="#FFB38A" status="sleeping" size={64} />
-            <p className="muted">{filter === 'unread' && notes.length ? t('emptyUnread') : t('empty')}</p>
-          </div>
-        )}
+        {shown.length === 0 && <p className="muted small">{filter === 'unread' ? t('emptyUnread') : t('empty')}</p>}
         {shown.map((it) => {
           const a = agents.find((x) => x.id === it.agent_id)
           const [icon, label] = KIND[it.kind] || KIND.note
@@ -111,7 +144,7 @@ export default function Inbox() {
             </button>
           )
         })}
-      </section>
+      </section>}
 
       {open && createPortal(
         <InboxPreview it={open} agent={agents.find((x) => x.id === open.agent_id)}

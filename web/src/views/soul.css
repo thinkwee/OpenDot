@@ -82,6 +82,11 @@
 .idc-item b { display: block; font-size: 14px; }
 .idc-item small { display: block; color: var(--ink2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .idc-item.done { opacity: .6; }
+.idc-plan { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 14px; background: var(--panel); border: 2px solid var(--edge); box-shadow: var(--hard-sm); text-align: left; color: var(--ink); }
+.idc-plan .grow { min-width: 0; }
+.idc-plan b { display: block; font-size: 14px; }
+.idc-plan small { display: block; color: var(--ink2); }
+.idc-plan .chev { font-size: 20px; color: var(--ink3); }
 .idc-faces { display: flex; flex-wrap: wrap; gap: 6px; }
 .idc-faces button { border-radius: 14px; padding: 4px; border: 2px solid transparent; }
 .idc-faces button.on { border-color: var(--edge); background: var(--m-yellow); box-shadow: var(--hard-sm); }

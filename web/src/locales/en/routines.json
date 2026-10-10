@@ -12,6 +12,7 @@
   "newRoutine": "＋ New routine",
   "easiest": "Easiest: just say it in chat — “every Friday 5pm, summarise my week”.",
   "empty": "No routines yet.",
+  "onceLine": "⏰ once · {{when}}",
   "cronLine": "⏰ {{schedule}} · next {{when}}",
   "eventLine": "⚡ when {{filter}}",
   "runNow": "▶ Run now",

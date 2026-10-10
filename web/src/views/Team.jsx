@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Eye, Mail, Monitor, Pause, Phone, Play, Plug, Timer, Trash2 } from 'lucide-react'
+import { Mail, Monitor, Phone, Plug, Timer, Trash2 } from 'lucide-react'
 import { api, store, toast, useStore } from '../store'
 import AppIcon from '../components/AppIcon'
 import Mascot, { ANIMALS, animalFor } from '../components/Mascot'
@@ -9,7 +9,7 @@ import Memory from './Memory'
 import Skills from './Skills'
 import { AgentIdentity } from './Identity'
 import Boundary from '../components/Boundary'
-import { COLORS, ago } from '../util'
+import { COLORS } from '../util'
 import './Team.css'
 import './soul.css'
 
@@ -61,18 +61,9 @@ function AgentCard({ agent, tab }) {
       toast(e.message.includes('at least one') ? t('letGo.keepOne') : e.message)
     }
   }
-  const toggle = async (r) => {
-    await api(`/api/automations/${r.id}`, { method: 'PATCH', body: { enabled: r.enabled ? 0 : 1 } })
-    loadRoutines()
-  }
-  const every = (m) => {
-    m = m || 60
-    if (m % 1440 === 0) return m === 1440 ? t('watching.every.day') : t('watching.every.days', { n: m / 1440 })
-    if (m % 60 === 0) return m === 60 ? t('watching.every.hourly') : t('watching.every.hour', { n: m / 60 })
-    return t('watching.every.min', { n: m })
-  }
-  const watches = routines.filter((r) => r.kind === 'watch')
-  const regular = routines.filter((r) => r.kind !== 'watch')
+  // what this agent watches and runs on a schedule lives in Plan; the card just counts it
+  const watches = routines.filter((r) => r.kind === 'watch' && r.enabled)
+  const regular = routines.filter((r) => r.kind !== 'watch' && r.enabled)
 
   return (
     <div className="profile">
@@ -119,45 +110,14 @@ function AgentCard({ agent, tab }) {
         <Editable label={t('knows.label')} value={agent.context} placeholder={t('knows.placeholder')} onSave={(v) => patch({ context: v })} />
         <Editable label={t('boundary.label')} value={agent.boundary} placeholder={t('boundary.placeholder')} onSave={(v) => patch({ boundary: v })} />
 
-        <div className="idc-sec">
-          <h3>{t('watching.title')}</h3>
-          {watches.length === 0 ? (
-            <p className="muted small">{t('watching.empty')}</p>
-          ) : (
-            <div className="idc-list">
-              {watches.map((w) => (
-                <div key={w.id} className={`idc-item ${w.enabled ? '' : 'done'}`}>
-                  <Eye size={18} />
-                  <div className="grow">
-                    <b>{w.name}</b>
-                    <small>{w.enabled ? t('watching.detail', { filter: w.event_filter, checks: w.checks || 0, every: every(w.every_min) }) : w.outcome || t('watching.done')}</small>
-                  </div>
-                  {w.enabled ? <button className="icon-btn" title={t('watching.stop')} onClick={() => toggle(w)}><Pause size={15} /></button> : null}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="idc-sec">
-          <h3>{t('routines.title')}</h3>
-          {regular.length === 0 ? (
-            <p className="muted small">{t('routines.empty')}</p>
-          ) : (
-            <div className="idc-list">
-              {regular.map((r) => (
-                <div key={r.id} className={`idc-item ${r.enabled ? '' : 'done'}`}>
-                  <Timer size={18} />
-                  <div className="grow">
-                    <b>{r.name}</b>
-                    <small>{r.kind === 'cron' ? `${r.schedule}${r.next_run ? t('routines.next', { when: ago(r.next_run) }) : ''}` : t('routines.when', { filter: r.event_filter })}</small>
-                  </div>
-                  <button className="icon-btn" title={r.enabled ? t('routines.pause') : t('routines.resume')} onClick={() => toggle(r)}>{r.enabled ? <Pause size={15} /> : <Play size={15} />}</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <button className="idc-sec idc-plan" onClick={() => { location.hash = `#/calendar?agent=${agent.id}` }}>
+          <Timer size={18} />
+          <span className="grow">
+            <b>{t('plan.title')}</b>
+            <small>{watches.length || regular.length ? t('plan.summary', { watching: watches.length, routines: regular.length }) : t('plan.none')}</small>
+          </span>
+          <span className="chev">›</span>
+        </button>
 
         <div className="idc-foot">
           {MORE.map((k) => (

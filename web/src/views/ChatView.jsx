@@ -12,11 +12,34 @@ import { QuestionCard, RoutineCard } from '../components/ChoiceCard'
 import { AgentStack } from './ChatList'
 import { AppOffer } from './Apps'
 import { go } from '../App'
-import { md, stepLabel } from '../util'
+import { clock, fullTime, md, stepLabel, took } from '../util'
 import './core.css'
 import './soul.css'
 
 // starter requests for an empty chat live in chats.json (`suggest.dm`, `suggest.group`)
+
+// re-render every `ms` while `on`, so running clocks tick
+function useNow(on, ms = 1000) {
+  const [now, setNow] = useState(() => Date.now() / 1000)
+  useEffect(() => {
+    if (!on) return
+    setNow(Date.now() / 1000)
+    const id = setInterval(() => setNow(Date.now() / 1000), ms)
+    return () => clearInterval(id)
+  }, [on, ms])
+  return on ? now : Date.now() / 1000
+}
+
+function Stamp({ ts }) {
+  return ts ? <time className="msg-time" title={fullTime(ts)}>{clock(ts)}</time> : null
+}
+
+// "1m 05s", ticking while the thing is still going
+function Took({ from, to, live }) {
+  const now = useNow(live && !to)
+  if (!from || (!to && !live)) return null // older records never saved when they ended
+  return <span className="took">{took((to || now) - from)}</span>
+}
 
 // paths an agent mentions (`shared/notes.md`, `~/report.xlsx`) become clickable file chips
 const PATH_RX = /^(~\/|\.\/|\/)?([\w\-.()一-鿿 ]+\/)*[\w\-.()一-鿿]+\.[A-Za-z0-9]{1,8}$/
@@ -209,12 +232,14 @@ export default function ChatView({ threadId, desktop, computerOpen, onToggleComp
                 {streams[r.run_id] ? (
                   <div className="bubble-wrap">
                     <div className="bubble streaming" dangerouslySetInnerHTML={{ __html: md(streams[r.run_id]) }} />
+                    {r.started && <span className="msg-time"><Took from={r.started} live /></span>}
                   </div>
                 ) : (
                   <div className="bubble typing">
                     {thoughts[r.run_id] && <div className="thought">{thoughts[r.run_id].slice(0, 200)}</div>}
                     <span className="dots"><i /><i /><i /></span>
                     <small className="muted">{a.status_text}</small>
+                    {r.started && <small className="muted"><Took from={r.started} live /></small>}
                     {!computerOpen && <button className="link-btn watch" onClick={onToggleComputer}>🖥️ {t('chat.watch')}</button>}
                   </div>
                 )}
@@ -284,6 +309,7 @@ function Bubble({ m, agent, group, lead, threadId, answer, members }) {
         <div className="bubble-wrap user-wrap">
           {atts.length > 0 && <div className="user-files">{atts.map((d) => <DeliverableCard key={d.id} d={d} />)}</div>}
           {m.content && <div className="bubble" onClick={(e) => onFileClick(e, lead?.id)} dangerouslySetInnerHTML={{ __html: linkFiles(md(m.content)) }} />}
+          <Stamp ts={m.created} />
         </div>
       </div>
     )
@@ -311,6 +337,7 @@ function Bubble({ m, agent, group, lead, threadId, answer, members }) {
           <div className="agent-files">{files.map((d) => <DeliverableCard key={d.id} d={d} />)}</div>
         )}
         {m.meta?.choices?.length > 0 && <Reply choices={m.meta.choices} agent={agent} members={members} threadId={threadId} answer={answer} />}
+        <Stamp ts={m.created} />
       </div>
     </div>
   )
@@ -354,6 +381,9 @@ function RunCard({ steps, all = steps, agent, live, workers = [] }) {
     return { i, title: titles[i] || w?.title || t('team.helper', { n: i + 1 }), steps: helpers[i] || [], done: allDone || w?.state === 'done' }
   })
   const errs = steps.filter((s) => s.status === 'error').length
+  const start = steps[0]?.created
+  const ends = steps.map((s) => s.finished).filter(Boolean)
+  const end = live || steps.some((s) => !s.finished) ? null : Math.max(...ends)
   return (
     <div className={`run ${live ? 'live' : ''}`} style={{ '--c': agent?.color }}>
       <button className="run-head" onClick={() => setOpen(!open)}>
@@ -361,7 +391,9 @@ function RunCard({ steps, all = steps, agent, live, workers = [] }) {
         <span>
           {t(live ? 'run.working' : 'run.used', { name: agent?.name })} · {t('run.steps', { count: steps.length })}
           {errs > 0 && <span className="err-tag"> · {t('run.hiccups', { count: errs })}</span>}
+          {start && <> · <Took from={start} to={end} live={live} /></>}
         </span>
+        {start && <time className="run-time" title={fullTime(start)}>{clock(start)}</time>}
         <span className="chev">{open ? '▾' : '▸'}</span>
       </button>
       {open && (
@@ -399,6 +431,7 @@ function Team({ team, agent, live }) {
                 <b className="ellipsis">{h.title}</b>
                 <small className="muted ellipsis">
                   {h.done ? t('team.doneSteps', { count: h.steps.length }) : now ? `${now.icon} ${now.verb} ${now.obj || ''}` : t('team.starting')}
+                  {h.steps.length > 0 && <> · <Took from={h.steps[0].created} to={h.done ? last.finished : null} live={working} /></>}
                 </small>
               </span>
               <span role="button" tabIndex={0} className="helper-pc" title={t('team.watch')}
@@ -428,6 +461,7 @@ function Step({ s }) {
         <span className="step-ico">{icon}</span>
         <span className="step-verb">{verb}</span>
         <code className="ellipsis">{obj}</code>
+        <Took from={s.created} to={s.finished} live={s.status === 'running' || s.status === 'waiting'} />
         <span className={`st st-${s.status}`}>{s.status === 'running' ? '…' : s.status === 'waiting' ? '⏸' : s.status === 'error' ? '!' : s.status === 'stopped' ? '■' : '✓'}</span>
       </button>
       {open && s.result && <pre className="step-out">{prettyResult(s.result)}</pre>}

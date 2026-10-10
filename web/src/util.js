@@ -48,6 +48,55 @@ export function when(ts) {
   return d.toLocaleString(loc(), { weekday: 'short', hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })
 }
 
+// when a timed routine fires: a one-off at its set time, a repeating one at its next run
+export function routineWhen(r) {
+  return when(r.kind === 'once' ? r.next_run || new Date(r.schedule).getTime() / 1000 : r.next_run)
+}
+
+// "0 10 * * 3,6" → "Every Wed, Sat 10:00"; anything unusual stays as written
+export function cronText(expr) {
+  const p = (expr || '').trim().split(/\s+/)
+  if (p.length !== 5 || !/^\d+$/.test(p[0]) || !/^\d+$/.test(p[1])) return expr
+  const [mi, h, dom, mon, dow] = p
+  const time = `${h.padStart(2, '0')}:${mi.padStart(2, '0')}`
+  const wd = (n) => new Date(2024, 0, 7 + (Number(n) % 7)).toLocaleDateString(loc(), { weekday: 'short' }) // 2024-01-07 is a Sunday
+  if (dom === '*' && mon === '*' && dow === '*') return t('cron.daily', { time })
+  if (dom === '*' && mon === '*' && dow === '1-5') return t('cron.weekdays', { time })
+  if (dom === '*' && mon === '*' && /^[\d,]+$/.test(dow)) return t('cron.weekly', { days: dow.split(',').map(wd).join(t('cron.sep')), time })
+  if (/^\d+$/.test(dom) && mon === '*' && dow === '*') return t('cron.monthly', { d: dom, time })
+  if (/^\d+$/.test(dom) && /^\d+$/.test(mon) && dow === '*') {
+    const date = new Date(2024, Number(mon) - 1, Number(dom)).toLocaleDateString(loc(), { month: 'short', day: 'numeric' })
+    return t('cron.yearly', { date, time })
+  }
+  return expr
+}
+
+// a message's time: "14:05" today, "Mon 14:05" this week, "Oct 3 14:05" before that
+export function clock(ts) {
+  if (!ts) return ''
+  const d = new Date(ts * 1000), now = new Date()
+  const hm = d.toLocaleTimeString(loc(), { hour: '2-digit', minute: '2-digit' })
+  if (d.toDateString() === now.toDateString()) return hm
+  const days = (now - d) / 86400000
+  if (days < 6) return `${d.toLocaleDateString(loc(), { weekday: 'short' })} ${hm}`
+  const opts = { month: 'short', day: 'numeric', ...(d.getFullYear() !== now.getFullYear() && { year: 'numeric' }) }
+  return `${d.toLocaleDateString(loc(), opts)} ${hm}`
+}
+
+export function fullTime(ts) {
+  return ts ? new Date(ts * 1000).toLocaleString(loc()) : ''
+}
+
+// how long something took, in seconds → "0.4s", "12s", "3m 05s", "1h 02m"
+export function took(sec) {
+  if (sec == null || sec < 0) return ''
+  if (sec < 10) return `${sec.toFixed(1)}s`
+  if (sec < 60) return `${Math.round(sec)}s`
+  const s = Math.round(sec), m = Math.floor(s / 60), h = Math.floor(m / 60)
+  if (h) return `${h}h ${String(m % 60).padStart(2, '0')}m`
+  return `${m}m ${String(s % 60).padStart(2, '0')}s`
+}
+
 // icon per tool; the verb comes from common.json → tools.<name>
 export const TOOL_META = {
   shell: '⌨️', python: '🐍', read_file: '📄', write_file: '✏️', list_files: '🗂️',

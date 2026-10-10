@@ -1,5 +1,5 @@
 {
-  "title": "日历",
+  "title": "日程",
   "prev": "上一段",
   "next": "下一段",
   "today": "今天",
@@ -36,5 +36,24 @@
     "title": "日历",
     "body": "日历现在是“应用”：在 设置 → 应用 里连接 Google 日历、iCloud、任意 CalDAV 账号或日历链接，并选好哪些助理能用。它们都会显示在“日历”页上。",
     "cta": "去应用里连接日历"
+  },
+  "subtitle": "接下来会发生什么：你的安排、助理的提醒和例行事项、正在做的和盯着的事。",
+  "side": {
+    "now": "正在做",
+    "nowEmpty": "现在没人在忙。",
+    "watching": "盯着的事",
+    "watchingEmpty": "没有在盯的事。说一句“有空位告诉我”就会出现在这里。",
+    "watchMeta": "{{name}} · 已看 {{n}} 次 · 上次 {{when}}",
+    "stop": "不盯了",
+    "reminders": "提醒和例行事项",
+    "remindersEmpty": "还没有。跟助理说“每天早上 9 点…”或“周一提醒我…”就行。",
+    "once": "只一次 · {{when}}",
+    "next": "下次 {{when}}",
+    "onEvent": "当 {{filter}} 时",
+    "pause": "暂停",
+    "resume": "恢复",
+    "paused": "已暂停的 {{count}} 条",
+    "deleteAsk": "删掉「{{name}}」？",
+    "onlyAgent": "只看 {{name}}"
   }
 }

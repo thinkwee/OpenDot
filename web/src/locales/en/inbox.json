@@ -1,8 +1,17 @@
 {
-  "kind": { "report": "Report", "note": "Note", "email": "Email", "sms": "Text", "approval": "Approval", "learned": "Learned" },
-  "src": { "heartbeat": "💓 heartbeat" },
+  "kind": {
+    "report": "Report",
+    "note": "Note",
+    "email": "Email",
+    "sms": "Text",
+    "approval": "Approval",
+    "learned": "Learned"
+  },
+  "src": {
+    "heartbeat": "💓 heartbeat"
+  },
   "title": "Inbox",
-  "subtitle": "What needs your OK, and what your agents flagged for you.",
+  "subtitle": "Everything that needs you: what needs your OK, what's waiting for your answer, and what your agents told you.",
   "markAll": "Mark all read",
   "clearRead": "Clear read",
   "clearReadTitle": "Remove everything you've already read",
@@ -10,12 +19,16 @@
   "cleared": "🧹 Cleared {{count}}",
   "nothingToClear": "Nothing to clear",
   "needsOk": "Needs your OK",
-  "updates": "Updates",
+  "updates": "From your agents",
   "all": "All",
   "unread": "Unread",
   "emptyUnread": "Nothing unread — all caught up.",
-  "empty": "All quiet. Turn on a heartbeat for an agent, or set up a routine.",
+  "empty": "Nothing new.",
   "noDetails": "_(no details)_",
   "openThread": "Open “{{title}}”",
-  "openChat": "Open chat"
+  "openChat": "Open chat",
+  "needsAnswer": "Waiting for your answer",
+  "answer": "Answer",
+  "allClear": "All clear 🎉",
+  "allClearSub": "Anything that needs your OK, an answer or your attention shows up here."
 }

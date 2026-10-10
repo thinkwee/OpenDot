@@ -1,5 +1,5 @@
 {
-  "title": "Calendar",
+  "title": "Plan",
   "prev": "Previous",
   "next": "Next",
   "today": "Today",
@@ -36,5 +36,24 @@
     "title": "Calendars",
     "body": "Your calendars are apps: connect Google Calendar, iCloud, any CalDAV account or a calendar link in Settings → Apps, and pick which agents may use each one. They all show on the Calendar page.",
     "cta": "Open Calendars in Apps"
+  },
+  "subtitle": "What's coming up: your plans, your agents' reminders and routines, and what they're doing or watching.",
+  "side": {
+    "now": "Doing now",
+    "nowEmpty": "Nobody's busy right now.",
+    "watching": "Keeping an eye on",
+    "watchingEmpty": "Nothing being watched. Say “tell me when a slot opens” and it shows up here.",
+    "watchMeta": "{{name}} · checked {{n}} times · last {{when}}",
+    "stop": "Stop watching",
+    "reminders": "Reminders and routines",
+    "remindersEmpty": "None yet. Tell an agent “every morning at 9…” or “remind me Monday…”.",
+    "once": "Once · {{when}}",
+    "next": "next {{when}}",
+    "onEvent": "when {{filter}}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "paused": "{{count}} paused",
+    "deleteAsk": "Delete “{{name}}”?",
+    "onlyAgent": "Only {{name}}"
   }
 }

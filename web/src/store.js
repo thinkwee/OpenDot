@@ -37,12 +37,13 @@ const initial = {
   threads: [],
   messages: {}, // thread_id -> []
   steps: {}, // thread_id -> []
-  running: {}, // agent_id -> {thread_id, run_id}
+  running: {}, // agent_id -> {thread_id, run_id, started}
   workers: {}, // worker_id -> {parent_id, title, state, thread_id, result}
   thoughts: {}, // run_id -> text
   streams: {}, // run_id -> accumulated streamed text (cleared once the final message lands)
   approvals: [],
   inboxUnread: 0,
+  waiting: [], // ids of jobs that stopped to ask you something
   computer: {}, // agent_id -> {screenshot, url, terminal: [], files: n}
   pages: [],
   model: '',
@@ -77,7 +78,7 @@ function liveState(live = []) {
   const thoughts = {}
   const workers = {}
   for (const r of live) {
-    running[r.agent_id] = { thread_id: r.thread_id, run_id: r.run_id }
+    running[r.agent_id] = { thread_id: r.thread_id, run_id: r.run_id, started: r.started }
     if (r.text) streams[r.run_id] = r.text
     if (r.thought) thoughts[r.run_id] = r.thought
     for (const w of r.workers || []) workers[w.worker_id + ':' + w.title] = w
@@ -94,6 +95,7 @@ export async function bootstrap() {
     threads: b.threads,
     approvals: b.approvals,
     inboxUnread: b.inbox_unread,
+    waiting: b.waiting || [],
     model: b.model,
     hookToken: b.hook_token,
     ...liveState(b.live),
@@ -114,6 +116,7 @@ async function resync() {
         threads: b.threads,
         approvals: b.approvals,
         inboxUnread: b.inbox_unread,
+        waiting: b.waiting || [],
         ...liveState(b.live),
       })
       await Promise.all(Object.keys(store.get().messages).map((tid) => loadThread(tid).catch(() => {})))
@@ -200,6 +203,13 @@ function handle(ev) {
   try { window.dispatchEvent(new CustomEvent(`dot:${ev.kind}`, { detail: ev })) } catch { /* ignore */ }
   const s = store.get()
   switch (ev.kind) {
+    case 'task': {
+      const tk = ev.task
+      const was = s.waiting.includes(tk.id)
+      if (tk.status === 'waiting' && !was) store.set({ waiting: [...s.waiting, tk.id] })
+      else if (tk.status !== 'waiting' && was) store.set({ waiting: s.waiting.filter((x) => x !== tk.id) })
+      break
+    }
     case 'message': {
       const m = ev.message
       const list = s.messages[m.thread_id]
@@ -240,7 +250,7 @@ function handle(ev) {
     }
     case 'run': {
       const running = { ...s.running }
-      if (ev.state === 'start') running[ev.agent_id] = { thread_id: ev.thread_id, run_id: ev.run_id }
+      if (ev.state === 'start') running[ev.agent_id] = { thread_id: ev.thread_id, run_id: ev.run_id, started: ev.started }
       else delete running[ev.agent_id]
       const streams = { ...s.streams }
       if (ev.state === 'end') delete streams[ev.run_id]

@@ -226,6 +226,9 @@ h2, h3 { font-weight: 600; }
 .inbox-item.read, .inbox-item.done { box-shadow: var(--hard-sm); }
 .unread-dot { background: var(--m-coral); border: 2px solid var(--edge); width: 13px; height: 13px; animation: bounce-dot 1.4s var(--ease-spring) infinite; }
 @keyframes bounce-dot { 0%, 100% { transform: translateY(0) } 40% { transform: translateY(-4px) } }
+.inbox-go { flex: none; align-self: center; display: inline-flex; align-items: center; gap: 2px; font-weight: 800; font-size: 13px; padding: 4px 6px 4px 12px; border-radius: 999px; background: var(--m-yellow); color: #1e1b2e; border: 2px solid var(--edge); }
+.inbox-clear { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.inbox-clear p { margin: 0; }
 
 /* memory / skills / misc lists */
 .mem-file { border: 2px solid var(--edge); box-shadow: var(--hard-sm); transition: transform .2s var(--ease-spring), box-shadow .2s; }

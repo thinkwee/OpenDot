@@ -26,7 +26,8 @@
     "star": "Star us",
     "calendar": "Calendar",
     "todo": "Todo",
-    "examples": "Ideas to steal"
+    "examples": "Ideas to steal",
+    "plan": "Plan"
   },
   "status": {
     "idle": "idle",
@@ -66,5 +67,13 @@
   "errors": {
     "generic": "Hmm, that didn't work: {{msg}}",
     "sendFailed": "Couldn't send: {{msg}}"
+  },
+  "cron": {
+    "daily": "Every day {{time}}",
+    "weekdays": "Weekdays {{time}}",
+    "weekly": "Every {{days}} {{time}}",
+    "sep": ", ",
+    "monthly": "Monthly on the {{d}}th {{time}}",
+    "yearly": "Every year {{date}} {{time}}"
   }
 }

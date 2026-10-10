@@ -12,6 +12,7 @@
   "newRoutine": "＋ 新的例行事项",
   "easiest": "最简单的办法：直接在聊天里说——“每周五下午 5 点，帮我总结一下这周”。",
   "empty": "还没有例行事项。",
+  "onceLine": "⏰ 只一次 · {{when}}",
   "cronLine": "⏰ {{schedule}} · 下次 {{when}}",
   "eventLine": "⚡ 当 {{filter}} 时",
   "runNow": "▶ 现在就做",

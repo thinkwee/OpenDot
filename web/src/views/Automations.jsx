@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api, toast, useStore } from '../store'
 import Mascot, { animalFor } from '../components/Mascot'
-import { when, ago } from '../util'
+import { when, ago, routineWhen } from '../util'
 import './core.css'
 
 // [label key under routines:presets, cron]
@@ -71,7 +71,7 @@ export default function Automations({ agentId }) {
                 <div className="grow">
                   <b>{a.name}</b>
                   <div className="muted small">
-                    {a.kind === 'cron' ? t('cronLine', { schedule: a.schedule, when: when(a.next_run) }) : t('eventLine', { filter: a.event_filter })} · {ag?.name}
+                    {a.kind === 'once' ? t('onceLine', { when: routineWhen(a) }) : a.kind === 'cron' ? t('cronLine', { schedule: a.schedule, when: when(a.next_run) }) : t('eventLine', { filter: a.event_filter })} · {ag?.name}
                   </div>
                 </div>
                 <label className="switch">

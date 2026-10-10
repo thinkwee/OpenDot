@@ -5,14 +5,13 @@ import { syncLang } from './i18n'
 import Mascot from './components/Mascot'
 import Deco from './components/Deco'
 import { FileViewerHost } from './components/FileViewer'
-import { CalendarDays, ListChecks, MessageCircle, Inbox as InboxIcon, Settings as SettingsIcon } from 'lucide-react'
+import { CalendarDays, MessageCircle, Inbox as InboxIcon, Settings as SettingsIcon } from 'lucide-react'
 import ChatList from './views/ChatList'
 import ChatView from './views/ChatView'
 import ComputerPanel from './views/ComputerPanel'
 import Team from './views/Team'
 import Inbox from './views/Inbox'
 import Calendar from './views/Calendar'
-import Todo from './views/Todo'
 import Automations from './views/Automations'
 import Memory from './views/Memory'
 import Settings from './views/Settings'
@@ -21,17 +20,17 @@ import About, { StarLink } from './views/About'
 import Examples from './views/Examples'
 import Boundary from './components/Boundary'
 
-// your agents (like a contact list) and what needs you, plus settings. An agent's card
-// opens from its chat; everything else you just ask for in chat.
+// Three places, one question each: your agents (talk to them; their work shows in the
+// chat), the Inbox (what needs you), and Plan (everything with a time, what's going on
+// now, what's being watched). Each thing lives in exactly one of them.
 const NAV = [
   ['chats', <MessageCircle size={21} strokeWidth={2.2} />, 'nav.agents'],
-  ['todo', <ListChecks size={21} strokeWidth={2.2} />, 'nav.todo'],
-  ['calendar', <CalendarDays size={21} strokeWidth={2.2} />, 'nav.calendar'],
   ['inbox', <InboxIcon size={21} strokeWidth={2.2} />, 'nav.inbox'],
+  ['calendar', <CalendarDays size={21} strokeWidth={2.2} />, 'nav.plan'],
 ]
 const SETTINGS_ICON = <SettingsIcon size={21} strokeWidth={2.2} />
 // old links keep working
-const ALIASES = { office: 'chats', library: 'chats', connectors: 'settings' }
+const ALIASES = { office: 'chats', library: 'chats', connectors: 'settings', todo: 'calendar', plan: 'calendar' }
 
 function parseHash() {
   const h = location.hash.replace(/^#\/?/, '')
@@ -67,7 +66,7 @@ function useWide(px) {
 
 export default function App() {
   const route = useRoute()
-  const { authed, ready, inboxUnread, approvals, connected, threads, toast, watchOwner } = useStore()
+  const { authed, ready, inboxUnread, approvals, waiting, connected, threads, toast, watchOwner } = useStore()
   const [showComputer, setShowComputer] = useState(false)
   useEffect(() => {
     if (watchOwner) setShowComputer(true)
@@ -110,13 +109,12 @@ export default function App() {
       </div>
     )
   const threadId = view === 'chats' ? route.id || (desktop ? threads[0]?.id : null) : null
-  const badge = inboxUnread + approvals.length
+  const badge = inboxUnread + approvals.length + waiting.length
 
   const main = {
     team: <Team agentId={route.id} sub={route.sub} />,
     inbox: <Inbox />,
-    calendar: <Calendar />,
-    todo: <Todo />,
+    calendar: <Calendar focus={route.q.get('agent')} />,
     automations: <Automations />,
     memory: <Memory agentId={route.id} />,
     settings: <Settings sub={route.id} />,

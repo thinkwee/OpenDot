@@ -6,10 +6,12 @@ import { api, useStore } from '../store'
 import Mascot, { animalFor } from '../components/Mascot'
 import { go } from '../App'
 import { openApps } from './Apps'
+import PlanSide from './PlanSide'
 import './Calendar.css'
 
-// One timeline: your calendars (iPhone-synced, and every calendar app) and what your
-// agents do (runs, routines, watches) — overlapping, so you can see who's on what.
+// Plan: everything with a time, in one place. Your calendars (iPhone-synced, and every
+// calendar app) and when your agents' routines fire, on one timeline; beside it, what
+// they're doing right now, what they keep an eye on, and every reminder and routine.
 
 const HOUR = 46 // px per hour
 const DAY = 86400000
@@ -54,7 +56,7 @@ function lanes(list) {
   return out
 }
 
-export default function Calendar() {
+export default function Calendar({ focus }) {
   const { t, i18n } = useTranslation('calendar')
   const { agents } = useStore()
   const wide = window.innerWidth >= 900
@@ -100,12 +102,13 @@ export default function Calendar() {
   const events = (data?.events || [])
     .filter((e) => !hidden.has('cal:' + e.calendar))
     .map((e) => ({ ...e, type: 'event', s: e.start * 1000, e: e.end * 1000, color: calColor(e.calendar) }))
+  // on the timeline: when routines fire; watches have no time, they're listed beside it
   const items = (data?.items || [])
-    .filter((i) => !hidden.has('agent:' + i.agent_id) && agentById(i.agent_id))
+    .filter((i) => i.kind === 'routine' && !hidden.has('agent:' + i.agent_id) && agentById(i.agent_id) && (!focus || i.agent_id === focus))
     .map((i) => ({ ...i, type: i.kind, s: i.start * 1000, e: i.end * 1000, color: agentById(i.agent_id)?.color }))
-  const allDay = [...events.filter((e) => e.all_day), ...items.filter((i) => i.kind === 'watch')]
-  const timed = [...events.filter((e) => !e.all_day), ...items.filter((i) => i.kind !== 'watch')]
-  const busyAgents = [...new Set((data?.items || []).map((i) => i.agent_id))].map(agentById).filter(Boolean)
+  const allDay = events.filter((e) => e.all_day)
+  const timed = [...events.filter((e) => !e.all_day), ...items]
+  const busyAgents = [...new Set(items.map((i) => i.agent_id))].map(agentById).filter(Boolean)
   const linkedAgents = new Set((data?.events || []).flatMap((e) => e.agents.map((x) => x.agent_id)))
   const legendAgents = [...new Map([...busyAgents, ...[...linkedAgents].map(agentById).filter(Boolean)].map((a) => [a.id, a])).values()]
 
@@ -120,7 +123,10 @@ export default function Calendar() {
   return (
     <div className="cal">
       <header className="cal-head">
-        <h1>{t('title')}</h1>
+        <div className="cal-title">
+          <h1>{t('title')}</h1>
+          <p className="muted small">{t('subtitle')}</p>
+        </div>
         <div className="cal-nav">
           <button className="icon-btn" onClick={() => setAnchor(addDays(anchor, -step))} aria-label={t('prev')}><ChevronLeft size={18} /></button>
           <button className="btn ghost sm" onClick={() => setAnchor(startOfDay(new Date()))}>{t('today')}</button>
@@ -133,6 +139,9 @@ export default function Calendar() {
         </div>
       </header>
 
+      <div className="plan-layout">
+      <PlanSide focus={focus} />
+      <div className="plan-main">
       {mode === 'day' && (
         <div className="cal-strip">
           {Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(anchor), i)).map((d) => (
@@ -242,6 +251,8 @@ export default function Calendar() {
           </div>
         </div>
         {!data && <div className="cal-loading"><Mascot animal="fox" color="#FFB38A" status="thinking" size={48} /></div>}
+      </div>
+      </div>
       </div>
 
       {open && <Detail x={open} cal={cals[open.calendar]} agentById={agentById} onClose={() => setOpen(null)} />}
