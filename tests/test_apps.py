@@ -729,6 +729,8 @@ def test_google_builtin_apps(monkeypatch):
         monkeypatch.setattr(FakeClient, "post", refused)
         r = await hub.call("mcp__gm__search_mail", {})
         assert "error" in r and hub.servers["gm"].status == "sign_in"
+        # …and it's forgotten, so "sign in again" goes back to Google's page
+        assert not google_apps.signed_in("gm")
         await hub.stop_all()
         mcp_oauth.forget("gcal")
         mcp_oauth.forget("gm")

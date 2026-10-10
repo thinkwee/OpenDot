@@ -131,7 +131,21 @@ async def _token(name: str) -> str:
         r = await c.post(TOKEN_URL, data={"grant_type": "refresh_token", "client_id": cid,
                                           "client_secret": secret, "refresh_token": tok["refresh_token"]})
     if r.status_code != 200:
-        raise GoogleAuthError(r.json().get("error_description") or r.text[:200])
+        try:
+            err = r.json()
+        except ValueError:
+            err = {}
+        if err.get("error") == "invalid_grant":
+            # Google won't renew this sign-in any more: forget it, so "sign in again"
+            # really goes to Google instead of retrying the dead one
+            d.pop("tokens", None)
+            d.pop("expires_at", None)
+            mcp_oauth._save(name, d)
+            raise GoogleAuthError(
+                "Google ended this sign-in. While your Google Cloud app is in Testing, Google "
+                "keeps a sign-in for only 7 days; press Publish app under Google Auth Platform → "
+                "Audience so it lasts")
+        raise GoogleAuthError(err.get("error_description") or r.text[:200])
     _store(name, r.json())
     return r.json()["access_token"]
 

@@ -300,9 +300,11 @@ GOOGLE_SETUP = {
         T("Turn on the APIs for the Google apps you want (links below).",
           "为你想用的 Google 应用开启对应的 API（链接在下面）。"),
         T("Google Auth Platform → Branding: fill in an app name and your email. Audience: “External”, "
-          "then add yourself under Test users (or press Publish so you stay signed in for longer than 7 days).",
-          "Google Auth Platform → 品牌：填应用名和你的邮箱。受众：选“外部”，把你自己加为测试用户"
-          "（或者点“发布”，这样登录状态能保持超过 7 天）。"),
+          "then press Publish app. Skip this and Google signs you out every 7 days. When you sign in, "
+          "Google warns the app isn't verified; it's your own app, so tap Advanced → Go to it.",
+          "Google Auth Platform → 品牌：填应用名和你的邮箱。受众：选“外部”，然后点“发布应用”。"
+          "不发布的话，Google 每 7 天就会让你重新登录一次。登录时 Google 会提示“应用未经验证”，"
+          "这是你自己的应用，点“高级”→“转至……”就行。"),
         T("Clients → Create client → “Web application”. Under Authorised redirect URIs add the address "
           "shown below, then Create.",
           "客户端 → 创建客户端 → 类型选“Web 应用”。在“已获授权的重定向 URI”里加上下面显示的地址，然后创建。"),
