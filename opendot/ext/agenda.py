@@ -26,7 +26,7 @@ from fastapi import APIRouter
 
 from .. import memory
 from ..db import db
-from ..scheduler import next_cron
+from ..scheduler import TIMED, next_time
 
 log = logging.getLogger("opendot.ext.agenda")
 router = APIRouter(prefix="/api/agenda")
@@ -190,13 +190,13 @@ def agent_items(t0: float, t1: float) -> list[dict]:
         base = {"agent_id": a["agent_id"], "thread_id": a["thread_id"],
                 "automation_id": a["id"], "title": a["name"]}
         born = a["created"] or t0
-        if a["kind"] == "cron" and a["schedule"]:
-            t, n = next_cron(a["schedule"], max(t0, born) - 1), 0
-            while t <= t1 and n < 200:
+        if a["kind"] in TIMED and a["schedule"]:
+            t, n = next_time(a["kind"], a["schedule"], max(t0, born) - 1), 0
+            while t and t <= t1 and n < 200:
                 items.append({**base, "id": f"{a['id']}@{int(t)}", "kind": "routine",
                               "start": t, "end": t + 900, "past": t < now})
                 n += 1
-                t = next_cron(a["schedule"], t + 1)
+                t = next_time(a["kind"], a["schedule"], t + 1)
         elif a["kind"] == "watch":
             every = max(int(a["every_min"] or 60), 1) * 60
             lo, hi = max(t0, born), min(t1, a["expires"] or t1)

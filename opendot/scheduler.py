@@ -36,6 +36,26 @@ def next_cron(expr: str, after: float | None = None) -> float:
     return croniter(expr, base).get_next(dt.datetime).timestamp()
 
 
+# automations that fire at a time: "cron" repeats, "once" fires at one local time, then stops
+TIMED = ("cron", "once")
+
+
+def at_time(when: str) -> float:
+    """"2026-10-12T09:00" (local time unless it says otherwise) → a timestamp."""
+    d = dt.datetime.fromisoformat(when.strip().replace(" ", "T"))
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=memory.now_local().tzinfo)
+    return d.timestamp()
+
+
+def next_time(kind: str, schedule: str, after: float | None = None) -> float | None:
+    """When a timed automation fires next after ``after``; None once a one-off has passed."""
+    if kind == "once":
+        t = at_time(schedule)
+        return t if t > (after or time.time()) else None
+    return next_cron(schedule, after)
+
+
 def heartbeat_enabled(agent_id: str) -> bool:
     """The per-agent toggle; untouched, it's on only for the front desk."""
     v = db.kv_get(f"heartbeat:{agent_id}", None)
@@ -62,10 +82,13 @@ async def scheduler_loop() -> None:
     while True:
         now = time.time()
         try:
-            for a in db.q("SELECT * FROM automations WHERE kind='cron' AND enabled=1 "
+            for a in db.q("SELECT * FROM automations WHERE kind IN ('cron','once') AND enabled=1 "
                           "AND next_run IS NOT NULL AND next_run <= ?", now):
-                db.update("automations", a["id"], last_run=now,
-                          next_run=next_cron(a["schedule"], now))
+                if a["kind"] == "once":
+                    db.update("automations", a["id"], last_run=now, next_run=None, enabled=0)
+                else:
+                    db.update("automations", a["id"], last_run=now,
+                              next_run=next_cron(a["schedule"], now))
                 spawn(run_agent(a["agent_id"], a["thread_id"] or _default_thread(a["agent_id"]),
                                 f"automation:{a['name']}",
                                 f"⏰ Scheduled automation “{a['name']}”. Do this now: "

@@ -9,7 +9,7 @@ import time
 from fastapi import APIRouter, Body, HTTPException
 
 from ..db import db, new_id
-from ..scheduler import next_cron
+from ..scheduler import next_cron, next_time
 
 router = APIRouter(prefix="/api/routines")
 
@@ -19,7 +19,7 @@ async def upcoming(days: int = 7, limit_per: int = 20):
     """Next N days of cron runs, one row per future firing, soonest first."""
     horizon = time.time() + days * 86400
     out = []
-    for a in db.q("SELECT * FROM automations WHERE kind='cron' AND enabled=1"):
+    for a in db.q("SELECT * FROM automations WHERE kind IN ('cron','once') AND enabled=1"):
         t = a["next_run"] or time.time()
         n = 0
         while t and t <= horizon and n < limit_per:
@@ -27,7 +27,7 @@ async def upcoming(days: int = 7, limit_per: int = 20):
                        "at": t})
             n += 1
             try:
-                t = next_cron(a["schedule"], t + 1)
+                t = next_time(a["kind"], a["schedule"], t + 1)
             except Exception:
                 break
     out.sort(key=lambda r: r["at"])

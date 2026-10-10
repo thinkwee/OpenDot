@@ -65,14 +65,13 @@ async def test_a_smooth_run_teaches_nothing(llm):
     assert fake.calls == 0 and learned.load() == []
 
 
-async def test_fail_then_work_keeps_one_line_and_leaves_a_note(llm):
+async def test_fail_then_work_keeps_one_line(llm):
     llm(TIP)
     run, ag, tid = _run(goto(KAYAK, ok=False), goto(GF))
     await learned.after_run(run, ag, tid)
     tips = learned.load()
     assert len(tips) == 1 and tips[0]["on"] == "web:google.com"
-    note = db.one("SELECT * FROM inbox WHERE kind='learned' AND thread_id=?", tid)
-    assert note and note["status"] == "read"  # a record, not a badge
+    assert not db.one("SELECT * FROM inbox WHERE kind='learned'")  # the Inbox is what needs you
     assert "google.com/travel/flights" in learned.section()
 
 

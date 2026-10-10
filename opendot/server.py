@@ -30,7 +30,7 @@ from .runtime import (
     spawn,
     stop_thread,
 )
-from .scheduler import heartbeat_enabled, next_cron, scheduler_loop
+from .scheduler import TIMED, heartbeat_enabled, next_time, scheduler_loop
 
 log = logging.getLogger("opendot")
 WEB = ROOT / "web" / "dist"
@@ -192,6 +192,8 @@ async def bootstrap():
         "inbox_unread": db.one("SELECT count(*) n FROM inbox WHERE status='unread' "
                                "AND kind!='approval'")["n"],
         "approvals": db.q("SELECT * FROM approvals WHERE status='pending'"),
+        # jobs that stopped to ask you something (they wait in the Inbox too)
+        "waiting": [r["id"] for r in db.q("SELECT id FROM tasks WHERE status='waiting'")],
         "model": llm.model, "timezone": settings.TIMEZONE,
         "connectors": mcp_hub.status,
         "hook_token": _hook_token(),
@@ -444,7 +446,7 @@ async def automations():
 @app.post("/api/automations")
 async def create_automation(body: dict = Body(...)):
     kind = body.get("kind", "cron")
-    nxt = next_cron(body["schedule"]) if kind == "cron" else None
+    nxt = next_time(kind, body["schedule"]) if kind in TIMED else None
     a = db.insert("automations", id=new_id("au_"), agent_id=body["agent_id"],
                   name=body.get("name") or "automation", kind=kind,
                   schedule=body.get("schedule", ""), event_filter=body.get("event_filter", ""),
@@ -458,8 +460,8 @@ async def patch_automation(auid: str, body: dict = Body(...)):
     fields = {k: v for k, v in body.items() if k in ("name", "schedule", "prompt", "enabled",
                                                       "event_filter")}
     a = db.one("SELECT * FROM automations WHERE id=?", auid)
-    if a and a["kind"] == "cron" and ("schedule" in fields or fields.get("enabled")):
-        fields["next_run"] = next_cron(fields.get("schedule") or a["schedule"])
+    if a and a["kind"] in TIMED and ("schedule" in fields or fields.get("enabled")):
+        fields["next_run"] = next_time(a["kind"], fields.get("schedule") or a["schedule"])
     db.update("automations", auid, **fields)
     return db.one("SELECT * FROM automations WHERE id=?", auid)
 

@@ -9,7 +9,8 @@ Within a run (``fit``, before every model call):
 2. Compaction: if that isn't enough, the middle of the run is summarised by the model
    into one note (task, what was found, decisions, what's left) and the run goes on.
 
-Across turns (``history``): the chat's recent messages within a token budget, plus a
+Across turns (``history``): the chat's recent messages within a token budget, each
+agent reply followed by what its turn actually did (``with_actions``), plus a
 rolling summary of everything older (``update_summary``, after a run, off the
 critical path). The summary sits right after the system prompt and changes only when
 it's rewritten, so it stays in the prompt cache.
@@ -161,8 +162,83 @@ agent can remember what happened earlier without rereading it all.
 
 Update the summary with the new messages. Keep: what the human asked for and decided,
 their preferences, facts and results the agent found (names, numbers, links, dates —
-exact), promises made, and anything still open. Drop small talk and anything superseded.
+exact), what the agent actually did and promises still open. The "[OpenDot note" lines
+list the tools each turn really called: something a reply says was done with no
+matching call in its note was not done — keep it as still open. Drop small talk and anything superseded.
 At most 350 words, short bullets, in the language of the chat. Reply with the summary only."""
+
+
+NOTE = "[OpenDot note"
+ARGS_MAX, RESULT_MAX, STEPS_MAX = 300, 300, 40
+
+
+def _short(v, n: int) -> str:
+    s = v if isinstance(v, str) else json.dumps(v, ensure_ascii=False, default=str)
+    s = re.sub(r"\s+", " ", s or "").strip()
+    return s if len(s) <= n else s[:n] + "…"
+
+
+def _did(steps: list[dict]) -> str:
+    if not steps:
+        return f"{NOTE} — this turn called no tools.]"
+    lines = []
+    for i, st in enumerate(steps[:STEPS_MAX], 1):
+        who = st.get("agent_id") or ""
+        helper = re.search(r"-w(\d+)$", who)
+        by = f"(helper {int(helper.group(1)) + 1}) " if helper else ""
+        lines.append(f"{i}. {by}{st['tool']} {_short(st.get('args') or {}, ARGS_MAX)} → "
+                     f"{st.get('status')}: {_short(st.get('result') or '', RESULT_MAX)}")
+    if len(steps) > STEPS_MAX:
+        lines.append(f"… and {len(steps) - STEPS_MAX} more")
+    return f"{NOTE} — what this turn actually did, tool by tool:\n" + "\n".join(lines) + "]"
+
+
+def with_actions(rows: list[dict]) -> list[dict]:
+    """The chat with what each agent turn actually did: the last message of a turn gets
+    a note listing every tool it called (with what came back), or saying it called none;
+    a turn that did things but posted nothing shows up as a note of its own. Messages
+    only say what an agent claimed; this is what happened."""
+    from .db import db
+    if not rows:
+        return rows
+    last = {}  # run → its last message here
+    for r in rows:
+        rid = (r.get("meta") or {}).get("run_id")
+        if r["role"] == "agent" and rid:
+            last[rid] = r["id"]
+    lo = rows[0]["created"]
+    qs = ",".join("?" * len(last))
+    steps = db.q(f"SELECT * FROM steps WHERE thread_id=? AND (created>=?"
+                 f"{f' OR run_id IN ({qs})' if last else ''}) ORDER BY created",
+                 rows[0]["thread_id"], lo, *last)
+    by_run: dict[str, list] = {}
+    for st in steps:
+        by_run.setdefault(st["run_id"], []).append(st)
+    names = {a["id"]: a["name"] for a in db.q("SELECT id, name FROM agents")}
+    out = []
+    for r in rows:
+        rid = (r.get("meta") or {}).get("run_id")
+        if rid and last.get(rid) == r["id"]:
+            r = {**r, "content": f"{(r.get('content') or '').rstrip()}\n\n{_did(by_run.get(rid, []))}"}
+        out.append(r)
+    # turns that posted nothing (a quiet check-in, a stopped run) but did call tools
+    for rid, sts in by_run.items():
+        if rid in last:
+            continue
+        who = re.sub(r"-w\d+$", "", sts[0].get("agent_id") or "")
+        body = _did(sts).replace("what this turn actually did",
+                                         f"{names.get(who, 'an agent')} worked without posting "
+                                         f"a message; what that turn did", 1)
+        out.append({"id": f"did:{rid}", "thread_id": rows[0]["thread_id"], "role": "system",
+                    "agent_id": who, "content": body, "created": sts[0]["created"], "meta": {}})
+    out.sort(key=lambda m: m["created"])
+    return out
+
+
+def strip_notes(text: str) -> str:
+    """A reply never carries an OpenDot note; if a model copied one, it goes."""
+    i = (text or "").find(NOTE)
+    return text[:i].rstrip() if i >= 0 else text
 
 
 def summary_key(thread_id: str, agent_id: str) -> str:
@@ -191,7 +267,7 @@ async def update_summary(thread_id: str, agent: dict) -> None:
     key = summary_key(thread_id, agent["id"])
     s = db.kv_get(key) or {"upto": 0, "text": ""}
     rows = db.q("SELECT * FROM messages WHERE thread_id=? ORDER BY created", thread_id)
-    older, _ = split_history(rows, s["upto"])
+    older, _ = split_history(with_actions(rows), s["upto"])
     if not older or tokens([r["content"] for r in older]) < SUMMARY_OVER:
         return
     names = {a["id"]: a["name"] for a in db.q("SELECT id, name FROM agents")}

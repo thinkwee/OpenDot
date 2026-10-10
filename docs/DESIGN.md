@@ -59,8 +59,8 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
   counts for or against each line; one that fails more than it works, or isn't seen
   working for 120 days, goes; 40 lines at most. Lessons show where the capability is
   described: sites with `find-it-online`, apps under that app, commands under "Your
-  computer". It's a plain skill file (`learned`, in Skills), and each change leaves a
-  line in the Inbox.
+  computer". It's a plain skill file (`learned`, in Skills); the Inbox stays for
+  what needs you.
 - **Proactive, but quiet.** Watches (`ext/watch.py`) re-check something on a schedule and
   act the moment it happens; routines (`scheduler.py`) run on cron or on events (webhooks,
   RSS, email, SMS). What they say lands in that agent's chat; the Inbox holds only what
@@ -69,10 +69,16 @@ folder, the vault and the pairing token. Back it up and you've backed up everyth
 - **Memory you can read** (`memory.py`): `SOUL.md` (who the agent is), `USER.md` (what
   it knows about you), `MEMORY.md` (what it learned) and a daily journal, all plain files
   in the agent's folder.
-- **Todo and calendar** (`ext/todo.py`, `ext/agenda.py`): a task opens on an agent's
-  first real step and closes with the run (done / waiting on you / stopped / failed);
-  agents keep a checklist with the `todo` tool. The agenda merges every calendar app
-  (and the iPhone's calendars) with the times routines fire and watches check, and
+- **Three places, one question each**: Agents (talk to them; their work shows in the
+  chat), Inbox (only what needs you: asks for your OK, jobs waiting for your answer, what
+  an agent chose to `notify`) and Plan (everything with a time). Each thing lives in
+  exactly one place; an agent's card only counts its own and links to Plan.
+- **Plan** (`ext/agenda.py`, `ext/todo.py`): one timeline merges every calendar app
+  (and the iPhone's calendars) with the times routines fire; beside it, what agents are
+  doing now, what they're watching, and every reminder and routine (pause or delete
+  there). A task opens on an agent's first real step and closes with the run (done /
+  waiting on you / stopped / failed); agents keep a checklist with the `todo` tool.
+  Reminders are `once` (one local time, then off) or `cron` (repeating).
   `ext/calendar.py` reminds you shortly before each event.
 
 - **Usage** (`usage.py`, `ext/usage_api.py`, Settings → Usage): every model reply's
@@ -156,7 +162,7 @@ Protocol) — `opendot/connectors.py`, `opendot/mcp_oauth.py`, `opendot/ext/apps
   - **Calendars**: iCloud or any CalDAV account (an app-specific password, checked when
     you add it), or any calendar's private iCal link (read only).
 - **Calendars are apps**: Google Calendar, iCloud, CalDAV and calendar links are all
-  added in Settings → Apps and given to agents like any other app; the Calendar page
+  added in Settings → Apps and given to agents like any other app; the Plan page
   shows all of them. Older calendar settings (links on the Calendar page, a calendar per
   agent) move into Apps on the first start.
 - **Who can use it**: each app is given to specific agents (the front desk by default);

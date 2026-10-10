@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime as dt
 import json
 import re
 import time
@@ -75,13 +76,16 @@ TOOLS: dict[str, dict] = {
                        "dashboard, tracker) the human can open on their phone. It is "
                        "attached to your reply as a file card.",
                        {"slug": S, "title": S, "html": S}, ["slug", "html"]),
-    "schedule": fn("schedule", "Create an automation that wakes you up later. kind='cron' with "
-                   "schedule like '0 8 * * *' (local time) or kind='event' with event_filter "
+    "schedule": fn("schedule", "Create an automation that wakes you up later. kind='once' with "
+                   "schedule = a local date and time like '2026-10-12T09:00' for something that "
+                   "happens one time (a reminder); kind='cron' with schedule like '0 8 * * *' "
+                   "(local time) for something that repeats; or kind='event' with event_filter "
                    "(e.g. 'webhook:github' or 'rss:*' or 'share'). prompt = what to do then.",
-                   {"name": S, "kind": {"type": "string", "enum": ["cron", "event"]},
+                   {"name": S, "kind": {"type": "string", "enum": ["once", "cron", "event"]},
                     "schedule": S, "event_filter": S, "prompt": S},
                    ["name", "kind", "prompt"]),
-    "list_automations": fn("list_automations", "List your automations.", {}),
+    "list_automations": fn("list_automations", "List your automations: what each does, when it "
+                           "next fires and last fired (local time), and whether it's on.", {}),
     "cancel_automation": fn("cancel_automation", "Disable an automation by id.", {"id": S},
                             ["id"]),
     "offer_choices": fn(
@@ -160,12 +164,14 @@ async def _notify(ctx: Ctx, title: str, body: str = "") -> dict:
 
 async def _schedule(ctx: Ctx, name: str, kind: str, prompt: str, schedule: str = "",
                     event_filter: str = "") -> dict:
-    from .scheduler import next_cron
-    if kind == "cron":
+    from .scheduler import TIMED, next_time
+    if kind in TIMED:
         try:
-            nxt = next_cron(schedule)
+            nxt = next_time(kind, schedule)
         except Exception as e:
-            return {"error": f"bad cron expression: {e}"}
+            return {"error": f"bad schedule for kind={kind}: {e}"}
+        if nxt is None:
+            return {"error": f"{schedule} has already passed"}
     else:
         nxt = None
     a = db.insert("automations", id=new_id("au_"), agent_id=ctx.agent["id"], name=name,
@@ -173,6 +179,18 @@ async def _schedule(ctx: Ctx, name: str, kind: str, prompt: str, schedule: str =
                   enabled=1, next_run=nxt, thread_id=ctx.thread_id)
     bus.emit("automation", automation=a)
     return {"ok": True, "id": a["id"], "next_run": nxt}
+
+
+def _list_automations(ctx: Ctx) -> dict:
+    tz = memory.now_local().tzinfo
+
+    def local(ts):
+        return dt.datetime.fromtimestamp(ts, tz).strftime("%a %Y-%m-%d %H:%M") if ts else None
+    rows = db.q("SELECT id,name,kind,schedule,event_filter,prompt,enabled,next_run,last_run "
+                "FROM automations WHERE agent_id=? ORDER BY enabled DESC, next_run",
+                ctx.agent["id"])
+    return {"automations": [{**r, "on": bool(r.pop("enabled")), "next_run": local(r["next_run"]),
+                             "last_run": local(r["last_run"])} for r in rows]}
 
 
 LETTERS = "ABCDEF"
@@ -298,9 +316,7 @@ EXEC: dict[str, Callable[..., Awaitable[Any]]] = {
     "notify": _notify,
     "publish_page": _publish,
     "schedule": _schedule,
-    "list_automations": lambda ctx: _sync(lambda: {"automations": db.q(
-        "SELECT id,name,kind,schedule,event_filter,enabled,next_run FROM automations "
-        "WHERE agent_id=?", ctx.agent["id"])}),
+    "list_automations": lambda ctx: _sync(lambda: _list_automations(ctx)),
     "cancel_automation": lambda ctx, id: _sync(lambda: (db.update("automations", id, enabled=0),
                                                          {"ok": True})[1]),
     "offer_choices": _offer_choices,

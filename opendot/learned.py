@@ -17,7 +17,7 @@ bloat:
 Lessons show up where the capability is described: about sites with find-it-online,
 about an app under that app in the prompt, about commands under "Your computer". The
 file is a plain skill (``data/skills/learned/SKILL.md``), shown in Skills and
-deletable there. Every change leaves a line in the Inbox.
+deletable there. (Not in the Inbox: that's only for what needs you.)
 """
 
 from __future__ import annotations
@@ -30,10 +30,9 @@ import urllib.parse
 
 import frontmatter
 
-from .bus import bus
 from .computer.core import blocked_note
 from .config import settings
-from .db import db, new_id
+from .db import db
 
 log = logging.getLogger("opendot.learned")
 
@@ -235,11 +234,6 @@ async def _after_run(run_id: str, agent: dict, thread_id: str) -> None:
         _apply(tips, change)
     if change or touched:
         save(tips)
-    if change:
-        item = db.insert("inbox", id=new_id("in_"), agent_id=agent["id"], kind="learned",
-                         title=f"{agent['name']} · {change['key']}", body=change["tip"],
-                         status="read", thread_id=thread_id)
-        bus.emit("inbox", item=item)
 
 
 async def _reflect(steps, tips, agent, thread_id, run_id) -> dict | None:

@@ -92,3 +92,30 @@ def test_hook_endpoint_requires_correct_token(client, auth_headers):
     assert ok.status_code == 200
     bad = client.post("/hook/wrong-token/manual", json={"x": 1})
     assert bad.status_code == 401
+
+
+async def test_once_reminder_fires_one_time_then_stops(monkeypatch):
+    """kind='once': a reminder at one local time; it fires, then switches itself off
+    (a date written as cron would come back every year)."""
+    from opendot import scheduler, tools
+    aid = db.insert("agents", id=new_id("ag_"), name="Once", emoji="x", color="#fff",
+                    role="r")["id"]
+    ctx = tools.Ctx(agent={"id": aid}, thread_id=None, run_id="run_x")
+    soon = time.strftime("%Y-%m-%dT%H:%M", time.localtime(time.time() + 3600))
+    made = await tools._schedule(ctx, name="GP", kind="once", schedule=soon, prompt="call the GP")
+    assert made["ok"] and abs(made["next_run"] - (time.time() + 3600)) < 61
+    gone = await tools._schedule(ctx, name="late", kind="once", schedule="2020-01-01T09:00",
+                                 prompt="x")
+    assert "already passed" in gone["error"]
+    db.update("automations", made["id"], next_run=time.time() - 1)
+    fired = []
+
+    async def fake_run(agent_id, thread_id, source, prompt):
+        fired.append(source)
+    monkeypatch.setattr(runtime, "run_agent", fake_run)
+    loop = asyncio.create_task(scheduler.scheduler_loop())
+    await asyncio.sleep(0.3)
+    loop.cancel()
+    await _drain_spawned()
+    a = db.one("SELECT * FROM automations WHERE id=?", made["id"])
+    assert fired == ["automation:GP"] and not a["enabled"] and a["next_run"] is None

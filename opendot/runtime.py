@@ -206,6 +206,12 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
         + ("- Your teammates: " + "; ".join(f"{t['name']} ({(t['role'] or '')[:50]})"
                                            for t in others[:20]) + ".\n" if others else "")
         + "- Your computer home has a `shared/` folder every agent can read and write.\n"
+        + "- The human's OpenDot app has three places. Agents: a chat with each of you, where "
+        "your work shows. Inbox: only what needs them (asks for their OK, questions you're "
+        "waiting on, what you `notify`). Plan: their calendars on a timeline, and beside it "
+        "what you're doing now, what you're watching, and every reminder and routine you "
+        "set (they can pause or delete them there). An agent's card counts its own and links "
+        "to Plan. If they ask where to find something, point to the right place.\n"
     )
     rules = [
         "# Rules",
@@ -216,10 +222,17 @@ def system_prompt(agent: dict, thread: dict, source: str) -> str:
         "- Talk like a friend texting: short, warm, plain words, in the human's language. "
         "Never sound like a dev tool (no “approve/confirm execution/tool call/run”).",
         "- For wide/parallel work (many items to research or produce) use `delegate`.",
-        "- 'Every day / every Monday' → `schedule`. 'Tell me when / as soon as / if a slot "
+        "- 'Remind me Monday at 9' → `schedule` with kind='once'. 'Every day / every Monday' "
+        "→ `schedule` with kind='cron'. 'Tell me when / as soon as / if a slot "
         "opens / keep an eye on' → `watch` (it re-checks until it happens, then you act).",
         "- If you learn a lasting preference or fact about the human, `remember` it.",
         "- Never invent results. If a tool fails, say so and try another way.",
+        "- Only say something is done (saved, scheduled, booked, sent) after the tool that "
+        "does it succeeded in this turn.",
+        "- Your earlier replies in this chat end with an “[OpenDot note — …]” that OpenDot "
+        "adds: the tools that turn really called and what came back. It's the record of what "
+        "happened. If an earlier reply says something was done but its note shows no call that "
+        "did it, it wasn't done: say so and do it now. Never write such a note yourself.",
         "- Money: you never pay. Get everything ready and hand over the link so the human "
         "pays themselves.",
         "- Mail about the human's OpenDot setup (a test email, a provider's “new app password "
@@ -318,7 +331,7 @@ def history(thread: dict, agent: dict, limit: int = 400) -> list[dict]:
     rows = db.q("SELECT * FROM messages WHERE thread_id=? ORDER BY created DESC LIMIT ?",
                 thread["id"], limit)[::-1]
     summary = db.kv_get(context.summary_key(thread["id"], agent["id"])) or {"upto": 0, "text": ""}
-    older, rows = context.split_history(rows, summary["upto"])
+    older, rows = context.split_history(context.with_actions(rows), summary["upto"])
     names = {a["id"]: a["name"] for a in db.q("SELECT id, name FROM agents")}
     earlier = []
     if summary["text"]:
@@ -503,7 +516,7 @@ async def run_tool(ctx: Ctx, name: str, args: dict) -> dict:
     if name not in REPLY_TOOLS and name != "todo":
         try:
             from .ext import todo
-            todo.open_task(ctx)  # real work on something asked → it's on the Todo page
+            todo.open_task(ctx)  # real work on something asked → it's under "Doing now" in Plan
         except Exception:
             log.exception("todo open failed")
     if name == "browser" and args.get("ref"):
@@ -557,8 +570,9 @@ async def run_tool(ctx: Ctx, name: str, args: dict) -> dict:
         result = {"result": result}
     status = "error" if "error" in result else "done"
     preview = redact(json.dumps(result, ensure_ascii=False, default=str))[:1500]
-    db.update("steps", step["id"], status=status, result=preview, finished=time.time())
-    bus.emit("step", step={**step, "status": status, "result": preview})
+    finished = time.time()
+    db.update("steps", step["id"], status=status, result=preview, finished=finished)
+    bus.emit("step", step={**step, "status": status, "result": preview, "finished": finished})
     return result
 
 
@@ -620,9 +634,11 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             prompt = durable.resume_prompt(job["run_id"], prompt)
         if source == "handoff" and prompt:
             ctx.extra["prompt"] = prompt
+        started = time.time()
         _live[run_id] = {"agent_id": agent_id, "thread_id": thread_id, "run_id": run_id,
-                         "text": "", "thought": "", "workers": {}}
-        bus.emit("run", state="start", agent_id=agent_id, thread_id=thread_id, run_id=run_id)
+                         "started": started, "text": "", "thought": "", "workers": {}}
+        bus.emit("run", state="start", agent_id=agent_id, thread_id=thread_id, run_id=run_id,
+                 started=started)
         msgs = [{"role": "system", "content": system_prompt(agent, thread, source)}]
         msgs += history(thread, agent)
         if prompt:
@@ -685,6 +701,7 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
                         attachments.append(card)
             except Exception:
                 log.exception("work-file tracking failed")
+        text = context.strip_notes(text)
         # a run you stopped just stops: no "(stopped)" bubble
         quiet = text.strip().upper()  # "nothing new.\n\nNO_REPLY" is silence too
         silent = quiet.startswith("NO_REPLY") or quiet.endswith("NO_REPLY") or text == "(stopped)"
@@ -880,8 +897,9 @@ def stop_thread(thread_id: str) -> None:
             task.cancel()
     for st in db.q("SELECT * FROM steps WHERE thread_id=? AND status IN ('running','waiting')",
                    thread_id):
-        db.update("steps", st["id"], status="stopped")
-        bus.emit("step", step={**st, "status": "stopped"})
+        finished = time.time()
+        db.update("steps", st["id"], status="stopped", finished=finished)
+        bus.emit("step", step={**st, "status": "stopped", "finished": finished})
 
 
 async def wait_for_helpers(ctx: Ctx) -> dict:

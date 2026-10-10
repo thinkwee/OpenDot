@@ -146,8 +146,8 @@ async def _todo(ctx: Ctx, items: list, title: str = "") -> dict:
 
 
 register_tool("todo", fn(
-    "todo", "Your visible checklist for the job you're on (the human's Todo page shows it "
-    "live). Call it at the start of any job with 3+ steps, then again whenever an item "
+    "todo", "Your visible checklist for the job you're on (the human sees it live under "
+    "“Doing now” on their Plan page). Call it at the start of any job with 3+ steps, then again whenever an item "
     "starts or finishes — always pass the whole list.",
     {"title": {**S, "description": "short name of the job, in the human's language"},
      "items": {"type": "array", "items": {"type": "object", "properties": {
@@ -160,7 +160,7 @@ def PROMPT(agent: dict) -> str | None:
     return ("# Todo\nFor any job that takes 3 or more steps, start by calling `todo` with a "
             "short title and a checklist (in the human's language), and keep it current: "
             "mark an item `doing` when you start it and `done` when it's finished. The "
-            "human watches their Todo page instead of reading your steps. Skip it for quick "
+            "human watches it on their Plan page instead of reading your steps. Skip it for quick "
             "answers.")
 
 

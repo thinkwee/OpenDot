@@ -107,3 +107,32 @@ def test_claude_gets_cache_markers_others_dont():
     assert kw["cache_control_injection_points"][0] == {"location": "message", "role": "system"}
     kw = LLM(model="deepseek/deepseek-chat", base_url="")._kwargs([{"role": "user", "content": "x"}], None, 10)
     assert "cache_control_injection_points" not in kw  # caches on its own
+
+
+def test_history_shows_what_each_turn_actually_did():
+    """Each agent reply carries what its turn really did (the tools it called), so a
+    reply that only said "done" can't be mistaken for one that did it."""
+    ag = db.insert("agents", id=new_id("ag_"), name="Keeper", emoji="x", color="#fff", role="r")
+    th = db.insert("threads", id=new_id("th_"), title="Did", kind="dm", members=[ag["id"]])
+    t0 = time.time() - 100
+
+    def turn(i, run, said):
+        db.insert("messages", id=new_id("m_"), thread_id=th["id"], role="user",
+                  content=f"ask {i}", created=t0 + i * 10)
+        db.insert("messages", id=new_id("m_"), thread_id=th["id"], role="agent", agent_id=ag["id"],
+                  content=said, meta={"run_id": run}, created=t0 + i * 10 + 5)
+    turn(0, "run_a", "Saved ✅")  # said it, did nothing
+    db.insert("steps", id=new_id("st_"), thread_id=th["id"], run_id="run_b", agent_id=ag["id"],
+              tool="schedule", args={"name": "GP", "kind": "once"}, status="done",
+              result='{"ok": true}', created=t0 + 12)
+    turn(1, "run_b", "Saved ✅")
+    db.insert("steps", id=new_id("st_"), thread_id=th["id"], run_id="run_c", agent_id=ag["id"],
+              tool="web_search", args={"q": "dentist hours"}, status="done", result="{}",
+              created=t0 + 30)  # a quiet turn: no message
+    h = runtime.history(th, ag)
+    said = [m["content"] for m in h if m["role"] == "assistant"]
+    assert "called no tools" in said[0]
+    assert "schedule" in said[1] and '"name": "GP"' in said[1] and "→ done" in said[1]
+    assert any("worked without posting" in m["content"] and "web_search" in m["content"]
+               for m in h if m["role"] == "user")
+    assert context.strip_notes("Done!\n\n[OpenDot note — this turn called no tools.]") == "Done!"
