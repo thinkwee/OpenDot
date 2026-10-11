@@ -61,9 +61,12 @@ PROMPT = ("# Deliverables\nEverything you hand over is a file card: reports→ma
           "data→make_spreadsheet, decks→make_slides, other files→attach, "
           "interactive mini-apps/dashboards→publish_page (a web-page file).\n"
           "Charts and pictures go inside your message: make_chart draws one right in your "
-          "reply (no file), and so does a ```chart block you write yourself, holding the same "
-          "JSON. A picture: ![caption](path on your computer, or an https link). Tables are "
-          "Markdown tables. Most replies need none of these; use one when it says more than the "
+          "reply (no file). You can also write the chart yourself as a ```chart block; its JSON "
+          "is flat, with labels and series at the top level (not inside \"data\"): "
+          "{\"type\":\"line\",\"title\":\"...\",\"labels\":[\"9/1\",\"9/2\"],"
+          "\"series\":[{\"name\":\"...\",\"values\":[1.2,1.3]}],\"y\":{\"min\":1.0}} "
+          "(y is optional). A picture: ![caption](path on your computer, or an https link). "
+          "Tables are Markdown tables. Most replies need none of these; use one when it says more than the "
           "sentence it replaces, and keep it to one or two.")
 
 PALETTE = ["FFB38A", "8FD6B8", "B9A6F2", "8EC5FF", "FFD37A", "FF9EC4"]

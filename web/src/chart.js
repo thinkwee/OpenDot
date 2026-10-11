@@ -27,12 +27,18 @@ function niceTicks(lo, hi, n = 4) {
 function parse(text) {
   let s
   try { s = JSON.parse(text) } catch { return null }
+  // agents sometimes copy make_chart's arguments, with labels/series (or a bare values list)
+  // inside "data"; read either place
+  const d = s?.data && typeof s.data === 'object' ? s.data : {}
+  const pick = (k) => (Array.isArray(s?.[k]) ? s[k] : Array.isArray(d[k]) ? d[k] : null)
+  const values = pick('values')
   const type = ['bar', 'line', 'pie'].includes(s?.type) ? s.type : 'bar'
-  const labels = (Array.isArray(s?.labels) ? s.labels : []).slice(0, 60).map(String)
-  const series = (Array.isArray(s?.series) ? s.series : []).slice(0, MAX_SERIES)
+  const labels = (pick('labels') || []).slice(0, 60).map(String)
+  const series = (pick('series') || (values ? [{ name: s?.title, values }] : [])).slice(0, MAX_SERIES)
     .map((x, i) => ({ name: String(x?.name ?? `#${i + 1}`), values: labels.map((_, j) => num(x?.values?.[j])) }))
   if (!labels.length || !series.length) return null
-  const y = { min: num(s.y?.min), max: num(s.y?.max) }  // values the axis must reach, e.g. a threshold
+  const yr = s.y ?? d.y
+  const y = { min: num(yr?.min), max: num(yr?.max) }  // values the axis must reach, e.g. a threshold
   return { type, title: s.title ? String(s.title) : '', labels, series, y }
 }
 
