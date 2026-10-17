@@ -89,7 +89,7 @@ def test_long_chat_is_recent_messages_plus_summary():
     s = db.kv_get(context.summary_key(th["id"], ag["id"]))
     assert "aisle seats" in s["text"] and s["upto"] > t0
     h = runtime.history(th, ag)
-    assert h[0]["content"].startswith("[Earlier in this chat — a summary]")
+    assert h[0]["content"].startswith("[Earlier in this chat — a summary, up to ")
     assert "shortened" not in h[0]["content"]  # everything older is in the summary now
     assert "message 39" in h[-1]["content"]
 
@@ -136,3 +136,27 @@ def test_history_shows_what_each_turn_actually_did():
     assert any("worked without posting" in m["content"] and "web_search" in m["content"]
                for m in h if m["role"] == "user")
     assert context.strip_notes("Done!\n\n[OpenDot note — this turn called no tools.]") == "Done!"
+
+
+def test_all_day_events_read_as_the_days_they_are():
+    from opendot.builtin_apps import _fmt
+    out = _fmt([{"title": "Holiday", "start": "2026-10-18", "end": "2026-10-19"},
+                {"title": "Trip", "start": "2026-10-14", "end": "2026-10-18"},
+                {"title": "Lunch", "start": "2026-10-19T12:00:00+01:00",
+                 "end": "2026-10-19T13:00:00+01:00"}])
+    assert "2026-10-18 all day Holiday" in out  # one day, not "18 – 19"
+    assert "2026-10-14 – 2026-10-17 all day Trip" in out
+    assert "2026-10-19 12:00 – 2026-10-19 13:00 Lunch" in out
+
+
+def test_repeating_events():
+    import pytest
+
+    from opendot.builtin_apps import _rrule, _rrule_text
+    assert _rrule("") is None
+    rule = _rrule("Weekly", "2026-12-23")
+    assert rule["FREQ"] == "WEEKLY"
+    assert _rrule_text(rule).startswith("RRULE:FREQ=WEEKLY;UNTIL=20261223T")
+    assert _rrule_text(_rrule("daily")) == "RRULE:FREQ=DAILY"
+    with pytest.raises(RuntimeError):
+        _rrule("fortnightly")

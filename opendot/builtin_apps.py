@@ -329,7 +329,8 @@ def _dav_events(st: dict, start, end) -> list[dict]:
     return sorted(out, key=lambda e: e["start"])
 
 
-def _dav_add(st: dict, title: str, start, end, calendar: str, location: str, notes: str) -> str:
+def _dav_add(st: dict, title: str, start, end, calendar: str, location: str, notes: str,
+             rrule: dict | None = None) -> str:
     cals = _dav_calendars(st)
     pick = next((c for c in cals if _dav_name(c).lower() == calendar.strip().lower()), None) \
         if calendar else None
@@ -337,9 +338,45 @@ def _dav_add(st: dict, title: str, start, end, calendar: str, location: str, not
         raise RuntimeError(f"no calendar called {calendar!r}; there are: "
                            + ", ".join(_dav_name(c) for c in cals))
     target = pick or cals[0]
+    if rrule:  # repeat in the human's named zone, so 12:00 stays 12:00 after a clock change
+        from zoneinfo import ZoneInfo
+
+        from .config import settings
+        tz = ZoneInfo(settings.TIMEZONE)
+        start, end = start.astimezone(tz), end.astimezone(tz)
     target.add_event(dtstart=start, dtend=end, summary=title, location=location or None,
-                     description=notes or None)
+                     description=notes or None, rrule=rrule)
     return _dav_name(target)
+
+
+REPEATS = ("daily", "weekly", "monthly", "yearly")
+
+
+def _rrule(repeat: str, until: str = "") -> dict | None:
+    """repeat + until → an iCalendar RRULE as a dict (None if it doesn't repeat)."""
+    import datetime as dt
+
+    from .ext.calendar import _parse_dt
+    repeat = (repeat or "").strip().lower()
+    if not repeat:
+        return None
+    if repeat not in REPEATS:
+        raise RuntimeError(f"repeat must be one of {', '.join(REPEATS)}")
+    rule = {"FREQ": repeat.upper()}
+    if until:
+        u = _parse_dt(until)
+        if len(until.strip()) == 10:  # a date: through the end of that day
+            u = u.replace(hour=23, minute=59, second=59)
+        rule["UNTIL"] = u.astimezone(dt.timezone.utc)
+    return rule
+
+
+def _rrule_text(rule: dict) -> str:
+    """The RRULE line Google wants, from the dict above."""
+    parts = [f"FREQ={rule['FREQ']}"]
+    if rule.get("UNTIL"):
+        parts.append(f"UNTIL={rule['UNTIL']:%Y%m%dT%H%M%SZ}")
+    return "RRULE:" + ";".join(parts)
 
 
 def _range(start: str, end: str):
@@ -388,13 +425,26 @@ async def check(kind: str, spec: dict) -> None:
         raise PermissionError(f"couldn't reach the calendar ({msg[:160]})")
 
 
+def _span(start: str, end: str) -> str:
+    """When an event is, as a person reads it. An all-day event's end date is the day after
+    it ends (the calendar convention), so a one-day event shows as that one day."""
+    import datetime as dt
+    if len(start) == 10:  # a date, no time: all day
+        try:
+            last = (dt.date.fromisoformat(end[:10]) - dt.timedelta(days=1)).isoformat() \
+                if end else start
+        except ValueError:
+            last = start
+        return f"{start} all day" if last <= start else f"{start} – {last} all day"
+    return f"{start[:16].replace('T', ' ')} – {end[:16].replace('T', ' ')}"
+
+
 def _fmt(evs: list[dict]) -> str:
     rows = []
     for e in evs:
         where = f" @ {e['location']}" if e.get("location") else ""
         cal = f" [{e['calendar']}]" if e.get("calendar") else ""
-        rows.append(f"{e['start'][:16].replace('T', ' ')} – {e['end'][:16].replace('T', ' ')} "
-                    f"{e['title']}{where}{cal}")
+        rows.append(f"{_span(e['start'], e['end'])} {e['title']}{where}{cal}")
     return "\n".join(rows) or "Nothing on the calendar then."
 
 
@@ -421,14 +471,18 @@ def calendar_server(kind: str):
 
             @tool(s, title="Add an event", annotations=rw)
             async def create_event(title: str, start: str, end: str, calendar: str = "",
-                                   location: str = "", notes: str = "") -> str:
+                                   location: str = "", notes: str = "", repeat: str = "",
+                                   until: str = "") -> str:
                 """Add an event (ISO start/end; without a time zone it's the human's local time).
-                calendar: its name from list_calendars (default: the first one)."""
+                calendar: its name from list_calendars (default: the first one).
+                repeat: daily / weekly / monthly / yearly makes it repeat, until the date in
+                `until` (leave it out for no end)."""
                 s_, e_ = _range(start, end)
+                rule = _rrule(repeat, until)
                 where = await asyncio.to_thread(_dav_add, _settings(spec), title, s_, e_,
-                                                calendar, location, notes)
+                                                calendar, location, notes, rule)
                 _dav_cache.clear()
-                return f"Added “{title}” to {where}."
+                return f"Added “{title}” to {where}" + (f", repeating {repeat}." if rule else ".")
         return s
     return make
 

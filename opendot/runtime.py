@@ -8,6 +8,7 @@ works sequentially) but different agents run in parallel, and
 from __future__ import annotations
 
 import asyncio
+import datetime as dt
 import json
 import logging
 import random
@@ -288,6 +289,20 @@ def _flat(s: str | None) -> str:
     return " ".join((s or "").split())
 
 
+def _did_line(run_id: str) -> str:
+    """The tools a run called, in a few words: "called no tools" or "schedule ok, …"."""
+    rows = db.q("SELECT tool, status FROM steps WHERE run_id=? ORDER BY created", run_id)
+    if not rows:
+        return "called no tools"
+    seen: dict[str, str] = {}
+    for r in rows:
+        name = r["tool"].split("__")[-1]
+        if seen.get(name) != "ok":  # one success is enough to say it worked
+            seen[name] = "ok" if r["status"] == "done" else r["status"] or "?"
+    return "called " + ", ".join(f"{k} {v}" for k, v in list(seen.items())[:6]) \
+        + (" …" if len(seen) > 6 else "")
+
+
 def _last_ask(thread_id: str) -> str:
     r = db.one("SELECT content FROM messages WHERE thread_id=? AND role='user' "
                "ORDER BY created DESC LIMIT 1", thread_id)
@@ -335,7 +350,11 @@ def history(thread: dict, agent: dict, limit: int = 400) -> list[dict]:
     names = {a["id"]: a["name"] for a in db.q("SELECT id, name FROM agents")}
     earlier = []
     if summary["text"]:
-        earlier.append("[Earlier in this chat — a summary]\n" + summary["text"])
+        # dated, so what it says about "now" (a sign-in that was broken…) reads as then
+        asof = dt.datetime.fromtimestamp(summary["upto"], memory.now_local().tzinfo) \
+            .strftime("%a %Y-%m-%d %H:%M") if summary["upto"] else ""
+        earlier.append(f"[Earlier in this chat — a summary{f', up to {asof}' if asof else ''}]\n"
+                       + summary["text"])
     if older:  # not summarised yet (it happens after a run): the gist of each
         earlier.append("[Earlier messages, shortened]\n" + "\n".join(
             f"- {'Human' if m['role'] == 'user' else names.get(m['agent_id'], 'Agent')}: "
@@ -726,8 +745,10 @@ async def _run(job: dict, agent_id: str, thread_id: str, source: str, prompt: st
             bus.emit("message", message=msg)
             asked = prompt if source == "handoff" else _last_ask(thread_id) \
                 if source == "chat" else ""
+            # what the turn really did goes first: the reply only says what it claimed
             memory.journal(agent_id, f"[{_source_label(source)}] "
-                           + (f"{_flat(asked)[:60]} → " if asked else "") + _flat(text)[:140])
+                           + (f"{_flat(asked)[:60]} → " if asked else "")
+                           + f"({_did_line(run_id)}) " + _flat(text)[:140])
         if failed:
             durable.job_end(job["id"], "failed")
         try:

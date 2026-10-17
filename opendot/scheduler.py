@@ -92,7 +92,8 @@ async def scheduler_loop() -> None:
                 spawn(run_agent(a["agent_id"], a["thread_id"] or _default_thread(a["agent_id"]),
                                 f"automation:{a['name']}",
                                 f"⏰ Scheduled automation “{a['name']}”. Do this now: "
-                                f"{a['prompt']}"))
+                                f"{a['prompt']}\n\n(What you reply now is posted to the "
+                                f"human as is: it is the reminder or report itself.)"))
             from .ext.push import _quiet_now
             if not _quiet_now():  # daytime only (DOT_QUIET_FROM / DOT_QUIET_TO)
                 for ag in db.q("SELECT id FROM agents"):

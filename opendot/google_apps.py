@@ -230,7 +230,7 @@ async def calendar_events(name: str, start: dt.datetime, end: dt.datetime,
 def calendar_server(name: str, spec: dict):
     from mcp.server.mcpserver import MCPServer
 
-    from .builtin_apps import RO, RW, _fmt, _range, tool
+    from .builtin_apps import RO, RW, _fmt, _range, _rrule, _rrule_text, tool
     s = MCPServer("Google Calendar", instructions="Your human's Google Calendar: read it, and add events.")
 
     @tool(s, title="Calendars", annotations=RO)
@@ -247,10 +247,14 @@ def calendar_server(name: str, spec: dict):
 
     @tool(s, title="Add an event", annotations=RW)
     async def create_event(title: str, start: str, end: str, calendar: str = "",
-                           location: str = "", notes: str = "") -> str:
+                           location: str = "", notes: str = "", repeat: str = "",
+                           until: str = "") -> str:
         """Add an event (ISO start/end; without a time zone it's the human's local time).
-        calendar: its name from list_calendars (default: the main one). No invitations are sent."""
+        calendar: its name from list_calendars (default: the main one). No invitations are sent.
+        repeat: daily / weekly / monthly / yearly makes it repeat, until the date in `until`
+        (leave it out for no end)."""
         s_, e_ = _range(start, end)
+        rule = _rrule(repeat, until)
         cal_id = "primary"
         if calendar:
             match = [c for c in await calendars(name)
@@ -264,9 +268,14 @@ def calendar_server(name: str, spec: dict):
             body["location"] = location
         if notes:
             body["description"] = notes
+        if rule:  # a repeating event needs a named time zone to repeat in
+            from .config import settings
+            body["start"]["timeZone"] = body["end"]["timeZone"] = settings.TIMEZONE
+            body["recurrence"] = [_rrule_text(rule)]
         r = await _api(name, "google_calendar", "POST", f"{CAL}/calendars/{quote(cal_id, safe='')}/events",
                        params={"sendUpdates": "none"}, json=body)
-        return f"Added “{title}”: {r.json().get('htmlLink', '')}"
+        return f"Added “{title}”{f', repeating {repeat}' if rule else ''}: " \
+               f"{r.json().get('htmlLink', '')}"
 
     return s
 

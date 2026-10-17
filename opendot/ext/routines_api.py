@@ -78,3 +78,24 @@ async def add_preset(key: str, body: dict = Body(...)):
                  kind="cron", schedule=p["schedule"], event_filter="", prompt=p["prompt"],
                  enabled=1, next_run=nxt, thread_id=body.get("thread_id"))
     return a
+
+
+def PROMPT(agent: dict) -> str | None:
+    """The reminders and routines this agent has on right now, so it knows what's really
+    set without having to look (and a reminder it only said it set isn't here)."""
+    import datetime as dt
+
+    from .. import memory
+    rows = db.q("SELECT id, name, kind, schedule, next_run FROM automations WHERE kind IN "
+                "('cron','once') AND enabled=1 AND agent_id=? ORDER BY next_run LIMIT 30",
+                agent["id"])
+    if not rows:
+        return "# Your reminders and routines\nNone are on right now."
+    tz = memory.now_local().tzinfo
+
+    def when(r):
+        nxt = dt.datetime.fromtimestamp(r["next_run"], tz).strftime("%a %Y-%m-%d %H:%M") \
+            if r["next_run"] else "not scheduled"
+        return f"next {nxt}" + (f", repeats ({r['schedule']})" if r["kind"] == "cron" else ", once")
+    return "# Your reminders and routines (what's on right now)\n" + "\n".join(
+        f"- {r['name']} (id {r['id']}): {when(r)}" for r in rows)

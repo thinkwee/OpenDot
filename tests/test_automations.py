@@ -119,3 +119,28 @@ async def test_once_reminder_fires_one_time_then_stops(monkeypatch):
     await _drain_spawned()
     a = db.one("SELECT * FROM automations WHERE id=?", made["id"])
     assert fired == ["automation:GP"] and not a["enabled"] and a["next_run"] is None
+
+
+def test_agent_sees_the_reminders_it_really_has():
+    from opendot.ext import routines_api
+    aid = db.insert("agents", id=new_id("ag_"), name="Remind", emoji="x", color="#fff",
+                    role="r")["id"]
+    assert "None are on" in routines_api.PROMPT({"id": aid})
+    db.insert("automations", id="au_real", agent_id=aid, name="print letters", kind="once",
+              schedule="2030-01-01T09:00", prompt="p", enabled=1, next_run=time.time() + 3600)
+    db.insert("automations", id="au_off", agent_id=aid, name="old one", kind="once",
+              schedule="2020-01-01T09:00", prompt="p", enabled=0, next_run=None)
+    text = routines_api.PROMPT({"id": aid})
+    assert "print letters (id au_real)" in text and "once" in text
+    assert "old one" not in text  # what's on right now, not what's done
+
+
+def test_journal_says_what_a_turn_really_did():
+    run = new_id("run_")
+    assert runtime._did_line(run) == "called no tools"
+    for st in ("error", "done"):
+        db.insert("steps", id=new_id("st_"), run_id=run, tool="schedule", args="{}",
+                  result="{}", status=st, created=time.time())
+    db.insert("steps", id=new_id("st_"), run_id=run, tool="mcp__icloud-calendar__list_events",
+              args="{}", result="{}", status="error", created=time.time())
+    assert runtime._did_line(run) == "called schedule ok, list_events error"
